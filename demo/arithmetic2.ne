@@ -12,8 +12,10 @@
 # The _'s are defined as whitespace below. This is a mini-
 # -idiom.
 
-# NOTE: need prepare exprs
-# NOTE: need put space before all math "(" and after all ")"
+# Required preparations
+# 1) put spaces before all braces
+# 2) shift functions to braces (like " sin(...)
+# 3) Add spaces before all +/- signs (to simplify unary/binary sign logic)
 
 main -> _ OPS _ {% function(d) {return d[1]; } %}
 
@@ -22,13 +24,19 @@ main -> _ OPS _ {% function(d) {return d[1]; } %}
 # only paretheses
 P -> "(" _ OPS _ ")" {% function(d) {return d[2]; } %}
 
-# Parentheses or N signed
+# Parentheses or N
 PN -> P             {% id %}
-    | NS             {% id %}
+    | N             {% id %}
+
+# Parentheses or N signed
+PNS ->  PN        {% function(d) { return d[0]; } %}
+  | __ "+" _ PN  {% function(d) { /*console.log('u+');*/ return d[3]; } %}
+  | __ "-" _ PN  {% function(d) { /*console.log('u-');*/ return (-1) * d[3]; } %}
+
 
 # Exponents
-E -> PN exp E    {% function(d) {return Math.pow(d[0], d[2]); } %}
-   | PN             {% id %}
+E -> PNS exp E    {% function(d) {return Math.pow(d[0], d[2]); } %}
+   | PNS             {% id %}
 
 
 # Multiplication and division
@@ -53,15 +61,6 @@ SHIFT -> SHIFT leftShift AS   {% function(d) {return d[0] << d[2]; } %}
 # Operations (all)
 OPS -> SHIFT              {% id %}
 
-# N signed
-NS ->  N        {% function(d) { return d[0]; } %}
-   | __ "+" N  {% function(d) { return d[2]; } %}
-   | __ "-" N  {% function(d) { return (-1) * d[2]; } %}
-
-
-#unarySign -> __ "Z"
-#     | __ "Z2"
-#     | _       %{
 
 
 # A number value or a function of a number NOTE: no space between
@@ -93,9 +92,8 @@ N -> float          {% id %}
                     %}
 
 # I use `float` to basically mean a number with a decimal point in it
-float ->
-      int "." int   {% function(d) {return parseFloat(d[0] + d[1] + d[2])} %}
-    | int           {% function(d) {return parseInt(d[0])} %}
+float -> int "." int   {% function(d) {return parseFloat(d[0] + d[1] + d[2])} %}
+| int           {% function(d) {/*console.log('int', d);*/ return parseInt(d[0])} %}
 
 int -> [0-9]:+      {% function(d) {return d[0].join(""); } %}
 

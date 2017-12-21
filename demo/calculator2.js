@@ -33,7 +33,11 @@ function prepareTxt(txt, verbose=false) {
   //txt = txt.replace(new RegExp(`(${st})\s+`, 'gi'), ' $1')
   txt = txt.replace(new RegExp(`(\\W+|^)(${st})\\s*\\(`, 'gi'), '$1$2(')
 
-  if (verbose) console.log(`${txt0} -p-> ${txt}`)
+
+  // 2. Add spaces before all +/- signs (to simplify unary/binary sign logic)
+  txt = txt.replace(new RegExp(`\\s*([+-])`, 'gi'), ' $1')
+
+  if (verbose) console.log(`"${txt0}" -p-> "${txt}"`)
 
   return txt
 }
@@ -49,7 +53,11 @@ function call(txt, verbose=false) {
   let ans = new nearley.Parser(grammar.ParserRules, grammar.ParserStart).feed(txt);
 
   if (ans.results.length > 1) {
-    console.warn(`Multiple results for "${txt}": ${ans.results}`)
+    console.warn(`Not single result for "${txt}": ${ans.results}`)
+  }
+
+  if (ans.results.length === 0) {
+    throw new Error(`Empty result for "${txt}": ${ans.results}`)
   }
 
   if (verbose) {
@@ -68,8 +76,8 @@ function call(txt, verbose=false) {
 
 
 
-
-
+// simple expression
+assertEqual(call('123'), 123)
 
 
 
@@ -155,7 +163,13 @@ assertEqual(call('ln(e^5)'), 5)
 
 
 // unary "+" and "-"
-
+assertEqual(call('-5'), -5)
+assertEqual(call('-5+8'), 3)
+assertEqual(call('-5+8'), 3)
+assertEqual(call('-1 - -1'), 0)
+assertEqual(call('-sin(-pi/2)'), 1)
+assertEqual(call('-(-1)'), 1)
+assertEqual(call('-(-2 - -1)'), 1)
 
 // units, money
 //TODO
@@ -177,19 +191,16 @@ function runmath(s) {
 
     // Make a parser and feed the input
     //console.log('Initial', grammar.ParserRules, grammar.ParserStart, s )
-    ans = new nearley.Parser(grammar.ParserRules, grammar.ParserStart).feed(s);
-    //console.log("parser table:", table);
-    //console.log('RR:', ans)
-    
-    // Check if there are any results
-    if (ans.results.length) {
-      //console.log('RRR:',ans)
-      return ans.results[0].toString();
-    } else {
-      // This means the input is incomplete.
-      var out = "Error: incomplete input, parse failed. :(";
-      return out;
+    //ans = new nearley.Parser(grammar.ParserRules, grammar.ParserStart).feed(s);
+
+    let verbose = false      // hack for debugging
+    if (s[0] === '!') {
+      s = s.slice(1)
+      verbose = true
     }
+
+    ans = call(s, verbose)
+    return ans
   } catch(e) {
     console.log('error:', e)
     if (e.offset) {
