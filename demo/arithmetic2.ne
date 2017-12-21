@@ -22,17 +22,13 @@ main -> _ OPS _ {% function(d) {return d[1]; } %}
 # only paretheses
 P -> "(" _ OPS _ ")" {% function(d) {return d[2]; } %}
 
-# Parentheses or N
+# Parentheses or N signed
 PN -> P             {% id %}
-    | N             {% id %}
+    | NS             {% id %}
 
 # Exponents
 E -> PN exp E    {% function(d) {return Math.pow(d[0], d[2]); } %}
    | PN             {% id %}
-
-# ?
-# E2 -> E2 exp PN    {% function(d) {return Math.pow(d[0], d[2]); } %}
-#     | PN
 
 
 # Multiplication and division
@@ -57,8 +53,18 @@ SHIFT -> SHIFT leftShift AS   {% function(d) {return d[0] << d[2]; } %}
 # Operations (all)
 OPS -> SHIFT              {% id %}
 
+# N signed
+NS ->  N        {% function(d) { return d[0]; } %}
+   | __ "+" N  {% function(d) { return d[2]; } %}
+   | __ "-" N  {% function(d) { return (-1) * d[2]; } %}
 
-# A number or a function of a number NOTE: no space betweeb
+
+#unarySign -> __ "Z"
+#     | __ "Z2"
+#     | _       %{
+
+
+# A number value or a function of a number NOTE: no space between
 N -> float          {% id %}
    | "sin" P     {% function(d) {return Math.sin(d[1]); } %}
    | "cos" P     {% function(d) {return Math.cos(d[1]); } %}
@@ -94,8 +100,6 @@ float ->
 int -> [0-9]:+      {% function(d) {return d[0].join(""); } %}
 
 ident -> [a-z]:+    {% function(d) {return d[0].join(""); } %}
-
-
 
 
 plus -> _ "+" _

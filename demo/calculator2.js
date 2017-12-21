@@ -8,12 +8,12 @@ function assertEqual(a, b, almost=false) {
   try {
     assert(almost ? Math.abs(a - b) < 0.1 : a === b)
   } catch (e) {
-    console.warn(`"${a}" !=\n"${b}"`, a, b)
+    console.warn(`"${a}" !=\n"${b}"`)
     throw e
   }
 }
 
-const StandartFunctions = ['sin', 'cos', 'tag', 'asin', 'acos', 'atan', 'sqrt', 'ln']
+const StandartFunctions = ['sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'sqrt', 'ln']
 
 
 // magically adapting text for grammar parser
@@ -64,8 +64,20 @@ function call(txt, verbose=false) {
 // 1. put space before and after braces
 // 2. not put space before standart functions call sin(1)
 
+
+
+
+
+
+
+
+
+
+
 // math expressions
 assertEqual(call('3 + 2'), 5)
+
+
 
 
 
@@ -82,9 +94,6 @@ assertEqual(call('1 + pi'), 4.14, almost=true)
 
 
 
-
-// math functions
-assertEqual(call('sqrt(81) + 1'), 10)
 
 
 // implicit multiplication "*"
@@ -128,15 +137,35 @@ assertEqual(call('18 divide by 2 multiplied by 2 ^ 2'), 36)
 
 // bitwise shift
 assertEqual(call('3 << 4'), 48)
+assertEqual(call('99 >> 4'), 6)
 assertEqual(call('3 << 4 << 2'), 192)
 assertEqual(call('3 << (4 << 2)'), 196608)
 assertEqual(call('3 << 4 + 1 << 2'), 384)
 assertEqual(call('3 << 4 + 9 >> 2'), 6144)
 
 
+// standard functions
+//console.log(call('sin(2 pi)'),  call('2 sin(pi) cos(pi)'))
+assertEqual(call('sqrt(81)'), 9)
+//assertEqual(call('sqrt(-4)'), NaN)
+
+assertEqual(call('sin(2 pi)'),  call('2 sin(pi) cos(pi)'), almost=true)
+assertEqual(call('tan(3 pi)'),  call('sin(3 pi)/cos(3 pi)'), almost=true)
+assertEqual(call('ln(e^5)'), 5)
 
 
-console.log('tests done')
+// unary "+" and "-"
+
+
+// units, money
+//TODO
+
+
+// % operations
+//TODO
+
+
+console.log('tests passed')
 //return
 
 
