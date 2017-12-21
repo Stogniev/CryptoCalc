@@ -61,11 +61,7 @@ SHIFT -> SHIFT leftShift AS   {% function(d) {return d[0] << d[2]; } %}
 # Operations (all)
 OPS -> SHIFT              {% id %}
 
-
-
-# A number value or a function of a number NOTE: no space between
-N -> float          {% id %}
-   | "sin" P     {% function(d) {return Math.sin(d[1]); } %}
+FUNC -> "sin" P     {% function(d) {return Math.sin(d[1]); } %}
    | "cos" P     {% function(d) {return Math.cos(d[1]); } %}
    | "tan" P     {% function(d) {return Math.tan(d[1]); } %}
     
@@ -75,21 +71,29 @@ N -> float          {% id %}
    | "sqrt" P    {% function(d) {return Math.sqrt(d[1]); } %}
    | "ln" P       {% function(d) {return Math.log(d[1]); } %}
 
-   | "pi"          {% function(d) {return Math.PI; } %}
+CONST -> "pi"          {% function(d) {return Math.PI; } %}
    | "e"           {% function(d) {return Math.E; } %}
-   | ident         {% function(d, l, reject) {
-                         if (['sin', 'cos', 'tan', 'pi', 'e', 'asin', 'acos', 'atan',
-                             ].includes(d[0])) {  //NOTE: put all identifiers
-                           return reject;
-                         } else {
-                           if (false) {  // TODO: check/put variable here if exists
-                             return variables(d[0])
-                           } else {
-                             return reject
-                           }
-                         }
-                       }
-                    %}
+
+
+
+# A number value or a function of a number NOTE: no space between
+N -> float          {% id %}
+   | FUNC           {% id %}
+   | CONST          {% id %}
+   | ident         {%
+      function(d, l, reject) {
+        if (['sin', 'cos', 'tan', 'pi', 'e', 'asin', 'acos', 'atan', 'ln', 'sqrt'
+            ].includes(d[0])) {  //NOTE: put all identifiers
+            return reject;
+        } else {
+          if (false) {  // TODO: check/put variable here if exists
+            return variables(d[0])
+          } else {
+            return reject
+          }
+        }
+      }
+    %}
 
 # I use `float` to basically mean a number with a decimal point in it
 float -> int "." int   {% function(d) {return parseFloat(d[0] + d[1] + d[2])} %}

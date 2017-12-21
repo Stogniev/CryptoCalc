@@ -171,6 +171,9 @@ assertEqual(call('-sin(-pi/2)'), 1)
 assertEqual(call('-(-1)'), 1)
 assertEqual(call('-(-2 - -1)'), 1)
 
+//consts
+assertEqual(call('pi + e'), Math.PI + Math.E)
+
 // units, money
 //TODO
 
