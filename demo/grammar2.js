@@ -8,7 +8,7 @@ function id(x) {return x[0]; }
   const StandartFunctions = ['sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'sqrt', 'ln']
 
   // TODO: add all
-  const Units = ['cm', 'm', 'km', 'usd', 'uah', 'kg', 'g']
+  //const Units = ['cm', 'm', 'km', 'usd', 'uah', 'kg', 'g']
 
   function l() {
     //console.log('-',Object.values(arguments))
@@ -23,6 +23,7 @@ var grammar = {
     {"name": "SHIFT", "symbols": ["AS"], "postprocess": id},
     {"name": "AS", "symbols": ["AS", "plus", "MD"], "postprocess":  function(d,l, reject) {
           //console.log(22,  d[0], d[2])
+        
         
           // reject "3 cm + 2"
           if (d[0].constructor.name !== d[2].constructor.name) {  // ok?
@@ -43,14 +44,14 @@ var grammar = {
     {"name": "SIGNED", "symbols": ["VALUE_WITH_UNIT"], "postprocess": function(d) {l('vwu', d[0]); return d[0]; }},
     {"name": "SIGNED", "symbols": ["__", {"literal":"+"}, "_", "VALUE_WITH_UNIT"], "postprocess": function(d) { l('u+'); return d[3]; }},
     {"name": "SIGNED", "symbols": ["__", {"literal":"-"}, "_", "VALUE_WITH_UNIT"], "postprocess": function(d) { l('u-'); return math.multiply(-1, d[3]) }},
-    {"name": "VALUE_WITH_UNIT", "symbols": ["VALUE", "__", "unit"], "postprocess": 
+    {"name": "VALUE_WITH_UNIT", "symbols": ["VALUE", "_", "unit"], "postprocess": //exp: make space optional
         function(d,l, reject) {
              
           try {
             //console.log('value with unit:', math.unit(d[0], d[2]));
             return math.unit(d[0], d[2])
           } catch(e) {
-            console.warn('no unit:', e.message)
+            //console.warn('no unit:', e.message)
             return reject
           }
         }
@@ -81,6 +82,22 @@ var grammar = {
     {"name": "N", "symbols": ["float"], "postprocess": id},
     {"name": "N", "symbols": ["FUNC"], "postprocess": id},
     {"name": "N", "symbols": ["CONST"], "postprocess": id},
+    {"name": "N", "symbols": ["ident"], "postprocess": 
+        function(d, l, reject) {
+          if (['sin', 'cos', 'tan', 'pi', 'e', 'asin', 'acos', 'atan', 'ln', 'sqrt'
+              ].includes(d[0])) {  //NOTE: put all identifiers
+              //console.log('reject ident1');
+              return reject;
+          } else {
+            if (false) {  // TODO: check/put variable here if exists
+              return variables(d[0])
+            } else {
+              //console.log('reject ident2')
+              return reject;
+            }
+          }
+        }
+            },
     {"name": "float", "symbols": ["int", {"literal":"."}, "int"], "postprocess": function(d) {return parseFloat(d[0] + d[1] + d[2])}},
     {"name": "float", "symbols": ["int"], "postprocess": function(d) {/*l('int', d);*/ return parseInt(d[0])}},
     {"name": "int$ebnf$1", "symbols": [/[0-9]/]},
@@ -99,16 +116,16 @@ var grammar = {
         
           // problem:  1 and 2 m ultiplied by                  nUnexpected "u"
           //  don't check unit correctness (assume math.js will)
-          // return val
+          return val
         
         
-          if (Units.includes(val)) {  //TODO: include all units (currensies etc)
+          /*if (Units.includes(val)) {  //TODO: include all units (currensies etc)
                                          //console.log('unit ok:', val)
             return val
           } else {
             //console.log('rej unit:', val)
             return reject;
-          }
+          }*/
         
         }
              },

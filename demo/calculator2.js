@@ -55,7 +55,7 @@ function prepareTxt(txt, verbose=false) {
   // NOTE: cannot lowercase to distinguish "mm" and "Mm"; no need to space to avoid confusions like "multiple" -> "m ultiple"
   // 4) wrap by space all units (USD, Gb, km...)
   //const units = Units.join('|')
-  //txt = txt.replace(new RegExp(`(${units})`, 'gi'), '$1')
+  //txt = txt.replace(new RegExp(`\W(${units})\W`, 'gi'), '$1')
 
   if (verbose) console.log(`"${txt0}" -p-> "${txt}"`)
 
@@ -216,7 +216,7 @@ assertEqual(call('pi + e'), Math.PI + Math.E)
 
 console.log('tests passed')
 
-return
+//return
 
 // This is where the action is.
 function runmath(s) {

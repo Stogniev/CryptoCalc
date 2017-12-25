@@ -7,7 +7,7 @@
   const StandartFunctions = ['sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'sqrt', 'ln']
 
   // TODO: add all
-  const Units = ['cm', 'm', 'km', 'usd', 'uah', 'kg', 'g']
+  //const Units = ['cm', 'm', 'km', 'usd', 'uah', 'kg', 'g']
 
   function l() {
     //console.log('-',Object.values(arguments))
@@ -20,7 +20,7 @@
 # 1) put spaces around all math braces
 # 2) remove spaces between standard function calls braces likd "sin(...)"
 # 3) Add spaces before all +/- signs (to simplify unary/binary sign logic)
-# 4) wrap by space all units (USD, Gb, km...) NOTE: cannot lowercase (mm & Mm)
+# // seems works without 4) wrap by space all units (USD, Gb, km...) NOTE: cannot lowercase (mm & Mm)
 
 main -> _ OPS _ {% function(d) { return d[1]; } %}
 
@@ -34,6 +34,7 @@ SHIFT -> SHIFT leftShift AS   {% function(d) {return d[0] << d[2]; } %}
 
 AS -> AS plus MD {% function(d,l, reject) {
         //console.log(22,  d[0], d[2])
+
 
         // reject "3 cm + 2"
         if (d[0].constructor.name !== d[2].constructor.name) {  // ok?
@@ -65,14 +66,14 @@ SIGNED ->  VALUE_WITH_UNIT        {% function(d) {l('vwu', d[0]); return d[0]; }
   | __ "-" _ VALUE_WITH_UNIT  {% function(d) { l('u-'); return math.multiply(-1, d[3]) } %}
 
 VALUE_WITH_UNIT ->
-     VALUE __ unit    {%
+  VALUE _ unit    {%         //exp: make space optional
          function(d,l, reject) {
      
            try {
              //console.log('value with unit:', math.unit(d[0], d[2]));
              return math.unit(d[0], d[2])
            } catch(e) {
-             console.warn('no unit:', e.message)
+             //console.warn('no unit:', e.message)
              return reject
            }
          }
@@ -106,22 +107,22 @@ CONST -> "pi"          {% function(d) {return Math.PI; } %}
 N -> float          {% id %}
    | FUNC           {% id %}
    | CONST          {% id %}
-   # | ident         {%
-   #    function(d, l, reject) {
-   #      if (['sin', 'cos', 'tan', 'pi', 'e', 'asin', 'acos', 'atan', 'ln', 'sqrt'
-   #          ].includes(d[0])) {  //NOTE: put all identifiers
-   #          console.log('reject ident1');
-   #          return reject;
-   #      } else {
-   #        if (false) {  // TODO: check/put variable here if exists
-   #          return variables(d[0])
-   #        } else {
-   #          console.log('reject ident2')
-   #          return reject;
-   #        }
-   #      }
-   #    }
-   #  %}
+   | ident         {%
+      function(d, l, reject) {
+        if (['sin', 'cos', 'tan', 'pi', 'e', 'asin', 'acos', 'atan', 'ln', 'sqrt'
+            ].includes(d[0])) {  //NOTE: put all identifiers
+            //console.log('reject ident1');
+            return reject;
+        } else {
+          if (false) {  // TODO: check/put variable here if exists
+            return variables(d[0])
+          } else {
+            //console.log('reject ident2')
+            return reject;
+          }
+        }
+      }
+    %}
 
 # I use `float` to basically mean a number with a decimal point in it
 float -> int "." int   {% function(d) {return parseFloat(d[0] + d[1] + d[2])} %}
@@ -142,16 +143,16 @@ unit ->
 
          // problem:  1 and 2 m ultiplied by                  nUnexpected "u"
          //  don't check unit correctness (assume math.js will)
-         // return val
+         return val
 
 
-         if (Units.includes(val)) {  //TODO: include all units (currensies etc)
+         /*if (Units.includes(val)) {  //TODO: include all units (currensies etc)
                                         //console.log('unit ok:', val)
            return val
          } else {
            //console.log('rej unit:', val)
            return reject;
-         }
+         }*/
 
        }
      %}
