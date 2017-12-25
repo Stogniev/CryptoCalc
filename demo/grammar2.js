@@ -2,29 +2,63 @@
 // http://github.com/Hardmath123/nearley
 (function () {
 function id(x) {return x[0]; }
+
+  const math = require("mathjs");
+  // TODO: add all
+  const StandartFunctions = ['sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'sqrt', 'ln']
+
+  // TODO: add all
+  const Units = ['cm', 'm', 'km', 'usd', 'uah', 'kg', 'g']
+
+  function l() {
+    //console.log('-',Object.values(arguments))
+  }
 var grammar = {
     Lexer: undefined,
     ParserRules: [
-    {"name": "main", "symbols": ["_", "OPS", "_"], "postprocess": function(d) {return d[1]; }},
-    {"name": "P", "symbols": [{"literal":"("}, "_", "OPS", "_", {"literal":")"}], "postprocess": function(d) {return d[2]; }},
-    {"name": "PN", "symbols": ["P"], "postprocess": id},
-    {"name": "PN", "symbols": ["N"], "postprocess": id},
-    {"name": "PNS", "symbols": ["PN"], "postprocess": function(d) { return d[0]; }},
-    {"name": "PNS", "symbols": ["__", {"literal":"+"}, "_", "PN"], "postprocess": function(d) { /*console.log('u+');*/ return d[3]; }},
-    {"name": "PNS", "symbols": ["__", {"literal":"-"}, "_", "PN"], "postprocess": function(d) { /*console.log('u-');*/ return (-1) * d[3]; }},
-    {"name": "E", "symbols": ["PNS", "exp", "E"], "postprocess": function(d) {return Math.pow(d[0], d[2]); }},
-    {"name": "E", "symbols": ["PNS"], "postprocess": id},
-    {"name": "MD", "symbols": ["MD", "mul", "E"], "postprocess": function(d) {return d[0]*d[2]; }},
-    {"name": "MD", "symbols": ["MD", "__", "E"], "postprocess": function(d) {return d[0] * d[2]; }},
-    {"name": "MD", "symbols": ["MD", "divide", "E"], "postprocess": function(d) {return d[0]/d[2]; }},
-    {"name": "MD", "symbols": ["E"], "postprocess": id},
-    {"name": "AS", "symbols": ["AS", "plus", "MD"], "postprocess": function(d) {return d[0]+d[2]; }},
-    {"name": "AS", "symbols": ["AS", "minus", "MD"], "postprocess": function(d) {return d[0]-d[2]; }},
-    {"name": "AS", "symbols": ["MD"], "postprocess": id},
+    {"name": "main", "symbols": ["_", "OPS", "_"], "postprocess": function(d) { return d[1]; }},
+    {"name": "OPS", "symbols": ["SHIFT"], "postprocess": id},
     {"name": "SHIFT", "symbols": ["SHIFT", "leftShift", "AS"], "postprocess": function(d) {return d[0] << d[2]; }},
     {"name": "SHIFT", "symbols": ["SHIFT", "rightShift", "AS"], "postprocess": function(d) {return d[0] >> d[2]; }},
     {"name": "SHIFT", "symbols": ["AS"], "postprocess": id},
-    {"name": "OPS", "symbols": ["SHIFT"], "postprocess": id},
+    {"name": "AS", "symbols": ["AS", "plus", "MD"], "postprocess":  function(d,l, reject) {
+          //console.log(22,  d[0], d[2])
+        
+          // reject "3 cm + 2"
+          if (d[0].constructor.name !== d[2].constructor.name) {  // ok?
+            //console.log('incompatible sum:', d[0], d[2])
+            return reject
+          }
+          //console.log('plus:', d[0], d[2])
+          return math.add(d[0], d[2]);
+        } },
+    {"name": "AS", "symbols": ["AS", "minus", "MD"], "postprocess": function(d) {return d[0]-d[2]; }},
+    {"name": "AS", "symbols": ["MD"], "postprocess": id},
+    {"name": "MD", "symbols": ["MD", "mul", "E"], "postprocess": function(d) {/*l('mul');*/ return d[0]*d[2]; }},
+    {"name": "MD", "symbols": ["MD", "__", "E"], "postprocess": function(d) {l('imul'); return d[0] * d[2]; }},
+    {"name": "MD", "symbols": ["MD", "divide", "E"], "postprocess": function(d) {return d[0]/d[2]; }},
+    {"name": "MD", "symbols": ["E"], "postprocess": id},
+    {"name": "E", "symbols": ["SIGNED", "exp", "E"], "postprocess": function(d) {return Math.pow(d[0], d[2]); }},
+    {"name": "E", "symbols": ["SIGNED"], "postprocess": id},
+    {"name": "SIGNED", "symbols": ["VALUE_WITH_UNIT"], "postprocess": function(d) {l('vwu', d[0]); return d[0]; }},
+    {"name": "SIGNED", "symbols": ["__", {"literal":"+"}, "_", "VALUE_WITH_UNIT"], "postprocess": function(d) { l('u+'); return d[3]; }},
+    {"name": "SIGNED", "symbols": ["__", {"literal":"-"}, "_", "VALUE_WITH_UNIT"], "postprocess": function(d) { l('u-'); return math.multiply(-1, d[3]) }},
+    {"name": "VALUE_WITH_UNIT", "symbols": ["VALUE", "__", "unit"], "postprocess": 
+        function(d,l, reject) {
+             
+          try {
+            //console.log('value with unit:', math.unit(d[0], d[2]));
+            return math.unit(d[0], d[2])
+          } catch(e) {
+            console.warn('no unit:', e.message)
+            return reject
+          }
+        }
+               },
+    {"name": "VALUE_WITH_UNIT", "symbols": ["VALUE"], "postprocess": function(d) {l('just value:', d[0]); return d[0]; }},
+    {"name": "VALUE", "symbols": ["P"], "postprocess": id},
+    {"name": "VALUE", "symbols": ["N"], "postprocess": id},
+    {"name": "P", "symbols": [{"literal":"("}, "_", "OPS", "_", {"literal":")"}], "postprocess": function(d) {return d[2]; }},
     {"name": "FUNC$string$1", "symbols": [{"literal":"s"}, {"literal":"i"}, {"literal":"n"}], "postprocess": function joiner(d) {return d.join('');}},
     {"name": "FUNC", "symbols": ["FUNC$string$1", "P"], "postprocess": function(d) {return Math.sin(d[1]); }},
     {"name": "FUNC$string$2", "symbols": [{"literal":"c"}, {"literal":"o"}, {"literal":"s"}], "postprocess": function joiner(d) {return d.join('');}},
@@ -47,28 +81,37 @@ var grammar = {
     {"name": "N", "symbols": ["float"], "postprocess": id},
     {"name": "N", "symbols": ["FUNC"], "postprocess": id},
     {"name": "N", "symbols": ["CONST"], "postprocess": id},
-    {"name": "N", "symbols": ["ident"], "postprocess": 
-        function(d, l, reject) {
-          if (['sin', 'cos', 'tan', 'pi', 'e', 'asin', 'acos', 'atan', 'ln', 'sqrt'
-              ].includes(d[0])) {  //NOTE: put all identifiers
-              return reject;
-          } else {
-            if (false) {  // TODO: check/put variable here if exists
-              return variables(d[0])
-            } else {
-              return reject
-            }
-          }
-        }
-            },
     {"name": "float", "symbols": ["int", {"literal":"."}, "int"], "postprocess": function(d) {return parseFloat(d[0] + d[1] + d[2])}},
-    {"name": "float", "symbols": ["int"], "postprocess": function(d) {/*console.log('int', d);*/ return parseInt(d[0])}},
+    {"name": "float", "symbols": ["int"], "postprocess": function(d) {/*l('int', d);*/ return parseInt(d[0])}},
     {"name": "int$ebnf$1", "symbols": [/[0-9]/]},
     {"name": "int$ebnf$1", "symbols": ["int$ebnf$1", /[0-9]/], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
-    {"name": "int", "symbols": ["int$ebnf$1"], "postprocess": function(d) {return d[0].join(""); }},
-    {"name": "ident$ebnf$1", "symbols": [/[a-z]/]},
-    {"name": "ident$ebnf$1", "symbols": ["ident$ebnf$1", /[a-z]/], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
+    {"name": "int", "symbols": ["int$ebnf$1"], "postprocess": function(d) {/*l('int:', d[0].join(""));*/ return d[0].join(""); }},
+    {"name": "ident$ebnf$1", "symbols": [/[a-zA-Z]/]},
+    {"name": "ident$ebnf$1", "symbols": ["ident$ebnf$1", /[a-zA-Z]/], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
     {"name": "ident", "symbols": ["ident$ebnf$1"], "postprocess": function(d) {return d[0].join(""); }},
+    {"name": "unit$ebnf$1", "symbols": [/[a-zA-Z0-9]/]},
+    {"name": "unit$ebnf$1", "symbols": ["unit$ebnf$1", /[a-zA-Z0-9]/], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
+    {"name": "unit", "symbols": ["unit$ebnf$1"], "postprocess": 
+        function(d, l, reject) {
+          //const val = (d[0].concat(d[1])).join('').toLocaleLowerCase()
+          const val = d[0].join('')
+          //console.log('u:', val)
+        
+          // problem:  1 and 2 m ultiplied by                  nUnexpected "u"
+          //  don't check unit correctness (assume math.js will)
+          // return val
+        
+        
+          if (Units.includes(val)) {  //TODO: include all units (currensies etc)
+                                         //console.log('unit ok:', val)
+            return val
+          } else {
+            //console.log('rej unit:', val)
+            return reject;
+          }
+        
+        }
+             },
     {"name": "plus", "symbols": ["_", {"literal":"+"}, "_"]},
     {"name": "plus$string$1", "symbols": [{"literal":"p"}, {"literal":"l"}, {"literal":"u"}, {"literal":"s"}], "postprocess": function joiner(d) {return d.join('');}},
     {"name": "plus", "symbols": ["__", "plus$string$1", "__"]},

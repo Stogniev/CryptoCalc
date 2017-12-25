@@ -9,6 +9,7 @@
     "demo": "(cd ./demo && ./build-and-test2.sh)"
   },
   "dependencies": {
+    "mathjs": "^3.18.0",
     "nearley": "^2.11.0"
   }
 }
