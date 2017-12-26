@@ -6,12 +6,40 @@
   // TODO: add all
   const StandartFunctions = ['sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'sqrt', 'ln']
 
+  function multiply(a, b, l, reject) {
+    // cannot multiple two units
+    if (a instanceof math.type.Unit && b instanceof math.type.Unit) {
+      log('cannot multiply: unit * unit')
+      return reject
+    }
+
+    log('multiply', a, b)
+    return math.multiply(a, b)
+  }
+
+  function divide(a, b, l, reject) {
+
+    if (a instanceof math.type.Unit && b instanceof math.type.Unit) {
+      log('cannot divide: unit / unit')
+      return reject
+    }
+
+    if (b instanceof math.type.Unit) {
+      log('cannot divide: X / unit')
+      return reject
+    }
+
+    log('divide', a, b)
+    return math.divide(a, b)
+  }
+
   // TODO: add all
   //const Units = ['cm', 'm', 'km', 'usd', 'uah', 'kg', 'g']
 
-  function l() {
-    //console.log('-',Object.values(arguments))
+  function log() {
+                  //console.log('-',Object.values(arguments))
   }
+
 %}
 
 
@@ -20,9 +48,11 @@
 # 1) put spaces around all math braces
 # 2) remove spaces between standard function calls braces likd "sin(...)"
 # 3) Add spaces before all +/- signs (to simplify unary/binary sign logic)
-# // seems works without 4) wrap by space all units (USD, Gb, km...) NOTE: cannot lowercase (mm & Mm)
+# 4) wrap by space all units (USD, Gb, km...)   \
+#    reason: to parse '10 cm' and same time avoid "1 and 2 m"ul 3
+#    NOTE: cannot lowercase (mm & Mm)
 
-main -> _ OPS _ {% function(d) { return d[1]; } %}
+main -> _ OPS _ {% function(d) { log('>',d); return d[1]; } %}
 
 # Operations (all)
 OPS -> SHIFT              {% id %}
@@ -33,53 +63,57 @@ SHIFT -> SHIFT leftShift AS   {% function(d) {return d[0] << d[2]; } %}
        | AS         {% id %}
 
 AS -> AS plus MD {% function(d,l, reject) {
-        //console.log(22,  d[0], d[2])
-
-
-        // reject "3 cm + 2"
-        if (d[0].constructor.name !== d[2].constructor.name) {  // ok?
-          //console.log('incompatible sum:', d[0], d[2])
-          return reject
-        }
         //console.log('plus:', d[0], d[2])
-        return math.add(d[0], d[2]);
+
+        // can sum...
+        if (// two units
+            (d[0] instanceof math.type.Unit && d[2] instanceof math.type.Unit)
+            // two numbers
+            || ((typeof(d[0]) === 'number' && typeof(d[0]) === 'number'))
+           ) {
+          log('adding:', d[0], d[2])
+          return math.add(d[0], d[2]);
+        }
+
+        //log('incompatible sum:', d[0], d[2])
+        return reject
       } %}
     | AS minus MD {% function(d) {return d[0]-d[2]; } %}
     | MD            {% id %}
 
 # Multiplication and division
-MD -> MD mul E         {% function(d) {/*l('mul');*/ return d[0]*d[2]; } %}
+MD -> MD mul E          {% (d, l, rej) => multiply(d[0], d[2], l, rej)  %}
 
-     # implicit multiplication (NOTE: always require spaces around parentheses)
-     | MD __ E           {% function(d) {l('imul'); return d[0] * d[2]; } %}
+   # implicit multiplication (NOTE: always require spaces around parentheses)
+   | MD __ E           {%  (d, l, rej) => multiply(d[0], d[2], l, rej) %}
 
-     | MD divide E         {% function(d) {return d[0]/d[2]; } %}
-     | E                    {% id %}
+   | MD divide E       {% (d, l, rej) => divide(d[0], d[2], l, rej) %}
+   | E                 {% id %}
 
 # Exponents
 E -> SIGNED exp E    {% function(d) {return Math.pow(d[0], d[2]); } %}
    | SIGNED          {% id %}
 
 # Parentheses or unary signed N
-SIGNED ->  VALUE_WITH_UNIT        {% function(d) {l('vwu', d[0]); return d[0]; } %}
-  | __ "+" _ VALUE_WITH_UNIT  {% function(d) { l('u+'); return d[3]; } %}
-  | __ "-" _ VALUE_WITH_UNIT  {% function(d) { l('u-'); return math.multiply(-1, d[3]) } %}
+SIGNED ->  VALUE_WITH_UNIT        {% function(d) {/*log('value+unit:', d[0]);*/ return d[0]; } %}
+  | __ "+" _ VALUE_WITH_UNIT  {% function(d) { log('u+'); return d[3]; } %}
+  | __ "-" _ VALUE_WITH_UNIT  {% function(d) { log('u-'); return math.multiply(-1, d[3]) } %}
 
 VALUE_WITH_UNIT ->
-  VALUE _ unit    {%         //exp: make space optional
+  VALUE _ unit ";"    {%         // | - special separator instead of cutted two spaces to support implicit multiplication with units (like "4 kg  2")         old: last space to avoid: "1 and 2 m"ultiplied by 3
          function(d,l, reject) {
      
            try {
-             //console.log('value with unit:', math.unit(d[0], d[2]));
+             log('value with unit:', d[0], d[2]);
              return math.unit(d[0], d[2])
            } catch(e) {
-             //console.warn('no unit:', e.message)
+             console.warn('no unit:', e.message)
              return reject
            }
          }
        %}
     |
-    VALUE      {% function(d) {l('just value:', d[0]); return d[0]; } %}
+    VALUE      {% function(d) {log('value:', d[0]); return d[0]; } %}
 
 # Parentheses or N
 VALUE -> P            {% id %}
@@ -126,9 +160,9 @@ N -> float          {% id %}
 
 # I use `float` to basically mean a number with a decimal point in it
 float -> int "." int   {% function(d) {return parseFloat(d[0] + d[1] + d[2])} %}
-       | int           {% function(d) {/*l('int', d);*/ return parseInt(d[0])} %}
+       | int           {% function(d) {/*log('int', d);*/ return parseInt(d[0])} %}
 
-int -> [0-9]:+      {% function(d) {/*l('int:', d[0].join(""));*/ return d[0].join(""); } %}
+int -> [0-9]:+      {% function(d) {/*log('int:', d[0].join(""));*/ return d[0].join(""); } %}
 
 ident -> [a-zA-Z]:+    {% function(d) {return d[0].join(""); } %}
 

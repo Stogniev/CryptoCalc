@@ -28,17 +28,17 @@ function assertEqual(a, b, almost=false) {
 // TODO: add all
 const StandartFunctions = ['sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'sqrt', 'ln']
 
-// TODO: add all
-const Units = ['cm', 'm', 'km', 'usd', 'uah',]
+const UnitNames = Object.values(math.type.Unit.UNITS).map( u => u.name)
+const UnitPrefixes = Object.keys(math.type.Unit.PREFIXES.SHORTLONG)
 
 // magically adapting text for grammar parser
 function prepareTxt(txt, verbose=false) {
   const txt0 = txt
 
-  // 0) remove multispaces
-  txt = txt.replace(new RegExp('\\s+', 'gi'), ' ')
+  // !! 0) remove multispaces
+  //txt = txt.replace(new RegExp('\\s+', 'gi'), ' ')
 
-  // 1) put spaces around all math braces
+  // 1) put spaces around all math braces (to simplify implicit multiplication grammar)
   //txt = txt.replace(new RegExp('([\(\)])', 'gi'), ' $1 ')
   txt = txt.replace(new RegExp('\\s*([\(\)])\\s*', 'gi'), ' $1 ')
 
@@ -52,10 +52,15 @@ function prepareTxt(txt, verbose=false) {
   // 3) Add spaces before all +/- signs (to simplify unary/binary sign logic)
   txt = txt.replace(new RegExp(`\\s*([+-])`, 'gi'), ' $1')
 
-  // NOTE: cannot lowercase to distinguish "mm" and "Mm"; no need to space to avoid confusions like "multiple" -> "m ultiple"
-  // 4) wrap by space all units (USD, Gb, km...)
-  //const units = Units.join('|')
-  //txt = txt.replace(new RegExp(`\W(${units})\W`, 'gi'), '$1')
+  // 4) wrap all units (USD, Gb, km...) by " kg|"
+  //    reason: to parse '10 cm' and same time avoid "1 and 2 m"ul 3
+  const UP = UnitPrefixes.join('|')
+  const UN = UnitNames.join('|')
+  txt = txt.replace(new RegExp(`([^a-zA-Z])(${UP})(${UN})((?:[^a-zA-Z]|$))`, 'gi'), '$1 $2$3; $4')
+
+  // remove multispace (produced user, 4)) reason: to avoid multiresults
+  txt = txt.replace(new RegExp('\\s+', 'gi'), ' ')
+
 
   if (verbose) console.log(`"${txt0}" -p-> "${txt}"`)
 
@@ -69,8 +74,6 @@ function prepareTxt(txt, verbose=false) {
 
 function call(txt, verbose=false) {
   txt = prepareTxt(txt, verbose)
-
-  if (verbose) console.log(`preparedTxt: "${txt}"`)
 
   let ans = new nearley.Parser(grammar.ParserRules, grammar.ParserStart).feed(txt);
 
@@ -91,36 +94,15 @@ function call(txt, verbose=false) {
 }
 
 
-assertEqual(call('2 multiplied by 3'), 6)
-assertEqual(call('1 and 2 * 3'), 7)
+// mini-sandbox
+//
+// assertEqual(call('4 kg  2', 1), '8 kg')
+//assertEqual(call('4 kg (1 - 0.5) + 100g', 1), '2.1 kg')
+//
 
-
-assertEqual(call('10'), 10)
-
-// units
-assertEqual(call('10 cm'), '10 cm')
-assertEqual(call('-10 cm'), '-10 cm')
-
-assertEqual(call('3 cm + 2 cm'), '5 cm')
-//!!assertEqual(call('3 km + 2 m'), '3.002 km')
-
-try {
-  call('2 kg + 4 cm')
-} catch(e) {
-  assertEqual(e.message, 'Units do not match')
-}
-
-try {
-  call('2 fakeUnit')
-} catch(e) {
-  assertEqual(e.message, 'Empty result for "2 fakeUnit"')
-}
-
-
-//assertEqual(call('2 tonne * 4 gram '), '6 kg^2')
-
-
+//assertEqual(call('4 kg (1 -0.5) + 0.3g', 1), '2.0003 kg')
 //return
+
 
 // simple expression
 assertEqual(call('123'), 123)
@@ -169,6 +151,7 @@ assertEqual(call('4^-2'), 4 ** -2, )
 
 // word-described math expressions
 assertEqual(call('3 + 2'), 5)
+
 assertEqual(call('1 and 2 multiplied by 3'), 7)
 assertEqual(call('(1 and 2) multiplied by 3'), 9)
 assertEqual(call('1 with 62 without 2 times 3'), 57)
@@ -206,7 +189,42 @@ assertEqual(call('-(-2 - -1)'), 1)
 //consts
 assertEqual(call('pi + e'), Math.PI + Math.E)
 
-// units, money
+// units
+assertEqual(call('10 cm'), '10 cm')
+assertEqual(call('-10 cm'), '-10 cm')
+
+assertEqual(call('3 cm + 2 cm'), '5 cm')
+assertEqual(call('3 km + 2m + 1  mm').value, 3002.001, almost=true)
+
+try {
+  call('2 kg + 4 cm')
+} catch(e) {
+  assertEqual(e.message, 'Units do not match')
+}
+
+try {
+  call('2 fakeUnit')
+} catch(e) {
+  assertEqual(e.message, 'Empty result for "2 fakeUnit"')
+}
+
+
+try {
+  assertEqual(call('2 tonne * 4 gram '), '6 kg^2')
+} catch(e) {
+  assert(e.message.includes('Empty result'))
+}
+
+assertEqual(call('4 kg  2'), '8 kg')
+assertEqual(call('4 kg (1 - 0.5) + 100g'), '2.1 kg')
+
+
+assertEqual(call('69 cm * 3 / 2 + 2km'), '2.001035 km')
+
+
+
+
+//TODO money
 //TOOD assertEqual(call('10 USD'), '10-USD')
 
 

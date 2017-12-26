@@ -7,56 +7,88 @@ function id(x) {return x[0]; }
   // TODO: add all
   const StandartFunctions = ['sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'sqrt', 'ln']
 
+  function multiply(a, b, l, reject) {
+    // cannot multiple two units
+    if (a instanceof math.type.Unit && b instanceof math.type.Unit) {
+      log('cannot multiply: unit * unit')
+      return reject
+    }
+
+    log('multiply', a, b)
+    return math.multiply(a, b)
+  }
+
+  function divide(a, b, l, reject) {
+
+    if (a instanceof math.type.Unit && b instanceof math.type.Unit) {
+      log('cannot divide: unit / unit')
+      return reject
+    }
+
+    if (b instanceof math.type.Unit) {
+      log('cannot divide: X / unit')
+      return reject
+    }
+
+    log('divide', a, b)
+    return math.divide(a, b)
+  }
+
   // TODO: add all
   //const Units = ['cm', 'm', 'km', 'usd', 'uah', 'kg', 'g']
 
-  function l() {
-    //console.log('-',Object.values(arguments))
+  function log() {
+                  //console.log('-',Object.values(arguments))
   }
+
 var grammar = {
     Lexer: undefined,
     ParserRules: [
-    {"name": "main", "symbols": ["_", "OPS", "_"], "postprocess": function(d) { return d[1]; }},
+    {"name": "main", "symbols": ["_", "OPS", "_"], "postprocess": function(d) { log('>',d); return d[1]; }},
     {"name": "OPS", "symbols": ["SHIFT"], "postprocess": id},
     {"name": "SHIFT", "symbols": ["SHIFT", "leftShift", "AS"], "postprocess": function(d) {return d[0] << d[2]; }},
     {"name": "SHIFT", "symbols": ["SHIFT", "rightShift", "AS"], "postprocess": function(d) {return d[0] >> d[2]; }},
     {"name": "SHIFT", "symbols": ["AS"], "postprocess": id},
     {"name": "AS", "symbols": ["AS", "plus", "MD"], "postprocess":  function(d,l, reject) {
-          //console.log(22,  d[0], d[2])
-        
-        
-          // reject "3 cm + 2"
-          if (d[0].constructor.name !== d[2].constructor.name) {  // ok?
-            //console.log('incompatible sum:', d[0], d[2])
-            return reject
-          }
           //console.log('plus:', d[0], d[2])
-          return math.add(d[0], d[2]);
+        
+          // can sum...
+          if (// two units
+              (d[0] instanceof math.type.Unit && d[2] instanceof math.type.Unit)
+              // two numbers
+              || ((typeof(d[0]) === 'number' && typeof(d[0]) === 'number'))
+             ) {
+            log('adding:', d[0], d[2])
+            return math.add(d[0], d[2]);
+          }
+        
+          //log('incompatible sum:', d[0], d[2])
+          return reject
         } },
     {"name": "AS", "symbols": ["AS", "minus", "MD"], "postprocess": function(d) {return d[0]-d[2]; }},
     {"name": "AS", "symbols": ["MD"], "postprocess": id},
-    {"name": "MD", "symbols": ["MD", "mul", "E"], "postprocess": function(d) {/*l('mul');*/ return d[0]*d[2]; }},
-    {"name": "MD", "symbols": ["MD", "__", "E"], "postprocess": function(d) {l('imul'); return d[0] * d[2]; }},
-    {"name": "MD", "symbols": ["MD", "divide", "E"], "postprocess": function(d) {return d[0]/d[2]; }},
+    {"name": "MD", "symbols": ["MD", "mul", "E"], "postprocess": (d, l, rej) => multiply(d[0], d[2], l, rej)},
+    {"name": "MD", "symbols": ["MD", "__", "E"], "postprocess": (d, l, rej) => multiply(d[0], d[2], l, rej)},
+    {"name": "MD", "symbols": ["MD", "divide", "E"], "postprocess": (d, l, rej) => divide(d[0], d[2], l, rej)},
     {"name": "MD", "symbols": ["E"], "postprocess": id},
     {"name": "E", "symbols": ["SIGNED", "exp", "E"], "postprocess": function(d) {return Math.pow(d[0], d[2]); }},
     {"name": "E", "symbols": ["SIGNED"], "postprocess": id},
-    {"name": "SIGNED", "symbols": ["VALUE_WITH_UNIT"], "postprocess": function(d) {l('vwu', d[0]); return d[0]; }},
-    {"name": "SIGNED", "symbols": ["__", {"literal":"+"}, "_", "VALUE_WITH_UNIT"], "postprocess": function(d) { l('u+'); return d[3]; }},
-    {"name": "SIGNED", "symbols": ["__", {"literal":"-"}, "_", "VALUE_WITH_UNIT"], "postprocess": function(d) { l('u-'); return math.multiply(-1, d[3]) }},
-    {"name": "VALUE_WITH_UNIT", "symbols": ["VALUE", "_", "unit"], "postprocess": //exp: make space optional
+    {"name": "SIGNED", "symbols": ["VALUE_WITH_UNIT"], "postprocess": function(d) {/*log('value+unit:', d[0]);*/ return d[0]; }},
+    {"name": "SIGNED", "symbols": ["__", {"literal":"+"}, "_", "VALUE_WITH_UNIT"], "postprocess": function(d) { log('u+'); return d[3]; }},
+    {"name": "SIGNED", "symbols": ["__", {"literal":"-"}, "_", "VALUE_WITH_UNIT"], "postprocess": function(d) { log('u-'); return math.multiply(-1, d[3]) }},
+    {"name": "VALUE_WITH_UNIT", "symbols": ["VALUE", "_", "unit", {"literal":";"}], "postprocess": // | - special separator instead of cutted two spaces to support implicit multiplication with units (like "4 kg  2")         old: last space to avoid: "1 and 2 m"ultiplied by 3
         function(d,l, reject) {
              
           try {
-            //console.log('value with unit:', math.unit(d[0], d[2]));
+            log('value with unit:', d[0], d[2]);
             return math.unit(d[0], d[2])
           } catch(e) {
-            //console.warn('no unit:', e.message)
+            console.warn('no unit:', e.message)
             return reject
           }
         }
                },
-    {"name": "VALUE_WITH_UNIT", "symbols": ["VALUE"], "postprocess": function(d) {l('just value:', d[0]); return d[0]; }},
+    {"name": "VALUE_WITH_UNIT", "symbols": ["VALUE"], "postprocess": function(d) {log('value:', d[0]); return d[0]; }},
     {"name": "VALUE", "symbols": ["P"], "postprocess": id},
     {"name": "VALUE", "symbols": ["N"], "postprocess": id},
     {"name": "P", "symbols": [{"literal":"("}, "_", "OPS", "_", {"literal":")"}], "postprocess": function(d) {return d[2]; }},
@@ -99,10 +131,10 @@ var grammar = {
         }
             },
     {"name": "float", "symbols": ["int", {"literal":"."}, "int"], "postprocess": function(d) {return parseFloat(d[0] + d[1] + d[2])}},
-    {"name": "float", "symbols": ["int"], "postprocess": function(d) {/*l('int', d);*/ return parseInt(d[0])}},
+    {"name": "float", "symbols": ["int"], "postprocess": function(d) {/*log('int', d);*/ return parseInt(d[0])}},
     {"name": "int$ebnf$1", "symbols": [/[0-9]/]},
     {"name": "int$ebnf$1", "symbols": ["int$ebnf$1", /[0-9]/], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
-    {"name": "int", "symbols": ["int$ebnf$1"], "postprocess": function(d) {/*l('int:', d[0].join(""));*/ return d[0].join(""); }},
+    {"name": "int", "symbols": ["int$ebnf$1"], "postprocess": function(d) {/*log('int:', d[0].join(""));*/ return d[0].join(""); }},
     {"name": "ident$ebnf$1", "symbols": [/[a-zA-Z]/]},
     {"name": "ident$ebnf$1", "symbols": ["ident$ebnf$1", /[a-zA-Z]/], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
     {"name": "ident", "symbols": ["ident$ebnf$1"], "postprocess": function(d) {return d[0].join(""); }},
