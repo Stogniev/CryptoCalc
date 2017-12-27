@@ -6,9 +6,45 @@
   // TODO: add all
   const StandartFunctions = ['sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'sqrt', 'ln']
 
+  function isNumber(x) {
+    return typeof(x) === 'number'
+  }
+
+  function isUnit(x) {
+    return x instanceof math.type.Unit
+  }
+
+  function sum(a, b, l, reject) {
+     //log('sum:', a, b)
+
+     // can sum...
+     if ( isUnit(a) && isUnit(b)
+          || isNumber(a) && isNumber(b) ) {
+       log('adding:', a, b)
+       return math.add(a, b);
+     }
+
+     log('incompatible sum:', a, b)
+     return reject
+   }
+
+  function subtract(a, b, l, reject) {
+     log('subtract:', a, b)
+
+     // can subtract...
+     if ( isUnit(a) && isUnit(b)
+          || isNumber(a) && isNumber(b) ) {
+       log('subtract:', a, b)
+       return math.subtract(a, b);
+     }
+
+     log('incompatible subtract:', a, b)
+     return reject
+   }
+
   function multiply(a, b, l, reject) {
     // cannot multiple two units
-    if (a instanceof math.type.Unit && b instanceof math.type.Unit) {
+    if (isUnit(a) && isUnit(b)) {
       log('cannot multiply: unit * unit')
       return reject
     }
@@ -18,14 +54,8 @@
   }
 
   function divide(a, b, l, reject) {
-
-    if (a instanceof math.type.Unit && b instanceof math.type.Unit) {
-      log('cannot divide: unit / unit')
-      return reject
-    }
-
-    if (b instanceof math.type.Unit) {
-      log('cannot divide: X / unit')
+    if (isUnit(b)) {
+      log('cannot divide: x / unit')
       return reject
     }
 
@@ -33,11 +63,37 @@
     return math.divide(a, b)
   }
 
+  function exponent(a, b, l, reject) {
+    if (isUnit(a) || isUnit(b)) {
+      log('cannot expose units')
+      return reject
+    }
+
+    return Math.pow(a, b)
+  }
+
+  function shift(a, b, direction, l, reject) {
+    if (!isNumber(a) || !isNumber(b)) {
+      log('can binary shift only numbers')
+      return reject
+    }
+
+    if (direction === 'left') {
+      return a << b;
+    } else if (direction === 'right') {
+      return a >> b;
+    }
+
+    return reject
+  }
+
   // TODO: add all
   //const Units = ['cm', 'm', 'km', 'usd', 'uah', 'kg', 'g']
 
   function log() {
-                  //console.log('-',Object.values(arguments))
+    if (process.env.DEBUG) {
+      console.log('-',Object.values(arguments))
+    }
   }
 
 %}
@@ -58,28 +114,13 @@ main -> _ OPS _ {% function(d) { log('>',d); return d[1]; } %}
 OPS -> SHIFT              {% id %}
 
 # bitwise shift
-SHIFT -> SHIFT leftShift AS   {% function(d) {return d[0] << d[2]; } %}
-       | SHIFT rightShift AS    {% function(d) {return d[0] >> d[2]; } %}
+SHIFT -> SHIFT leftShift AS   {% (d,l, rej) => shift(d[0], d[2], 'left', l, rej) %}
+       | SHIFT rightShift AS  {% (d,l, rej) => shift(d[0], d[2], 'right', l, rej) %}
        | AS         {% id %}
 
-AS -> AS plus MD {% function(d,l, reject) {
-        //console.log('plus:', d[0], d[2])
-
-        // can sum...
-        if (// two units
-            (d[0] instanceof math.type.Unit && d[2] instanceof math.type.Unit)
-            // two numbers
-            || ((typeof(d[0]) === 'number' && typeof(d[0]) === 'number'))
-           ) {
-          log('adding:', d[0], d[2])
-          return math.add(d[0], d[2]);
-        }
-
-        //log('incompatible sum:', d[0], d[2])
-        return reject
-      } %}
-    | AS minus MD {% function(d) {return d[0]-d[2]; } %}
-    | MD            {% id %}
+AS -> AS plus MD {% (d,l, rej) => sum(d[0], d[2], l, rej) %}
+    | AS minus MD {% (d,l, rej) => subtract(d[0], d[2], l, rej) %}
+    | MD          {% id %}
 
 # Multiplication and division
 MD -> MD mul E          {% (d, l, rej) => multiply(d[0], d[2], l, rej)  %}
@@ -91,7 +132,7 @@ MD -> MD mul E          {% (d, l, rej) => multiply(d[0], d[2], l, rej)  %}
    | E                 {% id %}
 
 # Exponents
-E -> SIGNED exp E    {% function(d) {return Math.pow(d[0], d[2]); } %}
+E -> SIGNED exp E    {% (d,l,rej) => exponent(d[0], d[2], l, rej)  %}
    | SIGNED          {% id %}
 
 # Parentheses or unary signed N
@@ -145,13 +186,13 @@ N -> float          {% id %}
       function(d, l, reject) {
         if (['sin', 'cos', 'tan', 'pi', 'e', 'asin', 'acos', 'atan', 'ln', 'sqrt'
             ].includes(d[0])) {  //NOTE: put all identifiers
-            //console.log('reject ident1');
+            //log('reject ident1');
             return reject;
         } else {
           if (false) {  // TODO: check/put variable here if exists
             return variables(d[0])
           } else {
-            //console.log('reject ident2')
+            //log('reject ident2')
             return reject;
           }
         }
@@ -173,7 +214,7 @@ unit ->
        function(d, l, reject) {
          //const val = (d[0].concat(d[1])).join('').toLocaleLowerCase()
          const val = d[0].join('')
-         //console.log('u:', val)
+         //log('u:', val)
 
          // problem:  1 and 2 m ultiplied by                  nUnexpected "u"
          //  don't check unit correctness (assume math.js will)
@@ -181,10 +222,10 @@ unit ->
 
 
          /*if (Units.includes(val)) {  //TODO: include all units (currensies etc)
-                                        //console.log('unit ok:', val)
+                                        //log('unit ok:', val)
            return val
          } else {
-           //console.log('rej unit:', val)
+           //log('rej unit:', val)
            return reject;
          }*/
 

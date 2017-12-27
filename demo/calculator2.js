@@ -5,6 +5,8 @@ var grammar = require("./grammar2.js");
 let assert = require('assert')
 const math = require('mathjs')
 
+const DEBUG = process.env.DEBUG
+
 function assertEqual(a, b, almost=false) {
   function getValue(v) {
     if (v instanceof math.type.Unit) {
@@ -62,7 +64,7 @@ function prepareTxt(txt, verbose=false) {
   txt = txt.replace(new RegExp('\\s+', 'gi'), ' ')
 
 
-  if (verbose) console.log(`"${txt0}" -p-> "${txt}"`)
+  if (verbose || DEBUG) console.log(`"${txt0}" -p-> "${txt}"`)
 
   return txt
 }
@@ -86,7 +88,7 @@ function call(txt, verbose=false) {
     throw new Error(`Empty result for "${txt}"`)
   }
 
-  if (verbose) {
+  if (verbose || DEBUG) {
     console.log(`"${txt}" -c-> "${ans.results}"`)
   }
 
@@ -196,6 +198,11 @@ assertEqual(call('-10 cm'), '-10 cm')
 assertEqual(call('3 cm + 2 cm'), '5 cm')
 assertEqual(call('3 km + 2m + 1  mm').value, 3002.001, almost=true)
 
+assertEqual(call('3 km - 500 m'), '2.5 km')
+
+assertEqual(call('8m / 2'), '4 m')
+assertEqual(call('(5+3)km'), '8 km')
+
 try {
   call('2 kg + 4 cm')
 } catch(e) {
@@ -208,7 +215,6 @@ try {
   assertEqual(e.message, 'Empty result for "2 fakeUnit"')
 }
 
-
 try {
   assertEqual(call('2 tonne * 4 gram '), '6 kg^2')
 } catch(e) {
@@ -220,6 +226,33 @@ assertEqual(call('4 kg (1 - 0.5) + 100g'), '2.1 kg')
 
 
 assertEqual(call('69 cm * 3 / 2 + 2km'), '2.001035 km')
+
+
+try {
+  call('2 kg ^ 2')   // cannot exponent units
+} catch(e) {
+  assert(e.message.includes('Empty result'))
+}
+
+assertEqual(call('3(4kg - 2000 gram / 2) /2'), '4.5 kg')
+
+// negative units
+assertEqual(call('-2 m - (-3m)').value, 1, almost=true)
+
+
+try {
+  call('2 kg << 2 ')
+} catch(e) {
+  assert(e.message.includes('Empty result'))
+}
+
+try {
+  call('12 / 2kg ')
+} catch(e) {
+  assert(e.message.includes('Empty result'))
+}
+
+
 
 
 
