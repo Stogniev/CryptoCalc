@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=1.0, user-scalable=0">
+    <title>Cripto Calc</title>
+    <link rel="stylesheet" href="light.css">
+    <!--<link rel="stylesheet" href="dark.css">-->
+    <link rel="stylesheet" href="fonts.css">
+</head>
+<body>
+<header>
+    <div class="container">
+        <a class="logo light" href="#">
+            <img src="img/logo-light.svg" alt="logo">cryptocalc
+        </a>
+        <a class="logo dark" href="#">
+            <img src="img/logo-dark.svg" alt="logo">cryptocalc
+        </a>
+        <ul class="menu">
+            <li><a href="#">Calculator</a></li>
+            <li><a href="#">Docs</a></li>
+        </ul>
+    </div>
+</header>
+<main class="main">
+    <section class="change">
+        <div class="container">
+            <div class="switch">
+                <img src="img/light-icon.svg" alt="light" class="light">
+                <img src="img/sun.svg" alt="light" class="dark">
+                <div>
+                    <input type="checkbox" class="checkbox" id="checkbox"/>
+                    <label for="checkbox"></label>
+                </div>
+                <img src="img/dark-icon.svg" alt="dark" class="change-img-light">
+                <img src="img/dark-icon-change.svg" alt="dark" class="change-img-dark">
+            </div>
+            <div class="total"><span>Tolal:</span><span>&#8364; 1,000,000,00</span></div>
+            <div class="holder">
+                <span class="plus-black"><img src="img/plus.svg" alt="plus"></span>
+                <span class="plus-white"><img src="img/plus-white.svg" alt="plus"></span>
+                <span class="open-search black"><img src="img/burger.svg" alt="burger"></span>
+                <span class="open-search white"><img src="img/burger-white.svg" alt="burger"></span>
+                <form class="search-form">
+                    <input type="text" value="text">
+                    <ul>
+                        <li>Summary</li>
+                        <li>1 add 1 <span></span></li>
+                        <li>Sample</li>
+                    </ul>
+                </form>
+            </div>
+        </div>
+    </section>
+    <div class="container">
+        <div class="calc-example">
+            <div>
+                <span class="grey-color"># Example</span>
+                <p><span class="blue-color">$</span>30 <span class="blue-color">CAD</span> + 5 <span
+                        class="blue-color">USD</span> - 7<span class="blue-color">EUR</span></p>
+                <p>1000 <span class="orange-color">times</span> 1</p>
+                <p><span class="blue-color">$</span>50 <span class="orange-color"> as a % of </span> <span
+                        class="blue-color">$</span>100</p>
+            </div>
+            <div>
+                <span class="green-bg sum">100,000,000</span>
+                <div class="copy">
+                    <span>Click to copy</span>
+                </div>
+                <span class="green-color">50%</span>
+            </div>
+        </div>
+        <div class="calc-example_results">
+            <div>
+                <p class="grey-color"># User write long verbal math expression</p>
+                <p>6 <span class="orange-color">divided by </span>2 plus 7 multiply by 2</p>
+                <div class="result sum">
+                    <p class="grey-bg"><span class="grey-color">6</span> <span class="red-color">/</span> <span class="grey-color">2</span> <span class="red-color">+</span> <span class="grey-color">7</span> <span
+                            class="red-color">*</span> <span class="grey-color">2</span></p>
+                    <p><span class="grey-color">=</span>17</p>
+                </div>
+                <p class="grey-color"># User calculate results that consist several different
+                    inner calculations.
+                </p>
+                <div class="result">
+                    <p><span class="violet-color">v</span> <span class="orange-color">=</span> <span class="blue-color">$</span>20
+                    </p>
+                    <p><span class="grey-color">=</span>$20</p>
+                </div>
+                <div class="result">
+                    <p><span class="violet-color">v2</span> <span class="orange-color">=</span> 5%</p>
+                    <p><span class="grey-color">=</span>5%</p>
+                </div>
+                <div class="result">
+                    <p><span class="violet-color">v</span> <span class="orange-color">times</span> 7 <span
+                            class="orange-color">-</span> v2</p>
+                </div>
+                <div class="result sum">
+                    <p class="grey-bg">
+                        <span class="blue-color">$</span><span class="grey-color">20</span> <span
+                            class="red-color">*</span> <span class="grey-color">7</span> <span
+                            class="red-color">-</span> <span class="grey-color">5%</span>
+                    </p>
+                    <p><span class="grey-color">=</span>$133</p>
+                </div>
+                <div class="result">
+                    <p><span class="violet-color">v</span><span class="orange-color"> += </span><span class="blue-color">$</span>10
+                    </p>
+                    <p><span class="grey-color">=</span>$30</p>
+                </div>
+                <p class="grey-color"># User calculate several different calculation.</p>
+                <div class="result">
+                    <p><span class="violet-color">Line 1</span> <span class="blue-color">$10</span></p>
+                    <p><span class="grey-color">=</span>$10</p>
+                </div>
+                <div class="result">
+                    <p><span class="violet-color">Line 2</span> <span class="blue-color">$15</span></p>
+                    <p><span class="grey-color">=</span>$15</p>
+                </div>
+                <div class="result">
+                    <p><span class="violet-color">Result:</span> <span class="orange-color">sum</span></p>
+                </div>
+                <div class="result sum">
+                    <p class="grey-bg">
+                        <span class="blue-color">$</span><span class="grey-color">10</span> <span
+                            class="red-color">+</span> <span class="blue-color">$</span><span class="grey-color">15</span>
+                    </p>
+                    <p><span class="grey-color">=</span>$25</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</main>
+<script src="js/main.js"></script>
+</body>
+</html>
