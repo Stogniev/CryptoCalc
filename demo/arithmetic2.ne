@@ -108,40 +108,81 @@
 #    reason: to parse '10 cm' and same time avoid "1 and 2 m"ul 3
 #    NOTE: cannot lowercase (mm & Mm)
 
-main -> _ OPS _ {% function(d) { log('>',d); return d[1]; } %}
+main -> _ OPS _ {% function(d) { log('>',d, typeof d[1]); return d[1]; } %}
 
 # Operations (all)
-OPS -> SHIFT              {% id %}
+OPS -> OPS_NUM        {% id %}
+     | OPS_UNIT       {% id %}
+
+OPS_NUM -> SHIFT        {% id %}
+
+OPS_UNIT -> AS_UNIT              {% id %}
 
 # bitwise shift
-SHIFT -> SHIFT leftShift AS   {% (d,l, rej) => shift(d[0], d[2], 'left', l, rej) %}
-       | SHIFT rightShift AS  {% (d,l, rej) => shift(d[0], d[2], 'right', l, rej) %}
-       | AS         {% id %}
+SHIFT -> SHIFT leftShift AS_NUM   {% (d,l, rej) => d[0] << d[2] %}
+       | SHIFT rightShift AS_NUM  {% (d,l, rej) => d[0] >> d[2] %}
+       | AS_NUM  {% id %}
 
-AS -> AS plus MD {% (d,l, rej) => sum(d[0], d[2], l, rej) %}
-    | AS minus MD {% (d,l, rej) => subtract(d[0], d[2], l, rej) %}
-    | MD          {% id %}
+AS_NUM ->
+      AS_NUM plus MD_NUM {% (d,l, rej) => math.add(d[0], d[2]) %}
+    | AS_NUM minus MD_NUM {% (d,l, rej) => math.subtract(d[0], d[2]) %}
+    | MD_NUM  {% id %}
 
-# Multiplication and division
-MD -> MD mul E          {% (d, l, rej) => multiply(d[0], d[2], l, rej)  %}
+
+AS_UNIT ->
+      AS_UNIT plus MD_UNIT {% (d,l, rej) => math.add(d[0], d[2]) %}
+    | AS_UNIT minus MD_UNIT {% (d,l, rej) => math.subtract(d[0], d[2]) %}
+    | MD_UNIT          {% id %}
+
+
+MD_NUM ->
+     MD_NUM mul E_NUM   {% (d,l, rej) => math.multiply(d[0], d[2]) %}
 
    # implicit multiplication (NOTE: always require spaces around parentheses)
-   | MD __ E           {%  (d, l, rej) => multiply(d[0], d[2], l, rej) %}
+   | MD_NUM __ E_NUM    {% (d,l, rej) => math.multiply(d[0], d[2]) %}
 
-   | MD divide E       {% (d, l, rej) => divide(d[0], d[2], l, rej) %}
-   | E                 {% id %}
+   | MD_NUM divide E_NUM  {% (d,l, rej) => math.divide(d[0], d[2]) %}
+   | E_NUM     {% id %}
+
+
+# Multiplication and division
+MD_UNIT ->
+     MD_UNIT mul SIGNED_NUM  {% (d,l, rej) => math.multiply(d[0], d[2]) %}
+   | MD_NUM mul SIGNED_UNIT  {% (d,l, rej) => math.multiply(d[0], d[2]) %}
+
+   # implicit multiplication (NOTE: always require spaces around parentheses)
+   | MD_UNIT __ SIGNED_NUM   {% (d,l, rej) => math.multiply(d[0], d[2]) %}
+   | MD_NUM __ SIGNED_UNIT   {% (d,l, rej) => math.multiply(d[0], d[2]) %}
+
+   | MD_UNIT divide SIGNED_NUM  {% (d,l, rej) => math.divide(d[0], d[2]) %}
+   | SIGNED_UNIT                 {% id %}
 
 # Exponents
-E -> SIGNED exp E    {% (d,l,rej) => exponent(d[0], d[2], l, rej)  %}
-   | SIGNED          {% id %}
+E_NUM ->
+     SIGNED_NUM exp E_NUM    {% (d,l,rej) => Math.pow(d[0], d[2])  %}
+   | SIGNED_NUM              {% id %}
 
 # Parentheses or unary signed N
-SIGNED ->  VALUE_WITH_UNIT        {% function(d) {/*log('value+unit:', d[0]);*/ return d[0]; } %}
-  | __ "+" _ VALUE_WITH_UNIT  {% function(d) { log('u+'); return d[3]; } %}
-  | __ "-" _ VALUE_WITH_UNIT  {% function(d) { log('u-'); return math.multiply(-1, d[3]) } %}
+SIGNED_NUM ->
+    __ "+" _ VALUE_NUM  {% function(d) { /*log('value_num+');*/ return d[3]; } %}
+  | __ "-" _ VALUE_NUM  {% function(d) { /*log('value_num-');*/ return math.multiply(-1, d[3]) } %}
+  | VALUE_NUM        {% function(d) {/*log('value_num:', d[0]);*/ return d[0]; } %}
 
-VALUE_WITH_UNIT ->
-  VALUE _ unit ";"    {%         // | - special separator instead of cutted two spaces to support implicit multiplication with units (like "4 kg  2")         old: last space to avoid: "1 and 2 m"ultiplied by 3
+
+SIGNED_UNIT ->
+    __ "+" _ VALUE_UNIT  {% function(d) { log('u+'); return d[3]; } %}
+  | __ "-" _ VALUE_UNIT  {% function(d) { log('u-'); return math.multiply(-1, d[3]) } %}
+  | VALUE_UNIT        {% function(d) {log('value+unit:', d[0]); return d[0]; } %}
+
+
+VALUE_NUM ->
+    P_NUM         {% id %}
+  | N             {% id %}
+
+
+VALUE_UNIT ->
+    P_UNIT        {% id %}
+  | VALUE_NUM _ unit ";"    {%         // ; - special separator instead of cutted two spaces to support implicit multiplication with units (like "4 kg  2")         old: last space to avoid: "1 and 2 m"ultiplied by 3
          function(d,l, reject) {
      
            try {
@@ -153,25 +194,25 @@ VALUE_WITH_UNIT ->
            }
          }
        %}
-    |
-    VALUE      {% function(d) {log('value:', d[0]); return d[0]; } %}
 
-# Parentheses or N
-VALUE -> P            {% id %}
-       | N             {% id %}
 
-# paretheses only
-P -> "(" _ OPS _ ")" {% function(d) {return d[2]; } %}
 
-FUNC -> "sin" P     {% function(d) {return Math.sin(d[1]); } %}
-   | "cos" P     {% function(d) {return Math.cos(d[1]); } %}
-   | "tan" P     {% function(d) {return Math.tan(d[1]); } %}
+
+# paretheses with something
+P_NUM -> "(" _ OPS_NUM _ ")" {% function(d) {return d[2]; } %}
+
+P_UNIT -> "(" _ OPS_UNIT _ ")" {% function(d) {return d[2]; } %}
+
+
+FUNC -> "sin" P_NUM     {% function(d) {return Math.sin(d[1]); } %}
+   | "cos" P_NUM     {% function(d) {return Math.cos(d[1]); } %}
+   | "tan" P_NUM     {% function(d) {return Math.tan(d[1]); } %}
     
-   | "asin" P    {% function(d) {return Math.asin(d[1]); } %}
-   | "acos" P    {% function(d) {return Math.acos(d[1]); } %}
-   | "atan" P    {% function(d) {return Math.atan(d[1]); } %}
-   | "sqrt" P    {% function(d) {return Math.sqrt(d[1]); } %}
-   | "ln" P       {% function(d) {return Math.log(d[1]); } %}
+   | "asin" P_NUM    {% function(d) {return Math.asin(d[1]); } %}
+   | "acos" P_NUM    {% function(d) {return Math.acos(d[1]); } %}
+   | "atan" P_NUM    {% function(d) {return Math.atan(d[1]); } %}
+   | "sqrt" P_NUM    {% function(d) {return Math.sqrt(d[1]); } %}
+   | "ln" P_NUM       {% function(d) {return Math.log(d[1]); } %}
 
 CONST -> "pi"          {% function(d) {return Math.PI; } %}
    | "e"           {% function(d) {return Math.E; } %}
@@ -201,7 +242,7 @@ N -> float          {% id %}
 
 # I use `float` to basically mean a number with a decimal point in it
 float -> int "." int   {% function(d) {return parseFloat(d[0] + d[1] + d[2])} %}
-       | int           {% function(d) {/*log('int', d);*/ return parseInt(d[0])} %}
+       | int           {% function(d) {log('int', d); return parseInt(d[0])} %}
 
 int -> [0-9]:+      {% function(d) {/*log('int:', d[0].join(""));*/ return d[0].join(""); } %}
 

@@ -98,11 +98,15 @@ function call(txt, verbose=false) {
 
 // mini-sandbox
 //
-// assertEqual(call('4 kg  2', 1), '8 kg')
-//assertEqual(call('4 kg (1 - 0.5) + 100g', 1), '2.1 kg')
-//
 
-//assertEqual(call('4 kg (1 -0.5) + 0.3g', 1), '2.0003 kg')
+// assertEqual(call('123'), 123)
+// 
+// //console.log('!!', call('2 * 3km'), typeof call('2 * 3km'), `"${call('2 * 3km')}"`)
+// assertEqual(call('2 * 3km'), '6 km')
+// 
+// assertEqual(call('2km * 3'), '6 km')
+//
+//
 //return
 
 
@@ -218,7 +222,7 @@ try {
 try {
   assertEqual(call('2 tonne * 4 gram '), '6 kg^2')
 } catch(e) {
-  assert(e.message.includes('Empty result'))
+  assert(e.message.includes('Unexpected'))
 }
 
 assertEqual(call('4 kg  2'), '8 kg')
@@ -231,7 +235,7 @@ assertEqual(call('69 cm * 3 / 2 + 2km'), '2.001035 km')
 try {
   call('2 kg ^ 2')   // cannot exponent units
 } catch(e) {
-  assert(e.message.includes('Empty result'))
+  assert(e.message.includes('Unexpected'))
 }
 
 assertEqual(call('3(4kg - 2000 gram / 2) /2'), '4.5 kg')
@@ -243,13 +247,13 @@ assertEqual(call('-2 m - (-3m)').value, 1, almost=true)
 try {
   call('2 kg << 2 ')
 } catch(e) {
-  assert(e.message.includes('Empty result'))
+  assert(e.message.includes('Unexpected'))
 }
 
 try {
   call('12 / 2kg ')
 } catch(e) {
-  assert(e.message.includes('Empty result'))
+  assert(e.message.includes('Unexpected '))
 }
 
 
