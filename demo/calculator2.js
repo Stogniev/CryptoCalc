@@ -256,9 +256,21 @@ try {
   assert(e.message.includes('Unexpected '))
 }
 
+assertEqual(call('(3+5) 2 kg * 2').value, 32, )
 
 
 
+
+// Tests from Specification
+assertEqual(call('8 times 9'), 72)
+//assertEqual(call('1 meter 20 cm'), '120 cm')
+// assertEqual(call(''), )
+// assertEqual(call(''), )
+// assertEqual(call(''), )
+// assertEqual(call(''), )
+// assertEqual(call(''), )
+// assertEqual(call(''), )
+// assertEqual(call(''), )
 
 
 //TODO money
