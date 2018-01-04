@@ -101,34 +101,14 @@ VALUE_NUM ->
 
 VALUE_UNIT ->
     P_UNIT        {% id %}
-  | VALUE_NUM _ unit ";"    {%         // ; - special separator instead of cutted two spaces to support implicit multiplication with units (like "4 kg  2")         old: last space to avoid: "1 and 2 m"ultiplied by 3
+  | VALUE_UNIT __ VALUE_NUM _ unit ";"    {%         // example: "1m 20 cm 30 mm"
          function(d,l, reject) {
-     
-           try {
-             log('value with unit:', d[0], d[2]);
-             return math.unit(d[0], d[2])
-           } catch(e) {
-             console.warn('no unit:', e.message)
-             return reject
-           }
-         }
-       %}
-  | VALUE_NUM _ unit ";" __ VALUE_NUM _ unit ";"    {%         // like "1m 20cm"
-         function(d,l, reject) {
-           let u1, u2;
-
-           // !! TODO: 3 and more
-           try {
-             log('value with unit:', d[0], d[2]);
-             u1 = math.unit(d[0], d[2])
-           } catch(e) {
-             //console.warn('no unit:', e.message)
-             return reject
-           }
+           let u1 = d[0]
+           let u2
 
            try {
-             log('value with unit:', d[5], d[7]);
-             u2 = math.unit(d[5], d[7])
+             log('value with unit:', d[2], d[4]);
+             u2 = math.unit(d[2], d[4])
            } catch(e) {
              //console.warn('no unit:', e.message)
              return reject
@@ -140,12 +120,22 @@ VALUE_UNIT ->
 
            // not the case of same base unit
            reject;
-
         }
        %}
+  | VALUE_NUM _ unit ";"    {%
+         function(d,l, reject) {
+           try {
+             log('value with unit:', d[0], d[2]);
+             return math.unit(d[0], d[2])
+           } catch(e) {
+             //console.warn('no unit:', e.message)
+             return reject
+           }
 
-
-
+           // not the case of same base unit
+           reject;
+        }
+       %}
 
 # paretheses with something
 P_NUM -> "(" _ OPS_NUM _ ")" {% function(d) {return d[2]; } %}

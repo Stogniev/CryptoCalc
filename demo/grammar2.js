@@ -54,34 +54,14 @@ var grammar = {
     {"name": "VALUE_NUM", "symbols": ["P_NUM"], "postprocess": id},
     {"name": "VALUE_NUM", "symbols": ["N"], "postprocess": id},
     {"name": "VALUE_UNIT", "symbols": ["P_UNIT"], "postprocess": id},
-    {"name": "VALUE_UNIT", "symbols": ["VALUE_NUM", "_", "unit", {"literal":";"}], "postprocess": // ; - special separator instead of cutted two spaces to support implicit multiplication with units (like "4 kg  2")         old: last space to avoid: "1 and 2 m"ultiplied by 3
-        function(d,l, reject) {
-             
-          try {
-            log('value with unit:', d[0], d[2]);
-            return math.unit(d[0], d[2])
-          } catch(e) {
-            console.warn('no unit:', e.message)
-            return reject
-          }
-        }
-               },
-    {"name": "VALUE_UNIT", "symbols": ["VALUE_NUM", "_", "unit", {"literal":";"}, "__", "VALUE_NUM", "_", "unit", {"literal":";"}], "postprocess":  // like "1m 20cm"
+    {"name": "VALUE_UNIT", "symbols": ["VALUE_UNIT", "__", "VALUE_NUM", "_", "unit", {"literal":";"}], "postprocess":  // example: "1m 20 cm 30 mm"
          function(d,l, reject) {
-           let u1, u2;
-        
-           // !! TODO: 3 and more
-           try {
-             log('value with unit:', d[0], d[2]);
-             u1 = math.unit(d[0], d[2])
-           } catch(e) {
-             //console.warn('no unit:', e.message)
-             return reject
-           }
+           let u1 = d[0]
+           let u2
         
            try {
-             log('value with unit:', d[5], d[7]);
-             u2 = math.unit(d[5], d[7])
+             log('value with unit:', d[2], d[4]);
+             u2 = math.unit(d[2], d[4])
            } catch(e) {
              //console.warn('no unit:', e.message)
              return reject
@@ -93,7 +73,20 @@ var grammar = {
         
            // not the case of same base unit
            reject;
+        }
+               },
+    {"name": "VALUE_UNIT", "symbols": ["VALUE_NUM", "_", "unit", {"literal":";"}], "postprocess": 
+         function(d,l, reject) {
+           try {
+             log('value with unit:', d[0], d[2]);
+             return math.unit(d[0], d[2])
+           } catch(e) {
+             //console.warn('no unit:', e.message)
+             return reject
+           }
         
+           // not the case of same base unit
+           reject;
         }
                },
     {"name": "P_NUM", "symbols": [{"literal":"("}, "_", "OPS_NUM", "_", {"literal":")"}], "postprocess": function(d) {return d[2]; }},

@@ -191,6 +191,7 @@ assertEqual(call('1 + 2 * 3'), 7)
 assertEqual(call('1 + (2^3) - 2 * 3'), 3)
 
 // math constants
+assertEqual(call('e'), 2.7, almost=true)
 assertEqual(call('pi'), 3.14, almost=true)
 assertEqual(call('pi + 1'), 4.14, almost=true)
 assertEqual(call('1 + pi'), 4.14, almost=true)
@@ -334,7 +335,7 @@ try {
   assert(e.message.includes('Unexpected '))
 }
 
-assertEqual(call('(3+5) 2 kg * 2').value, 32, )
+assertEqual(call('(3+5) 2 kg * 2').value, 32)
 
 // mixed subunits
 assertEqual(String(call('1 meter 20 cm').toSI()), '1.2 m')
@@ -347,6 +348,7 @@ assertEqual(String(call('1 kg 300 gram / -2').toSI()), '-0.65 kg')
 
 assertEqual(String(call('1 m 70 cm + 1 ft').toSI().value), 2.0048, almost=true)
 
+assertEqual(String(call('0.1km 11m 11 cm + 0.5 * 2 km 2 mm').toSI().value), 1111.111, almost=true)
 
 
 
@@ -354,7 +356,7 @@ assertEqual(String(call('1 m 70 cm + 1 ft').toSI().value), 2.0048, almost=true)
 // Tests from Specification
 assertEqual(call('8 times 9'), 72)
 assertEqual(String(call('1 meter 20 cm').toSI()), '1.2 m')
-// assertEqual(call(''), )
+assertEqual(call('6(3)'), 18)
 // assertEqual(call(''), )
 // assertEqual(call(''), )
 // assertEqual(call(''), )
