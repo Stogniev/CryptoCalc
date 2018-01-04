@@ -39,8 +39,8 @@ var grammar = {
     {"name": "MD_NUM", "symbols": ["E_NUM"], "postprocess": id},
     {"name": "MD_UNIT", "symbols": ["MD_UNIT", "mul", "SIGNED_NUM"], "postprocess": (d,l, rej) => math.multiply(d[0], d[2])},
     {"name": "MD_UNIT", "symbols": ["MD_NUM", "mul", "SIGNED_UNIT"], "postprocess": (d,l, rej) => math.multiply(d[0], d[2])},
-    {"name": "MD_UNIT", "symbols": ["MD_UNIT", "__", "SIGNED_NUM"], "postprocess": (d,l, rej) => math.multiply(d[0], d[2])},
-    {"name": "MD_UNIT", "symbols": ["MD_NUM", "__", "SIGNED_UNIT"], "postprocess": (d,l, rej) => math.multiply(d[0], d[2])},
+    {"name": "MD_UNIT", "symbols": ["MD_UNIT", "__", "VALUE_NUM"], "postprocess": (d,l, rej) => math.multiply(d[0], d[2])},
+    {"name": "MD_UNIT", "symbols": ["MD_NUM", "__", "VALUE_UNIT"], "postprocess": (d,l, rej) => math.multiply(d[0], d[2])},
     {"name": "MD_UNIT", "symbols": ["MD_UNIT", "divide", "SIGNED_NUM"], "postprocess": (d,l, rej) => math.divide(d[0], d[2])},
     {"name": "MD_UNIT", "symbols": ["SIGNED_UNIT"], "postprocess": id},
     {"name": "E_NUM", "symbols": ["SIGNED_NUM", "exp", "E_NUM"], "postprocess": (d,l,rej) => Math.pow(d[0], d[2])},
@@ -64,6 +64,36 @@ var grammar = {
             console.warn('no unit:', e.message)
             return reject
           }
+        }
+               },
+    {"name": "VALUE_UNIT", "symbols": ["VALUE_NUM", "_", "unit", {"literal":";"}, "__", "VALUE_NUM", "_", "unit", {"literal":";"}], "postprocess":  // like "1m 20cm"
+         function(d,l, reject) {
+           let u1, u2;
+        
+           // !! TODO: 3 and more
+           try {
+             log('value with unit:', d[0], d[2]);
+             u1 = math.unit(d[0], d[2])
+           } catch(e) {
+             //console.warn('no unit:', e.message)
+             return reject
+           }
+        
+           try {
+             log('value with unit:', d[5], d[7]);
+             u2 = math.unit(d[5], d[7])
+           } catch(e) {
+             //console.warn('no unit:', e.message)
+             return reject
+           }
+        
+           if (u1.equalBase(u2)) {
+             return math.sum(u1, u2)
+           }
+        
+           // not the case of same base unit
+           reject;
+        
         }
                },
     {"name": "P_NUM", "symbols": [{"literal":"("}, "_", "OPS_NUM", "_", {"literal":")"}], "postprocess": function(d) {return d[2]; }},

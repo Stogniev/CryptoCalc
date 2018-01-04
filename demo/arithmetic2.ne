@@ -23,7 +23,7 @@
 # 1) put spaces around all math braces
 # 2) remove spaces between standard function calls braces likd "sin(...)"
 # 3) Add spaces before all +/- signs (to simplify unary/binary sign logic)
-# 4) wrap by space all units (USD, Gb, km...)   \
+# 4) wrap by space all units (USD, Gb, km...)
 #    reason: to parse '10 cm' and same time avoid "1 and 2 m"ul 3
 #    NOTE: cannot lowercase (mm & Mm)
 
@@ -70,8 +70,8 @@ MD_UNIT ->
    | MD_NUM mul SIGNED_UNIT  {% (d,l, rej) => math.multiply(d[0], d[2]) %}
 
    # implicit multiplication (NOTE: always require spaces around parentheses)
-   | MD_UNIT __ SIGNED_NUM   {% (d,l, rej) => math.multiply(d[0], d[2]) %}
-   | MD_NUM __ SIGNED_UNIT   {% (d,l, rej) => math.multiply(d[0], d[2]) %}
+   | MD_UNIT __ VALUE_NUM   {% (d,l, rej) => math.multiply(d[0], d[2]) %}
+   | MD_NUM __ VALUE_UNIT   {% (d,l, rej) => math.multiply(d[0], d[2]) %}
 
    | MD_UNIT divide SIGNED_NUM  {% (d,l, rej) => math.divide(d[0], d[2]) %}
    | SIGNED_UNIT                 {% id %}
@@ -112,6 +112,36 @@ VALUE_UNIT ->
              return reject
            }
          }
+       %}
+  | VALUE_NUM _ unit ";" __ VALUE_NUM _ unit ";"    {%         // like "1m 20cm"
+         function(d,l, reject) {
+           let u1, u2;
+
+           // !! TODO: 3 and more
+           try {
+             log('value with unit:', d[0], d[2]);
+             u1 = math.unit(d[0], d[2])
+           } catch(e) {
+             //console.warn('no unit:', e.message)
+             return reject
+           }
+
+           try {
+             log('value with unit:', d[5], d[7]);
+             u2 = math.unit(d[5], d[7])
+           } catch(e) {
+             //console.warn('no unit:', e.message)
+             return reject
+           }
+
+           if (u1.equalBase(u2)) {
+             return math.sum(u1, u2)
+           }
+
+           // not the case of same base unit
+           reject;
+
+        }
        %}
 
 

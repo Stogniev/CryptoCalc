@@ -37,8 +37,8 @@ const UnitPrefixes = Object.keys(math.type.Unit.PREFIXES.SHORTLONG)
 function prepareTxt(txt, verbose=false) {
   const txt0 = txt
 
-  // !! 0) remove multispaces
-  //txt = txt.replace(new RegExp('\\s+', 'gi'), ' ')
+  // 0) remove multispaces
+  txt = txt.replace(new RegExp('\\s+', 'gi'), ' ')
 
   // 1) put spaces around all math braces (to simplify implicit multiplication grammar)
   //txt = txt.replace(new RegExp('([\(\)])', 'gi'), ' $1 ')
@@ -77,6 +77,9 @@ function prepareTxt(txt, verbose=false) {
 function call(txt, verbose=false) {
   txt = prepareTxt(txt, verbose)
 
+  verbose = verbose || DEBUG
+
+  try {
   let ans = new nearley.Parser(grammar.ParserRules, grammar.ParserStart).feed(txt);
 
   //console.log('ans:', ans)
@@ -88,12 +91,27 @@ function call(txt, verbose=false) {
     throw new Error(`Empty result for "${txt}"`)
   }
 
-  if (verbose || DEBUG) {
+  if (verbose) {
     console.log(`"${txt}" -c-> "${ans.results}"`)
   }
 
   return ans.results[0]
+
+  } catch(e) {
+    if (verbose) {
+      console.log(`"${txt}" -E-> "${e.message}"`)
+    }
+    throw e
+  }
 }
+
+
+
+
+
+
+
+
 
 
 // mini-sandbox
@@ -107,6 +125,59 @@ function call(txt, verbose=false) {
 // assertEqual(call('2km * 3'), '6 km')
 //
 //
+
+
+
+
+
+// call('a')
+// call('ab')
+// call('aba')
+// call('abab')
+// call('baba')
+// call('ababab')
+// call('b')
+// call('bbbb')
+// call('abbbab')
+// call('abbbabba')
+// try { call('abbbaabb') } catch(e) {assert(e.message.includes('Unexpected'))}
+// call('abbbabba')
+// 
+// call('c')
+// call('ccc')
+// call('ccac')
+// call('cabc')
+// call('abc')
+// call('cab')
+// 
+// return
+//
+
+
+assertEqual(call('2 ^ 3'), 8)
+assertEqual(call('(2 ^ 3)'), 8)
+
+assertEqual(call('2(3)'), 6)
+assertEqual(call('(2)3'), 6)
+assertEqual(call('(2)(3)'), 6)
+assertEqual(call('2(3)4'), 24)
+
+
+assertEqual(call('(2 + 3) *4'), 20)
+
+assertEqual(call('5(2 + 3)*4'), 100)
+assertEqual(call('5*(2 + 3)4'), 100)
+assertEqual(call('2*(3)*4'), 24)
+
+assertEqual(call('2*(3)'), 6)
+assertEqual(call('(2)*3'), 6)
+assertEqual(call('(2)*(3)'), 6)
+
+
+assertEqual(call('(2 + 3)*4'), 20)
+
+assertEqual(call('5*(2 + 3)*4'), 100)
+
 //return
 
 
@@ -126,7 +197,11 @@ assertEqual(call('1 + pi'), 4.14, almost=true)
 
 // implicit multiplication "*"
 assertEqual(call('(3)7'), 21)
-assertEqual(call('3(5-3)4'), 24)
+assertEqual(call('(1+7)3'), 24)
+assertEqual(call('8(3)'), 24)
+assertEqual(call('(3)(4)'), 12)
+
+assertEqual(call('3(5-2)4'), 36)
 assertEqual(call('(3-1) (8/4 + 1)'), 6)
 assertEqual(call('(3-1)(8/4 + 1)'), 6)
 assertEqual(call('3+ (7-4) 2'), 9)
@@ -195,6 +270,9 @@ assertEqual(call('-(-2 - -1)'), 1)
 //consts
 assertEqual(call('pi + e'), Math.PI + Math.E)
 
+// floats
+assertEqual(call('12.95 + 3.10'), 16.05, almost=true)
+
 // units
 assertEqual(call('10 cm'), '10 cm')
 assertEqual(call('-10 cm'), '-10 cm')
@@ -258,12 +336,24 @@ try {
 
 assertEqual(call('(3+5) 2 kg * 2').value, 32, )
 
+// mixed subunits
+assertEqual(String(call('1 meter 20 cm').toSI()), '1.2 m')
+assertEqual(String(call('-1 meter 20 cm').toSI()), '-1.2 m')
+
+assertEqual(String(call('1 meter 20 cm * 2').toSI()), '2.4 m')
+assertEqual(String(call('1 meter 20 cm + 2m 50 cm * 3').toSI()), '8.7 m')
+
+assertEqual(String(call('1 kg 300 gram / -2').toSI()), '-0.65 kg')
+
+assertEqual(String(call('1 m 70 cm + 1 ft').toSI().value), 2.0048, almost=true)
+
+
 
 
 
 // Tests from Specification
 assertEqual(call('8 times 9'), 72)
-//assertEqual(call('1 meter 20 cm'), '120 cm')
+assertEqual(String(call('1 meter 20 cm').toSI()), '1.2 m')
 // assertEqual(call(''), )
 // assertEqual(call(''), )
 // assertEqual(call(''), )
