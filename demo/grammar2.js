@@ -5,7 +5,7 @@ function id(x) {return x[0]; }
 
   const math = require("mathjs");
   // TODO: add all
-  const StandartFunctions = ['sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'sqrt', 'ln']
+  // const StandartFunctions = ['sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'sqrt', 'ln']
 
   // TODO: add all
   //const Units = ['cm', 'm', 'km', 'usd', 'uah', 'kg', 'g']
@@ -36,6 +36,7 @@ var grammar = {
     {"name": "MD_NUM", "symbols": ["MD_NUM", "mul", "E_NUM"], "postprocess": (d,l, rej) => math.multiply(d[0], d[2])},
     {"name": "MD_NUM", "symbols": ["MD_NUM", "__", "E_NUM"], "postprocess": (d,l, rej) => math.multiply(d[0], d[2])},
     {"name": "MD_NUM", "symbols": ["MD_NUM", "divide", "E_NUM"], "postprocess": (d,l, rej) => math.divide(d[0], d[2])},
+    {"name": "MD_NUM", "symbols": ["MD_NUM", "mod", "E_NUM"], "postprocess": (d,l, rej) => math.mod(d[0], d[2])},
     {"name": "MD_NUM", "symbols": ["E_NUM"], "postprocess": id},
     {"name": "MD_UNIT", "symbols": ["MD_UNIT", "mul", "SIGNED_NUM"], "postprocess": (d,l, rej) => math.multiply(d[0], d[2])},
     {"name": "MD_UNIT", "symbols": ["MD_NUM", "mul", "SIGNED_UNIT"], "postprocess": (d,l, rej) => math.multiply(d[0], d[2])},
@@ -187,6 +188,8 @@ var grammar = {
     {"name": "divide$string$2", "symbols": [{"literal":"d"}, {"literal":"i"}, {"literal":"v"}, {"literal":"i"}, {"literal":"d"}, {"literal":"e"}, {"literal":" "}, {"literal":"b"}, {"literal":"y"}], "postprocess": function joiner(d) {return d.join('');}},
     {"name": "divide", "symbols": ["__", "divide$string$2", "__"]},
     {"name": "exp", "symbols": ["_", {"literal":"^"}, "_"]},
+    {"name": "mod$string$1", "symbols": [{"literal":"m"}, {"literal":"o"}, {"literal":"d"}], "postprocess": function joiner(d) {return d.join('');}},
+    {"name": "mod", "symbols": ["__", "mod$string$1", "__"]},
     {"name": "leftShift$string$1", "symbols": [{"literal":"<"}, {"literal":"<"}], "postprocess": function joiner(d) {return d.join('');}},
     {"name": "leftShift", "symbols": ["_", "leftShift$string$1", "_"]},
     {"name": "rightShift$string$1", "symbols": [{"literal":">"}, {"literal":">"}], "postprocess": function joiner(d) {return d.join('');}},

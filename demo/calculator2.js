@@ -190,6 +190,8 @@ assertEqual(call('3 + 2'), 5)
 assertEqual(call('1 + 2 * 3'), 7)
 assertEqual(call('1 + (2^3) - 2 * 3'), 3)
 
+assertEqual(call('4 + 10 mod 4 * 2'), 8)
+
 // math constants
 assertEqual(call('e'), 2.7, almost=true)
 assertEqual(call('pi'), 3.14, almost=true)
@@ -253,6 +255,8 @@ assertEqual(call('3 << 4 + 9 >> 2'), 6144)
 //console.log(call('sin(2 pi)'),  call('2 sin(pi) cos(pi)'))
 assertEqual(call('sqrt(81)'), 9)
 //assertEqual(call('sqrt(-4)'), NaN)
+
+
 
 assertEqual(call('sin(2 pi)'),  call('2 sin(pi) cos(pi)'), almost=true)
 assertEqual(call('tan(3 pi)'),  call('sin(3 pi)/cos(3 pi)'), almost=true)

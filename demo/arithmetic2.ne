@@ -4,7 +4,7 @@
 @{%
   const math = require("mathjs");
   // TODO: add all
-  const StandartFunctions = ['sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'sqrt', 'ln']
+  // const StandartFunctions = ['sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'sqrt', 'ln']
 
   // TODO: add all
   //const Units = ['cm', 'm', 'km', 'usd', 'uah', 'kg', 'g']
@@ -61,6 +61,7 @@ MD_NUM ->
    | MD_NUM __ E_NUM    {% (d,l, rej) => math.multiply(d[0], d[2]) %}
 
    | MD_NUM divide E_NUM  {% (d,l, rej) => math.divide(d[0], d[2]) %}
+   | MD_NUM mod E_NUM  {% (d,l, rej) => math.mod(d[0], d[2]) %}
    | E_NUM     {% id %}
 
 
@@ -232,6 +233,8 @@ divide -> _ "/" _
      | __ "divide by" __
 
 exp -> _ "^" _
+
+mod -> __ "mod" __
 
 leftShift -> _ "<<" _
 
