@@ -1,0 +1,179 @@
+{
+    "extends": [
+        "eslint:recommended",
+        "plugin:react/recommended",
+        "plugin:import/errors",
+        "plugin:import/warnings",
+        "eslint-config-airbnb"
+    ],
+
+    // use babel-eslint to parse class decorators (until eslint doesn't support it)
+    "parser": "babel-eslint",
+    "env": {
+        "node": true,
+        "browser": true,
+    },
+
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "sourceType": "module",
+        "ecmaFeatures": {
+            "jsx": true
+        }
+    },
+    "rules": {
+      //"semi": "off",
+      //comma-dangle: 1,
+      no-undef: 1,
+      comma-dangle: 0,
+      no-console: 0,
+      "import/no-commonjs": 0,
+      "no-unused-vars": ["warn", { "args": "none"}],
+
+      // disable some airbnb rules
+      "semi": "off",
+      object-curly-spacing: "off",
+      space-in-paren: "off",
+      arrow-parens: "off",
+      space-in-parens: "off"
+
+    },
+    "plugins": [
+        "react",
+        "import",
+    ],
+
+    "globals": {
+         "__DEVELOPMENT__": true,
+        // "__CLIENT__": true,
+        // "__SERVER__": true,
+        // "__DISABLE_SSR__": true,
+        // "__DEVTOOLS__": true,
+        //"require": true,
+      "Promise": true,
+      "Set": true,
+      "Symbol": true
+    },
+
+    "settings": {
+        'import/resolver': {
+            //?"webpack": {},
+            "node": {
+                "moduleDirectory": ["node_modules", "src"]
+            }
+        },
+        "import/ignore": [
+            "node_modules",
+            ".(scss|less|css)$",
+            ".(yaml)$",
+        ],
+        //??"import/parser": "babel-eslint",
+    },
+
+}
+
+
+// // based on http://stackoverflow.com/a/29756143/1948511
+// {
+//     "parser": "eslint",
+//     "env": {
+//         "browser": true,
+//         "node": true
+//     },
+// 
+//     "rules": {
+//         "no-mixed-requires": [0, false],
+//         "quotes": [2, "single"],
+//         "strict": [1, "never"],
+//         "semi": [2, "always"],
+//         "curly": 1,
+//         "no-bitwise": 1,
+//         "max-len": [1, 110, 4],
+//         "vars-on-top": 0,
+//         "guard-for-in": 1,
+//         "react/display-name": 1,
+//         "react/jsx-quotes": [2, "double", "avoid-escape"],
+//         "react/jsx-no-undef": 2,
+//         "react/jsx-sort-props": 0,
+//         "react/jsx-uses-react": 1,
+//         "react/jsx-uses-vars": 1,
+//         "react/no-did-mount-set-state": 2,
+//         "react/no-did-update-set-state": 2,
+//         "react/no-multi-comp": 0,
+//         "react/no-unknown-property": 1,
+//         "react/prop-types": 2,
+//         "react/react-in-jsx-scope": 1,
+//         "react/self-closing-comp": 1,
+//         "react/wrap-multilines": 2
+//     },
+// 
+//     "ecmaFeatures": {
+//         "jsx": true
+//     },
+// 
+//     "plugins": [ "react" ],
+// 
+//     "globals": {
+//         "require": "true",
+//         "module": "true",
+//         "$": "true",
+//         "d3": "true"
+//     }
+// }
+
+
+// in-project default
+
+// { "extends": "eslint-config-airbnb",
+//   "env": {
+//     "browser": true,
+//     "node": true,
+//     "mocha": true
+//   },
+//   "rules": {
+//     "react/jsx-uses-react": 2,
+//     "react/jsx-uses-vars": 2,
+//     "react/react-in-jsx-scope": 2,
+//     "react/jsx-quotes": 0,
+//     "import/default": 0,
+//     "import/no-duplicates": 0,
+//     "import/named": 0,
+//     "import/namespace": 0,
+//     "import/no-unresolved": 0,
+//     "import/no-named-as-default": 2,
+//     "jsx-quotes": 2,
+//     // Temporarirly disabled due to a possible bug in babel-eslint (todomvc example)
+//     "block-scoped-var": 0,
+//     // Temporarily disabled for test/* until babel/babel-eslint#33 is resolved
+//     "padded-blocks": 0,
+//     "comma-dangle": 0,  // not sure why airbnb turned this on. gross!
+//     "indent": [2, 2, {"SwitchCase": 1}],
+//     "no-console": 0,
+//     "no-alert": 0,
+//     "semi": 0,
+//     "react/no-multi-comp": 0,
+//     "spaced-comment": 0,
+//     "no-unused-vars": 1,
+//     "indent": 0,
+//     "prefer-const": 1,
+//     "no-multiple-empty-lines": 1,
+//   },
+//   "plugins": [
+//     "react", "import"
+//   ],
+//   "settings": {
+//     "import/parser": "babel-eslint",
+//     "import/resolve": {
+//       moduleDirectory: ["node_modules", "src"]
+//     }
+//   },
+//   "globals": {
+//     "__DEVELOPMENT__": true,
+//     "__CLIENT__": true,
+//     "__SERVER__": true,
+//     "__DISABLE_SSR__": true,
+//     "__DEVTOOLS__": true,
+//     "socket": true,
+//     "webpackIsomorphicTools": true
+//   }
+// }

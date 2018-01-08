@@ -9,7 +9,10 @@
     "demo": "(cd ./demo && ./build-and-test2.sh)"
   },
   "dependencies": {
+    "cryptocurrencies": "^1.1.1",
+    "currency-symbol-map": "^4.0.3",
     "mathjs": "^3.18.0",
-    "nearley": "^2.11.0"
+    "nearley": "^2.11.0",
+    "regexp.escape": "^1.0.2"
   }
 }

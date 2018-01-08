@@ -1,11 +1,24 @@
 // This is an example of how to use a nearley-made grammar.
-var PROMPT = "> ";
+var PROMPT = '> '
 var nearley = require("nearley");
 var grammar = require("./grammar2.js");
 let assert = require('assert')
 const math = require('mathjs')
+var escape = require('regexp.escape');
 
 const DEBUG = process.env.DEBUG
+const Currencies = require('./currencies')
+
+const Rates = require('./rates')
+
+// TODO: process "$100" additionally to "100$"
+// create currency units
+
+// "default" dollar - dollar USA
+math.createUnit('USD', {aliases: ['$']});
+math.createUnit('cent', {definition: '0.01 USD', aliases: ['¢', 'c']});
+
+
 
 function assertEqual(a, b, almost=false) {
   function getValue(v) {
@@ -54,10 +67,12 @@ function prepareTxt(txt, verbose=false) {
   // 3) Add spaces before all +/- signs (to simplify unary/binary sign logic)
   txt = txt.replace(new RegExp(`\\s*([+-])`, 'gi'), ' $1')
 
-  // 4) wrap all units (USD, Gb, km...) by " kg|"
-  //    reason: to parse '10 cm' and same time avoid "1 and 2 m"ul 3
-  const UP = UnitPrefixes.join('|')
-  const UN = UnitNames.join('|')
+  // 4) wrap all units (USD, Gb, kg...) by semicolon: " kg;"
+  //    reason: to parse '10 cm' and same time avoid word cropping "1 and 2 m"ul 3
+  const UP = UnitPrefixes.map( v => escape(v) ).join('|')
+  const UN = UnitNames.map( v => escape(v) ).join('|')
+  // console.log('UP', UP)
+  // console.log('UN', UN)
   txt = txt.replace(new RegExp(`([^a-zA-Z])(${UP})(${UN})((?:[^a-zA-Z]|$))`, 'gi'), '$1 $2$3; $4')
 
   // remove multispace (produced user, 4)) reason: to avoid multiresults
@@ -106,53 +121,19 @@ function call(txt, verbose=false) {
 }
 
 
-
-
-
-
-
-
-
-
 // mini-sandbox
 //
-
-// assertEqual(call('123'), 123)
-// 
-// //console.log('!!', call('2 * 3km'), typeof call('2 * 3km'), `"${call('2 * 3km')}"`)
-// assertEqual(call('2 * 3km'), '6 km')
-// 
-// assertEqual(call('2km * 3'), '6 km')
-//
-//
-
-
-
-
-
-// call('a')
-// call('ab')
-// call('aba')
-// call('abab')
-// call('baba')
-// call('ababab')
-// call('b')
-// call('bbbb')
-// call('abbbab')
-// call('abbbabba')
-// try { call('abbbaabb') } catch(e) {assert(e.message.includes('Unexpected'))}
-// call('abbbabba')
-// 
-// call('c')
-// call('ccc')
-// call('ccac')
-// call('cabc')
-// call('abc')
-// call('cab')
-// 
 // return
-//
 
+// math expressions
+assertEqual(call('123'), 123)
+assertEqual(call('3 + 2'), 5)
+
+assertEqual(call('1 + 2 * 3'), 7)
+assertEqual(call('1 + (2^3) - 2 * 3'), 3)
+
+assertEqual(call('11 mod 4'), 3)
+assertEqual(call('4 + 10 mod 4 * 2'), 8)
 
 assertEqual(call('2 ^ 3'), 8)
 assertEqual(call('(2 ^ 3)'), 8)
@@ -161,7 +142,6 @@ assertEqual(call('2(3)'), 6)
 assertEqual(call('(2)3'), 6)
 assertEqual(call('(2)(3)'), 6)
 assertEqual(call('2(3)4'), 24)
-
 
 assertEqual(call('(2 + 3) *4'), 20)
 
@@ -173,24 +153,9 @@ assertEqual(call('2*(3)'), 6)
 assertEqual(call('(2)*3'), 6)
 assertEqual(call('(2)*(3)'), 6)
 
-
 assertEqual(call('(2 + 3)*4'), 20)
-
 assertEqual(call('5*(2 + 3)*4'), 100)
 
-//return
-
-
-// simple expression
-assertEqual(call('123'), 123)
-
-// math expressions
-assertEqual(call('3 + 2'), 5)
-
-assertEqual(call('1 + 2 * 3'), 7)
-assertEqual(call('1 + (2^3) - 2 * 3'), 3)
-
-assertEqual(call('4 + 10 mod 4 * 2'), 8)
 
 // math constants
 assertEqual(call('e'), 2.7, almost=true)
@@ -216,7 +181,6 @@ assertEqual(call('1 + 3(5 + 4 - 6 / 3) / 2 * 4 - 3'), 40)
 assertEqual(call('3.139 * 1'), 3.14, almost=true)  //to constants
 assertEqual(call('pi (7 - 5) - pi'), 3.14, almost=true)  //to constants
 assertEqual(call('pi(7 - 5)pi/(pi*pi) - 2'), 0)
-
 
 // exponents
 assertEqual(call('2^3'), 8)
@@ -250,13 +214,10 @@ assertEqual(call('3 << (4 << 2)'), 196608)
 assertEqual(call('3 << 4 + 1 << 2'), 384)
 assertEqual(call('3 << 4 + 9 >> 2'), 6144)
 
-
 // standard functions
 //console.log(call('sin(2 pi)'),  call('2 sin(pi) cos(pi)'))
 assertEqual(call('sqrt(81)'), 9)
 //assertEqual(call('sqrt(-4)'), NaN)
-
-
 
 assertEqual(call('sin(2 pi)'),  call('2 sin(pi) cos(pi)'), almost=true)
 assertEqual(call('tan(3 pi)'),  call('sin(3 pi)/cos(3 pi)'), almost=true)
@@ -370,7 +331,8 @@ assertEqual(call('6(3)'), 18)
 
 
 //TODO money
-//TOOD assertEqual(call('10 USD'), '10-USD')
+assertEqual(call('10 USD'), '10 USD')
+assertEqual(call('2.5 $'), '2.5 USD')
 
 
 // % operations
