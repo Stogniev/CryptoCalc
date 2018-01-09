@@ -27,11 +27,16 @@ function isCurrencySymbolConfusing(c) {
 const symbolCurrencies = {}
 
 
-function addCurrencyAlias(iso, alias) {
-  if (!isCurrencySymbolConfusing(alias)) {
+function addCurrencyAlias(iso, alias, force=false) {
+  if (force || !isCurrencySymbolConfusing(alias)) {
     symbolCurrencies[alias] = iso
   }
 }
+
+function addCurrencyAliases(iso, aliases, force=false) {
+  aliases.forEach( a => addCurrencyAlias(iso, a, force) )
+}
+
 
 // add add currency symbols as aliases
 Object.entries(currencySymbols).forEach(
@@ -270,16 +275,13 @@ currencyCodes.forEach( c => addCurrencyAlias(c, c) )
 
 
 // add some traditional names
-(['$', 'dollar', 'dollars', 'buck', 'bucks']).forEach( a => addCurrencyAlias('USD', a) )
-  // ['₽', 'ruble', 'rubles', 'rouble', 'roubles'].forEach( a => addCurrencyAlias('RUB', a) )
-  // ['₴', 'гривна', 'гривны', 'гривен'].forEach( a => addCurrencyAlias('UAH', a) )
-  // ['£', 'pound', 'pounds'].forEach( a => addCurrencyAlias('GBP', a) )
-  // ['฿', '₿', 'bitcoins', 'bitcoin'].forEach( a => addCurrencyAlias('BTC', a) )
+addCurrencyAliases('USD', ['$', 'dollar', 'dollars', 'buck', 'bucks'], force=true)
+addCurrencyAliases('RUB', ['₽', 'ruble', 'rubles', 'rouble', 'roubles'], force=true)
+addCurrencyAliases('UAH', ['₴', 'гривна', 'гривны', 'гривен'], force=true)
+addCurrencyAliases('GBP', ['£', 'pound', 'pounds'], force=true)
+addCurrencyAliases('BTC', ['฿', '₿', 'bitcoins', 'bitcoin'], force=true)
 
 
-console.log(symbolCurrencies['42'])
-// 
-//console.log(isCurrencySymbolConfusing('42'))
-//console.log(symbolCurrencies)
+//console.log(symbolCurrencies['﷼'])
 
 module.exports = { /* Currencies, */ symbolCurrencies }
