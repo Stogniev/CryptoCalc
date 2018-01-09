@@ -38,7 +38,8 @@
       space-in-parens: "off",
       no-prototype-builtins: "off", // too specific limitation (disabled to allow o.hasOwnProperty(...)
       function-paren-newline: "off",
-      no-multi-spaces: ["warn", { ignoreEOLComments: true }]
+      no-multi-spaces: ["warn", { ignoreEOLComments: true }],
+      no-multiple-empty-lines: "off"
     },
     "plugins": [
         "react",

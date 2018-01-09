@@ -1,15 +1,15 @@
 // This is an example of how to use a nearley-made grammar.
-var PROMPT = '> '
-var nearley = require("nearley");
-var grammar = require("./grammar2.js");
-let assert = require('assert')
+const PROMPT = '> '
+const nearley = require('nearley')
+const grammar = require('./grammar2.js')
+const assert = require('assert')
 const math = require('mathjs')
-var escape = require('regexp.escape');
+const escape = require('regexp.escape');
 
 const DEBUG = process.env.DEBUG
-const Currencies = require('./currencies')
+//const Currencies = require('./currencies')
 
-const Rates = require('./rates')
+//const Rates = require('./rates')
 
 // TODO: process "$100" additionally to "100$"
 // create currency units
@@ -17,6 +17,8 @@ const Rates = require('./rates')
 // "default" dollar - dollar USA
 math.createUnit('USD', {aliases: ['$']});
 math.createUnit('cent', {definition: '0.01 USD', aliases: ['¢', 'c']});
+
+
 
 
 
@@ -66,6 +68,14 @@ function prepareTxt(txt, verbose=false) {
 
   // 3) Add spaces before all +/- signs (to simplify unary/binary sign logic)
   txt = txt.replace(new RegExp(`\\s*([+-])`, 'gi'), ' $1')
+
+  // 35) Convert all currerncy names to ISO format (math.js doesn't support specsymbols like "$" or "฿"
+
+  // 35.1) convert all "$30.5" -> "30.5 USD" for every currency SINGLE-chars
+  txt = txt.replace(new RegExp(`\\$\\s*(\\d+(?:\\.\\d+)?)`, 'gi'), '$1 USD'
+
+  // 35.2)
+
 
   // 4) wrap all units (USD, Gb, kg...) by semicolon: " kg;"
   //    reason: to parse '10 cm' and same time avoid word cropping "1 and 2 m"ul 3

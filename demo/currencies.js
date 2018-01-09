@@ -7,24 +7,38 @@ const confusingCurrencySymbols = [
 
 //
 function isCurrencySymbolConfusing(c) {
+  // if (c === '42') console.log('44442222222', (
+  //   confusingCurrencySymbols.includes(c)
+  //     // assume any numeric currency symbols is confusing (like 365 for 365Coin)
+  //     || !Number.isNaN(parseFloat(c))
+  // ))
   return (
     confusingCurrencySymbols.includes(c)
-      || !Number.isNaN(parseFloat(c)) // skip numeric currency symbols (like 365 for 365Coin)
+      // assume any numeric currency symbols is confusing (like 365 for 365Coin)
+      || !Number.isNaN(parseFloat(c))
   )
 }
 
 // currency symbol/name/ISO => ISO
 // { '$': 'USD', '฿': 'BTC', 'rouble': 'RUB', 'buck': 'USD'...}
-const symbolCurrencies = Object.assign({}, ...Object.entries(currencySymbols).map(
-  ([iso, symbol]) => (isCurrencySymbolConfusing(symbol) ? null : {[symbol]: iso})
-))
+// const symbolCurrencies = Object.assign({}, ...Object.entries(currencySymbols).map(
+//   ([iso, symbol]) => (isCurrencySymbolConfusing(symbol) ? null : {[symbol]: iso})
+// ))
+const symbolCurrencies = {}
 
 
-// but some confusingCurrencySymbols does has meaning
-symbolCurrencies['$'] = 'USD' /* eslint dot-notation: off */
-symbolCurrencies['£'] = 'GBP'
-symbolCurrencies['₿'] = 'BTC'     // real but not yet wide supported bitcoin char
-symbolCurrencies['฿'] = 'BTC' // use as "bitcoin" rather than "Thai baht"
+function addCurrencyAlias(iso, alias) {
+  if (!isCurrencySymbolConfusing(alias)) {
+    symbolCurrencies[alias] = iso
+  }
+}
+
+// add add currency symbols as aliases
+Object.entries(currencySymbols).forEach(
+  ([iso, symbol]) => addCurrencyAlias(iso, symbol) )
+
+
+// some exceptions and common meanings
 
 
 // let z = Object.entries(currencySymbols).map(
@@ -215,17 +229,16 @@ const openexchangeratesCurrencies = {
   ZMW: {name: 'Zambian Kwacha', },
 }
 
-
 // ALL currency codes
-const currencyCodes = [...new Set([
+const currencyCodes = [
+  ...Object.keys(cryptoCurrencies),
   ...Object.keys(openexchangeratesCurrencies),
-  ...Object.keys(cryptoCurrencies)
-]).values()]
+]
 
 
-// add currency codes as self-aliases {'USD': 'USD' ... }
-currencyCodes.forEach( c => symbolCurrencies[c] = c )
 
+// add all currency codes as self-aliases {'USD': 'USD' ... }
+currencyCodes.forEach( c => addCurrencyAlias(c, c) )
 
 
 // {  USD: { name: 'United States Dollar', aliases: [ '$', 'dollar', 'dollars' ],
@@ -256,18 +269,17 @@ currencyCodes.forEach( c => symbolCurrencies[c] = c )
 // Currencies['GBP'].aliases = ['$', 'pound', 'pounds']
 
 
-function addCurrencyAliases(code, aliases) {
-  aliases.forEach( v => symbolCurrencies[v] = code )
-}
-
-
 // add some traditional names
-addCurrencyAliases('USD', ['$', 'dollar', 'dollars', 'buck', 'bucks'])
-addCurrencyAliases('RUB', ['₽', 'ruble', 'rubles', 'rouble', 'roubles'])
-addCurrencyAliases('UAH', ['₴', 'гривна', 'гривны', 'гривен'])
-addCurrencyAliases('GBP', ['£', 'pound', 'pounds'])
+(['$', 'dollar', 'dollars', 'buck', 'bucks']).forEach( a => addCurrencyAlias('USD', a) )
+  // ['₽', 'ruble', 'rubles', 'rouble', 'roubles'].forEach( a => addCurrencyAlias('RUB', a) )
+  // ['₴', 'гривна', 'гривны', 'гривен'].forEach( a => addCurrencyAlias('UAH', a) )
+  // ['£', 'pound', 'pounds'].forEach( a => addCurrencyAlias('GBP', a) )
+  // ['฿', '₿', 'bitcoins', 'bitcoin'].forEach( a => addCurrencyAlias('BTC', a) )
 
 
+console.log(symbolCurrencies['42'])
+// 
+//console.log(isCurrencySymbolConfusing('42'))
 //console.log(symbolCurrencies)
 
 module.exports = { /* Currencies, */ symbolCurrencies }
