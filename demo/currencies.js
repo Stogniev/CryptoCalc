@@ -1,19 +1,43 @@
 // { 'USD': '$',  'BTC': '฿', ...}
 const currencySymbols = require('currency-symbol-map').currencySymbolMap
 
-const confusingCurrencySymbols = ['$', 'K', 'L', 'kr', '£', 'лв', '₨', '₱', '﷼']
-// { '$': 'USD', '฿': 'BTC', ...}
-let symbolCurrencies = Object.assign({}, ...Object.entries(currencySymbols).map(
-  ([iso, symbol]) => (confusingCurrencySymbols.includes(symbol) ? null : {[symbol]: iso})
+const confusingCurrencySymbols = [
+  '$', 'K', 'L', 'kr', '£', 'лв', '₨', '₱', '﷼', '฿',
+]
+
+//
+function isCurrencySymbolConfusing(c) {
+  return (
+    confusingCurrencySymbols.includes(c)
+      || !Number.isNaN(parseFloat(c)) // skip numeric currency symbols (like 365 for 365Coin)
+  )
+}
+
+// currency symbol/name/ISO => ISO
+// { '$': 'USD', '฿': 'BTC', 'rouble': 'RUB', 'buck': 'USD'...}
+const symbolCurrencies = Object.assign({}, ...Object.entries(currencySymbols).map(
+  ([iso, symbol]) => (isCurrencySymbolConfusing(symbol) ? null : {[symbol]: iso})
 ))
+
 
 // but some confusingCurrencySymbols does has meaning
 symbolCurrencies['$'] = 'USD' /* eslint dot-notation: off */
 symbolCurrencies['£'] = 'GBP'
+symbolCurrencies['₿'] = 'BTC'     // real but not yet wide supported bitcoin char
+symbolCurrencies['฿'] = 'BTC' // use as "bitcoin" rather than "Thai baht"
 
+
+// let z = Object.entries(currencySymbols).map(
+//   ([iso, symbol]) => {
+//     console.log(iso, symbol);
+//     return (confusingCurrencySymbols.includes(symbol) ? null : {[symbol]: iso})
+//   })
+// console.log(z)
 
 // {BTC: 'Bitcoin', ...}
 const cryptoCurrencies = require('cryptocurrencies')
+
+delete cryptoCurrencies.symbols
 
 
 // from https://docs.openexchangerates.org/docs/supported-currencies
@@ -191,7 +215,6 @@ const openexchangeratesCurrencies = {
   ZMW: {name: 'Zambian Kwacha', },
 }
 
-delete cryptoCurrencies.symbols
 
 // ALL currency codes
 const currencyCodes = [...new Set([
@@ -199,25 +222,52 @@ const currencyCodes = [...new Set([
   ...Object.keys(cryptoCurrencies)
 ]).values()]
 
-// {USD: {aliases: []}
-const Currencies = {}
 
-currencyCodes.forEach( c => {
-  Currencies[c] = {...openexchangeratesCurrencies[c]}
-
-  const s = currencySymbols[c]
-  Currencies[c].aliases = [
-    cryptoCurrencies[c],
-    !confusingCurrencySymbols.includes(s) && s
-  ].filter(Boolean)
-
-  Currencies[c].isCrypto = cryptoCurrencies.hasOwnProperty(c)
-})
-
-// traditional names
-Currencies['USD'].aliases = ['$', 'dollar', 'dollars']
-Currencies['RUB'].aliases = ['$', 'ruble', 'rubles']
-Currencies['GBP'].aliases = ['$', 'pound', 'pounds']
+// add currency codes as self-aliases {'USD': 'USD' ... }
+currencyCodes.forEach( c => symbolCurrencies[c] = c )
 
 
-module.exports = { Currencies, symbolCurrencies }
+
+// {  USD: { name: 'United States Dollar', aliases: [ '$', 'dollar', 'dollars' ],
+//           isCrypto: false },
+//    ...
+//    BTC: { name: 'Bitcoin', aliases: [ 'Bitcoin', '฿' ], isCrypto: true },
+//    ...
+// }
+//
+
+// const Currencies = {}
+// 
+// currencyCodes.forEach( c => {
+//   Currencies[c] = {...openexchangeratesCurrencies[c]}
+// 
+//   const s = currencySymbols[c]
+//   Currencies[c].aliases = [
+//     cryptoCurrencies[c],
+//     !confusingCurrencySymbols.includes(s) && s
+//   ].filter(Boolean)
+// 
+//   Currencies[c].isCrypto = cryptoCurrencies.hasOwnProperty(c)
+// })
+// 
+// // traditional names
+// Currencies['USD'].aliases = ['$', 'dollar', 'dollars']
+// Currencies['RUB'].aliases = ['$', 'ruble', 'rubles', 'rouble', 'roubles']
+// Currencies['GBP'].aliases = ['$', 'pound', 'pounds']
+
+
+function addCurrencyAliases(code, aliases) {
+  aliases.forEach( v => symbolCurrencies[v] = code )
+}
+
+
+// add some traditional names
+addCurrencyAliases('USD', ['$', 'dollar', 'dollars', 'buck', 'bucks'])
+addCurrencyAliases('RUB', ['₽', 'ruble', 'rubles', 'rouble', 'roubles'])
+addCurrencyAliases('UAH', ['₴', 'гривна', 'гривны', 'гривен'])
+addCurrencyAliases('GBP', ['£', 'pound', 'pounds'])
+
+
+//console.log(symbolCurrencies)
+
+module.exports = { /* Currencies, */ symbolCurrencies }
