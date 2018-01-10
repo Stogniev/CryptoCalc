@@ -21,10 +21,15 @@ function isCurrencySymbolConfusing(c) {
 // ))
 const symbolToCode = {}
 
+// {USD: ['$', 'USD', 'buck',...], ...}
+const codeToSymbols = {}
 
 function addCurrencyAlias(iso, alias, force=false) {
   if (force || !isCurrencySymbolConfusing(alias)) {
     symbolToCode[alias] = iso
+
+    codeToSymbols[iso] = codeToSymbols[iso] || []
+    codeToSymbols[iso].push(alias)
   }
 }
 
@@ -255,11 +260,22 @@ addCurrencyAliases('GBP', ['£', 'pound', 'pounds'], force=true)
 addCurrencyAliases('BTC', ['฿', '₿', 'bitcoins', 'bitcoin'], force=true)
 
 
+
 //console.log(symbolToCode['﷼'])
 //console.log(Object.values(symbolToCode).includes('MOD'))
 //console.log(Object.keys(symbolToCode).includes('MOD'))
 //console.log(symbolToCode)
 
-console.log(codes)
+console.log(codeToSymbols)
 
-module.exports = { symbolToCode, codes }  //{ /* Currencies, */ symbolToCode }
+module.exports = { symbolToCode, codes, codeToSymbols }  //{ /* Currencies, */ symbolToCode }
+
+
+
+
+
+
+
+
+
+
