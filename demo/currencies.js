@@ -2,7 +2,7 @@
 const currencySymbols = require('currency-symbol-map').currencySymbolMap
 
 const confusingCurrencySymbols = [
-  '$', 'K', 'L', 'kr', '£', 'лв', '₨', '₱', '﷼', '฿',
+  '$', 'K', 'L', 'kr', '£', 'лв', '₨', '₱', '﷼', '฿', 'MOD', 'D', 'G', 'M', 'T', 'R', 'AND', 'KM', 'TIME', 'MM', 'GRAM', 'Ft'
 ]
 
 //
@@ -283,5 +283,7 @@ addCurrencyAliases('BTC', ['฿', '₿', 'bitcoins', 'bitcoin'], force=true)
 
 
 //console.log(symbolCurrencies['﷼'])
+//console.log(Object.values(symbolCurrencies).includes('MOD'))
+//console.log(Object.keys(symbolCurrencies).includes('MOD'))
 
-module.exports = { /* Currencies, */ symbolCurrencies }
+module.exports = symbolCurrencies //{ /* Currencies, */ symbolCurrencies }

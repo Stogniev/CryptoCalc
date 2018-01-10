@@ -240,7 +240,6 @@ leftShift -> _ "<<" _
 
 rightShift -> _ ">>" _
 
-modulo -> __ "mod" __      # TODO
 
 
 

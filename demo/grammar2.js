@@ -194,8 +194,6 @@ var grammar = {
     {"name": "leftShift", "symbols": ["_", "leftShift$string$1", "_"]},
     {"name": "rightShift$string$1", "symbols": [{"literal":">"}, {"literal":">"}], "postprocess": function joiner(d) {return d.join('');}},
     {"name": "rightShift", "symbols": ["_", "rightShift$string$1", "_"]},
-    {"name": "modulo$string$1", "symbols": [{"literal":"m"}, {"literal":"o"}, {"literal":"d"}], "postprocess": function joiner(d) {return d.join('');}},
-    {"name": "modulo", "symbols": ["__", "modulo$string$1", "__"]},
     {"name": "_$ebnf$1", "symbols": []},
     {"name": "_$ebnf$1", "symbols": ["_$ebnf$1", /[\s]/], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
     {"name": "_", "symbols": ["_$ebnf$1"], "postprocess": function(d) {return null; }},

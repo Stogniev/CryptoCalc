@@ -7,7 +7,7 @@ const math = require('mathjs')
 const escape = require('regexp.escape');
 
 const DEBUG = process.env.DEBUG
-//const Currencies = require('./currencies')
+const currencies = require('./currencies')
 
 //const Rates = require('./rates')
 
@@ -17,7 +17,6 @@ const DEBUG = process.env.DEBUG
 // "default" dollar - dollar USA
 math.createUnit('USD', {aliases: ['$']});
 math.createUnit('cent', {definition: '0.01 USD', aliases: ['¢', 'c']});
-
 
 
 
@@ -49,8 +48,8 @@ const UnitNames = Object.values(math.type.Unit.UNITS).map( u => u.name)
 const UnitPrefixes = Object.keys(math.type.Unit.PREFIXES.SHORTLONG)
 
 // magically adapting text for grammar parser
-function prepareTxt(txt, verbose=false) {
-  const txt0 = txt
+function prepareTxt(text, verbose=false) {
+  let txt = text
 
   // 0) remove multispaces
   txt = txt.replace(new RegExp('\\s+', 'gi'), ' ')
@@ -71,16 +70,24 @@ function prepareTxt(txt, verbose=false) {
 
   // 35) Convert all currerncy names to ISO format (math.js doesn't support specsymbols like "$" or "฿"
 
-  // 35.1) convert all "$30.5" -> "30.5 USD" for every currency SINGLE-chars
-  txt = txt.replace(new RegExp(`\\$\\s*(\\d+(?:\\.\\d+)?)`, 'gi'), '$1 USD'
+  // 35.1) "$18.5" -> "18.5 USD" for every currency SINGLE-chars
+  const CURR = Object.keys(currencies).map(escape).join('|')
+  txt = txt.replace(
+    new RegExp(`(\\W+|^)(${CURR})\\s*(\\d+(?:\\.\\d+)?)`, 'gi'),
+    (match, pre, curr, amount) => `${pre}${amount} ${currencies[curr]}`
+  )
 
-  // 35.2)
+  // 35.2) "18.5 $" -> "18.5 USD"
+  txt = txt.replace(
+    new RegExp(`(\\d+(?:\\.\\d+)?)\\s*(${CURR})(\\W+|$)`, 'gi'),
+    (match, amount, curr, end) => `${amount} ${currencies[curr]}${end}`
+  )
 
 
   // 4) wrap all units (USD, Gb, kg...) by semicolon: " kg;"
   //    reason: to parse '10 cm' and same time avoid word cropping "1 and 2 m"ul 3
-  const UP = UnitPrefixes.map( v => escape(v) ).join('|')
-  const UN = UnitNames.map( v => escape(v) ).join('|')
+  const UP = UnitPrefixes.map(escape).join('|')
+  const UN = UnitNames.map(escape).join('|')
   // console.log('UP', UP)
   // console.log('UN', UN)
   txt = txt.replace(new RegExp(`([^a-zA-Z])(${UP})(${UN})((?:[^a-zA-Z]|$))`, 'gi'), '$1 $2$3; $4')
@@ -89,7 +96,7 @@ function prepareTxt(txt, verbose=false) {
   txt = txt.replace(new RegExp('\\s+', 'gi'), ' ')
 
 
-  if (verbose || DEBUG) console.log(`"${txt0}" -p-> "${txt}"`)
+  if (verbose || DEBUG) console.log(`"${text}" -p-> "${txt}"`)
 
   return txt
 }
@@ -133,7 +140,7 @@ function call(txt, verbose=false) {
 
 // mini-sandbox
 //
-// return
+//return
 
 // math expressions
 assertEqual(call('123'), 123)
@@ -343,6 +350,10 @@ assertEqual(call('6(3)'), 18)
 //TODO money
 assertEqual(call('10 USD'), '10 USD')
 assertEqual(call('2.5 $'), '2.5 USD')
+assertEqual(call('$ 2.5'), '2.5 USD')
+assertEqual(call('2.5 ₴'), '2.5 UAH')
+assertEqual(call('₴ 2.5'), '2.5 UAH')
+assertEqual(call('UAH 2.5'), '2.5 UAH')
 
 
 // % operations
