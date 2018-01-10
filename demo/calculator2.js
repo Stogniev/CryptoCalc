@@ -408,6 +408,7 @@ try {
 
 assertEqual(call('(3+5) 2 Euro * 2').value, 32)
 
+assertEqual(call('1 UAH * pi').value, 3.14, almost=true)
 
 
 // % operations

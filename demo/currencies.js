@@ -265,7 +265,7 @@ addCurrencyAliases('BTC', ['฿', '₿', 'BITCOINS', 'BITCOIN'], force=true)
 //console.log(symbolToCode['﷼'])
 //console.log(Object.values(symbolToCode).includes('MOD'))
 //console.log(Object.keys(symbolToCode).includes('MOD'))
-console.log(symbolToCode)
+//console.log(symbolToCode)
 
 //console.log(codeToSymbols)
 //console.log(symbolToCode['USD'])
