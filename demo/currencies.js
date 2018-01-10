@@ -7,11 +7,6 @@ const confusingCurrencySymbols = [
 
 //
 function isCurrencySymbolConfusing(c) {
-  // if (c === '42') console.log('44442222222', (
-  //   confusingCurrencySymbols.includes(c)
-  //     // assume any numeric currency symbols is confusing (like 365 for 365Coin)
-  //     || !Number.isNaN(parseFloat(c))
-  // ))
   return (
     confusingCurrencySymbols.includes(c)
       // assume any numeric currency symbols is confusing (like 365 for 365Coin)
@@ -20,16 +15,16 @@ function isCurrencySymbolConfusing(c) {
 }
 
 // currency symbol/name/ISO => ISO
-// { '$': 'USD', '฿': 'BTC', 'rouble': 'RUB', 'buck': 'USD'...}
-// const symbolCurrencies = Object.assign({}, ...Object.entries(currencySymbols).map(
+// { '$': 'USD', 'USD': 'USD', '฿': 'BTC', 'rouble': 'RUB', 'buck': 'USD'...}
+// const symbolToCode = Object.assign({}, ...Object.entries(currencySymbols).map(
 //   ([iso, symbol]) => (isCurrencySymbolConfusing(symbol) ? null : {[symbol]: iso})
 // ))
-const symbolCurrencies = {}
+const symbolToCode = {}
 
 
 function addCurrencyAlias(iso, alias, force=false) {
   if (force || !isCurrencySymbolConfusing(alias)) {
-    symbolCurrencies[alias] = iso
+    symbolToCode[alias] = iso
   }
 }
 
@@ -53,10 +48,15 @@ Object.entries(currencySymbols).forEach(
 //   })
 // console.log(z)
 
-// {BTC: 'Bitcoin', ...}
-const cryptoCurrencies = require('cryptocurrencies')
 
-delete cryptoCurrencies.symbols
+// too many useless (because absense on coinmarketcap)
+// {BTC: 'Bitcoin', ...}
+//
+// const cryptoCurrencies = require('cryptocurrencies')
+// 
+// delete cryptoCurrencies.symbols
+const cryptoCurrencyRatesData = require('./cryptoCurrencyRatesData')
+const cryptoCurrenciesList = cryptoCurrencyRatesData.map( data => data.symbol )
 
 
 // from https://docs.openexchangerates.org/docs/supported-currencies
@@ -235,43 +235,16 @@ const openexchangeratesCurrencies = {
 }
 
 // ALL currency codes
-const currencyCodes = [
-  ...Object.keys(cryptoCurrencies),
+const codes = [
+  //...Object.keys(cryptoCurrencies),
+  ...cryptoCurrenciesList,
   ...Object.keys(openexchangeratesCurrencies),
 ]
 
 
 
 // add all currency codes as self-aliases {'USD': 'USD' ... }
-currencyCodes.forEach( c => addCurrencyAlias(c, c) )
-
-
-// {  USD: { name: 'United States Dollar', aliases: [ '$', 'dollar', 'dollars' ],
-//           isCrypto: false },
-//    ...
-//    BTC: { name: 'Bitcoin', aliases: [ 'Bitcoin', '฿' ], isCrypto: true },
-//    ...
-// }
-//
-
-// const Currencies = {}
-// 
-// currencyCodes.forEach( c => {
-//   Currencies[c] = {...openexchangeratesCurrencies[c]}
-// 
-//   const s = currencySymbols[c]
-//   Currencies[c].aliases = [
-//     cryptoCurrencies[c],
-//     !confusingCurrencySymbols.includes(s) && s
-//   ].filter(Boolean)
-// 
-//   Currencies[c].isCrypto = cryptoCurrencies.hasOwnProperty(c)
-// })
-// 
-// // traditional names
-// Currencies['USD'].aliases = ['$', 'dollar', 'dollars']
-// Currencies['RUB'].aliases = ['$', 'ruble', 'rubles', 'rouble', 'roubles']
-// Currencies['GBP'].aliases = ['$', 'pound', 'pounds']
+codes.forEach( c => addCurrencyAlias(c, c) )
 
 
 // add some traditional names
@@ -282,8 +255,11 @@ addCurrencyAliases('GBP', ['£', 'pound', 'pounds'], force=true)
 addCurrencyAliases('BTC', ['฿', '₿', 'bitcoins', 'bitcoin'], force=true)
 
 
-//console.log(symbolCurrencies['﷼'])
-//console.log(Object.values(symbolCurrencies).includes('MOD'))
-//console.log(Object.keys(symbolCurrencies).includes('MOD'))
+//console.log(symbolToCode['﷼'])
+//console.log(Object.values(symbolToCode).includes('MOD'))
+//console.log(Object.keys(symbolToCode).includes('MOD'))
+//console.log(symbolToCode)
 
-module.exports = symbolCurrencies //{ /* Currencies, */ symbolCurrencies }
+console.log(codes)
+
+module.exports = { symbolToCode, codes }  //{ /* Currencies, */ symbolToCode }

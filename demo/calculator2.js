@@ -16,7 +16,9 @@ const currencies = require('./currencies')
 
 // "default" dollar - dollar USA
 math.createUnit('USD', {aliases: ['$']});
-math.createUnit('cent', {definition: '0.01 USD', aliases: ['¢', 'c']});
+//math.createUnit('cent', {definition: '0.01 USD', aliases: ['¢', 'c']});
+
+
 
 
 
@@ -71,16 +73,16 @@ function prepareTxt(text, verbose=false) {
   // 35) Convert all currerncy names to ISO format (math.js doesn't support specsymbols like "$" or "฿"
 
   // 35.1) "$18.5" -> "18.5 USD" for every currency SINGLE-chars
-  const CURR = Object.keys(currencies).map(escape).join('|')
+  const CURR = Object.keys(currencies.symbolToCode).map(escape).join('|')
   txt = txt.replace(
     new RegExp(`(\\W+|^)(${CURR})\\s*(\\d+(?:\\.\\d+)?)`, 'gi'),
-    (match, pre, curr, amount) => `${pre}${amount} ${currencies[curr]}`
+    (match, pre, curr, amount) => `${pre}${amount} ${currencies.symbolToCode[curr]}`
   )
 
   // 35.2) "18.5 $" -> "18.5 USD"
   txt = txt.replace(
     new RegExp(`(\\d+(?:\\.\\d+)?)\\s*(${CURR})(\\W+|$)`, 'gi'),
-    (match, amount, curr, end) => `${amount} ${currencies[curr]}${end}`
+    (match, amount, curr, end) => `${amount} ${currencies.symbolToCode[curr]}${end}`
   )
 
 
