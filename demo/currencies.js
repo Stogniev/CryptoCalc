@@ -240,11 +240,11 @@ const openexchangeratesCurrencies = {
 }
 
 // ALL currency codes
-const codes = [
+const codes = [...new Set([
   //...Object.keys(cryptoCurrencies),
   ...cryptoCurrenciesList,
   ...Object.keys(openexchangeratesCurrencies),
-]
+])]
 
 
 
@@ -266,7 +266,7 @@ addCurrencyAliases('BTC', ['฿', '₿', 'bitcoins', 'bitcoin'], force=true)
 //console.log(Object.keys(symbolToCode).includes('MOD'))
 //console.log(symbolToCode)
 
-console.log(codeToSymbols)
+//console.log(codeToSymbols)
 
 module.exports = { symbolToCode, codes, codeToSymbols }  //{ /* Currencies, */ symbolToCode }
 

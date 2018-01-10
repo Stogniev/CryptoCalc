@@ -14,11 +14,19 @@ const currencies = require('./currencies')
 // TODO: process "$100" additionally to "100$"
 // create currency units
 
+// Object.entries(currencies.codeToSymbols).forEach( ([code, symbols]) => {
+//   math.createUnit(code, {aliases: symbols})
+// })
+
+
+
+
 // "default" dollar - dollar USA
-math.createUnit('USD', {aliases: ['$']});
+//math.createUnit('USD', {aliases: ['buck']})
 //math.createUnit('cent', {definition: '0.01 USD', aliases: ['¢', 'c']});
 
-
+// create units for every currency code (without subunits)
+currencies.codes.forEach( code => math.createUnit(code) )
 
 
 
