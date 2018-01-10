@@ -2,7 +2,7 @@
 const currencySymbols = require('currency-symbol-map').currencySymbolMap
 
 const confusingCurrencySymbols = [
-  '$', 'K', 'L', 'kr', '£', 'лв', '₨', '₱', '﷼', '฿', 'MOD', 'D', 'G', 'M', 'T', 'R', 'AND', 'KM', 'TIME', 'MM', 'GRAM', 'Ft'
+  '$', 'K', 'L', 'kr', '£', 'лв', '₨', '₱', '﷼', '฿', 'MOD', 'D', 'G', 'M', 'T', 'R', 'AND', 'KM', 'TIME', 'MM', 'GRAM', 'Ft', 'E', 'S'
 ]
 
 //
@@ -253,22 +253,29 @@ codes.forEach( c => addCurrencyAlias(c, c) )
 
 
 // add some traditional names
-addCurrencyAliases('USD', ['$', 'dollar', 'dollars', 'buck', 'bucks'], force=true)
-addCurrencyAliases('RUB', ['₽', 'ruble', 'rubles', 'rouble', 'roubles'], force=true)
-addCurrencyAliases('UAH', ['₴', 'гривна', 'гривны', 'гривен'], force=true)
-addCurrencyAliases('GBP', ['£', 'pound', 'pounds'], force=true)
-addCurrencyAliases('BTC', ['฿', '₿', 'bitcoins', 'bitcoin'], force=true)
+addCurrencyAliases('USD', ['$', 'DOLLAR', 'DOLLARS', 'BUCK', 'BUCKS'], force=true)
+addCurrencyAliases('RUB', ['₽', 'RUBLE', 'RUBLES', 'ROUBLE', 'ROUBLES'], force=true)
+addCurrencyAliases('UAH', ['₴', 'ГРИВНА', 'ГРИВНЫ', 'ГРИВЕН'], force=true)
+addCurrencyAliases('GBP', ['£', 'POUND', 'POUNDS'], force=true)
+addCurrencyAliases('EUR', ['€', 'EURO', 'EUROS'], force=true)
+addCurrencyAliases('BTC', ['฿', '₿', 'BITCOINS', 'BITCOIN'], force=true)
 
 
 
 //console.log(symbolToCode['﷼'])
 //console.log(Object.values(symbolToCode).includes('MOD'))
 //console.log(Object.keys(symbolToCode).includes('MOD'))
-//console.log(symbolToCode)
+console.log(symbolToCode)
 
 //console.log(codeToSymbols)
+//console.log(symbolToCode['USD'])
 
-module.exports = { symbolToCode, codes, codeToSymbols }  //{ /* Currencies, */ symbolToCode }
+// detect currency and return iso
+function detect(s) {
+  return symbolToCode[s.toLocaleUpperCase()]
+}
+
+module.exports = { symbolToCode, detect, codes, codeToSymbols }  //{ /* Currencies, */ symbolToCode }
 
 
 

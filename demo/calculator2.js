@@ -9,24 +9,10 @@ const escape = require('regexp.escape');
 const DEBUG = process.env.DEBUG
 const currencies = require('./currencies')
 
-//const Rates = require('./rates')
-
-// TODO: process "$100" additionally to "100$"
-// create currency units
-
-// Object.entries(currencies.codeToSymbols).forEach( ([code, symbols]) => {
-//   math.createUnit(code, {aliases: symbols})
-// })
-
-
-
-
-// "default" dollar - dollar USA
+// Create units for every currency code (without subunits)
+currencies.codes.forEach( code => math.createUnit(code) )
 //math.createUnit('USD', {aliases: ['buck']})
 //math.createUnit('cent', {definition: '0.01 USD', aliases: ['¢', 'c']});
-
-// create units for every currency code (without subunits)
-currencies.codes.forEach( code => math.createUnit(code) )
 
 
 
@@ -81,17 +67,23 @@ function prepareTxt(text, verbose=false) {
   // 35) Convert all currerncy names to ISO format (math.js doesn't support specsymbols like "$" or "฿"
 
   // 35.1) "$18.5" -> "18.5 USD" for every currency SINGLE-chars
-  const CURR = Object.keys(currencies.symbolToCode).map(escape).join('|')
+  const currSymbols = Object.keys(currencies.symbolToCode).map(escape).join('|')
   txt = txt.replace(
-    new RegExp(`(\\W+|^)(${CURR})\\s*(\\d+(?:\\.\\d+)?)`, 'gi'),
-    (match, pre, curr, amount) => `${pre}${amount} ${currencies.symbolToCode[curr]}`
+    new RegExp(`(\\W+|^)(${currSymbols})\\s*(\\d+(?:\\.\\d+)?)`, 'gi'),
+    (match, pre, curr, amount) => `${pre}${amount} ${currencies.detect(curr)}`
   )
 
-  // 35.2) "18.5 $" -> "18.5 USD"
+  // 35. "$" -> "USD"
   txt = txt.replace(
-    new RegExp(`(\\d+(?:\\.\\d+)?)\\s*(${CURR})(\\W+|$)`, 'gi'),
-    (match, amount, curr, end) => `${amount} ${currencies.symbolToCode[curr]}${end}`
+    new RegExp(`(\\W+|^)(${currSymbols})(\\W+|$)`, 'gi'),
+    (match, begin, curr, end) => `${begin} ${currencies.detect(curr)} ${end}`
   )
+  // old:  (not support operations like "(5+3)$"
+  // 35.2) "18.5 $" -> "18.5 USD"
+  // txt = txt.replace(
+  //   new RegExp(`(\\d+(?:\\.\\d+)?)\\s*(${currSymbols})(\\W+|$)`, 'gi'),
+  //   (match, amount, curr, end) => `${amount} ${currencies.detect(curr)}${end}`
+  // )
 
 
   // 4) wrap all units (USD, Gb, kg...) by semicolon: " kg;"
@@ -357,13 +349,65 @@ assertEqual(call('6(3)'), 18)
 // assertEqual(call(''), )
 
 
-//TODO money
+//money
 assertEqual(call('10 USD'), '10 USD')
+assertEqual(call('10 usd'), '10 USD')
+
+assertEqual(call('10 Euro'), '10 EUR')
+assertEqual(call('€ 10'), '10 EUR')
+assertEqual(call('Eur10'), '10 EUR')
+assertEqual(call('eUro10'), '10 EUR')
+
+assertEqual(call('Uah10'), '10 UAH')
 assertEqual(call('2.5 $'), '2.5 USD')
 assertEqual(call('$ 2.5'), '2.5 USD')
 assertEqual(call('2.5 ₴'), '2.5 UAH')
 assertEqual(call('₴ 2.5'), '2.5 UAH')
 assertEqual(call('UAH 2.5'), '2.5 UAH')
+
+
+assertEqual(call('-10 USD'), '-10 USD')
+
+assertEqual(call('3 USD + 2 USD'), '5 USD')
+
+assertEqual(call('$8 / 2'), '4 USD')
+assertEqual(call('(5+3)$'), '8 USD')
+
+assertEqual(call('-2.5 USD + $3.1 +(1/2)usd'), '1.1 USD')
+
+try {
+  call('2 kg + 4 USD')
+} catch(e) {
+  assertEqual(e.message, 'Units do not match')
+}
+
+assertEqual(call('4 UAH  2'), '8 UAH')
+
+
+try {
+  call('2 GBP ^ 2')   // cannot exponent units
+} catch(e) {
+  assert(e.message.includes('Unexpected'))
+}
+
+// negative units
+assertEqual(call('-2 UAH - (-3UAH)').value, 1, almost=true)
+
+
+try {
+  call('2 UAH << 2 ')
+} catch(e) {
+  assert(e.message.includes('Unexpected'))
+}
+
+try {
+  call('12 / 2UAH ')
+} catch(e) {
+  assert(e.message.includes('Unexpected '))
+}
+
+assertEqual(call('(3+5) 2 Euro * 2').value, 32)
+
 
 
 // % operations

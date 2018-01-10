@@ -40,7 +40,8 @@
       function-paren-newline: "off",
       no-multi-spaces: ["warn", { ignoreEOLComments: true }],
       no-multiple-empty-lines: "off",
-      spaced-comment: "off"
+      spaced-comment: "off",
+      keyword-spacing: ["error", { "overrides": { "catch": { "after": false }, } }]
     },
     "plugins": [
         "react",
