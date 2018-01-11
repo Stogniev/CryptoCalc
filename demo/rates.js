@@ -19,10 +19,9 @@ const cryptoCurrencyRates = Object.assign(
   )
 )
 
+// Rates to USD:  {UAH: 28.11, USD: 1, EUR: 1.19...}
 const rates = {...cryptoCurrencyRates, ...currencyRates}
 
-//console.log(rates)
-
-module.exports = { rates }
+module.exports = rates
 
 

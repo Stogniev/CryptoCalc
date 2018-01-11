@@ -8,13 +8,28 @@ const escape = require('regexp.escape');
 
 const DEBUG = process.env.DEBUG
 const currencies = require('./currencies')
+const rates = require('./rates')
+
 
 // Create units for every currency code (without subunits)
-currencies.codes.forEach( code => math.createUnit(code) )
-//math.createUnit('USD', {aliases: ['buck']})
-//math.createUnit('cent', {definition: '0.01 USD', aliases: ['¢', 'c']});
+math.createUnit('USD')
+currencies.codes.forEach( code => {
+  if (code === 'USD') return;
+  if (!rates.hasOwnProperty(code)) return;
+
+  math.createUnit(code, {definition: `${rates[code]} USD`})
+})
+
+// artificional currencies for tesing
+math.createUnit('TENDOLL', {definition: '10 USD'})
+math.createUnit('ZUAH', {definition: '28 USD'})
+math.createUnit('ZUSD', {definition: '1 USD'})
+math.createUnit('ZEUR', {definition: '1.1 USD'})
 
 
+
+// console.log(currencies.detect('Uah'))
+// return
 
 
 function assertEqual(a, b, almost=false) {
@@ -75,7 +90,7 @@ function prepareTxt(text, verbose=false) {
 
   // 35. "$" -> "USD"
   txt = txt.replace(
-    new RegExp(`(\\W+|^)(${currSymbols})(\\W+|$)`, 'gi'),
+    new RegExp(`([^A-Za-z_]+|^)(${currSymbols})(\\W+|$)`, 'gi'),
     (match, begin, curr, end) => `${begin} ${currencies.detect(curr)} ${end}`
   )
   // old:  (not support operations like "(5+3)$"
@@ -337,16 +352,6 @@ assertEqual(String(call('0.1km 11m 11 cm + 0.5 * 2 km 2 mm').toSI().value), 1111
 
 
 
-// Tests from Specification
-assertEqual(call('8 times 9'), 72)
-assertEqual(String(call('1 meter 20 cm').toSI()), '1.2 m')
-assertEqual(call('6(3)'), 18)
-// assertEqual(call(''), )
-// assertEqual(call(''), )
-// assertEqual(call(''), )
-// assertEqual(call(''), )
-// assertEqual(call(''), )
-// assertEqual(call(''), )
 
 
 //money
@@ -358,7 +363,12 @@ assertEqual(call('€ 10'), '10 EUR')
 assertEqual(call('Eur10'), '10 EUR')
 assertEqual(call('eUro10'), '10 EUR')
 
+assertEqual(call('3 ₴'), '3 UAH')
+assertEqual(call('3₴'), '3 UAH')
+assertEqual(call('₴3'), '3 UAH')
+
 assertEqual(call('Uah10'), '10 UAH')
+assertEqual(call('5Uah'), '5 UAH')
 assertEqual(call('2.5 $'), '2.5 USD')
 assertEqual(call('$ 2.5'), '2.5 USD')
 assertEqual(call('2.5 ₴'), '2.5 UAH')
@@ -391,7 +401,7 @@ try {
 }
 
 // negative units
-assertEqual(call('-2 UAH - (-3UAH)').value, 1, almost=true)
+assertEqual(call('-2 UAH - (-3UAH)'), '1 UAH')
 
 
 try {
@@ -406,13 +416,34 @@ try {
   assert(e.message.includes('Unexpected '))
 }
 
-assertEqual(call('(3+5) 2 Euro * 2').value, 32)
+assertEqual(call('(3+5) 2 Euro * 2'), '32 EUR')
 
-assertEqual(call('1 UAH * pi').value, 3.14, almost=true)
+assertEqual(call('1 UAH * pi').toNumber(), 3.14, almost=true)
+
+
+// mixed currencies
+assertEqual(call('1 USD + 1 TENDOLL').toNumber('USD'), 11)
+assertEqual(call('1 TENDOLL + 1 USD').toNumber('USD'), 11)
+assertEqual(call('1 ZUAH + 1 USD + 1 ZEUR').value, 28 + 1 + 1.1)
+assertEqual(call('(1 USD)2 + 1 ZEUR').value, 1*2 + 1.1)
+assertEqual(call('1 USD + 1 EUR').value, call('1 EUR + 1 USD').value, almost=true)
 
 
 // % operations
 //TODO
+
+
+// Tests from Specification
+assertEqual(call('8 times 9'), 72)
+assertEqual(String(call('1 meter 20 cm').toSI()), '1.2 m')
+assertEqual(call('6(3)'), 18)
+//assertEqual(call('$30 CAD + 5 USD - 7EUR').value,  , almost=true)
+// assertEqual(call(''), )
+// assertEqual(call(''), )
+// assertEqual(call(''), )
+// assertEqual(call(''), )
+// assertEqual(call(''), )
+// assertEqual(call(''), )
 
 
 console.log('tests passed')
@@ -436,6 +467,9 @@ function runmath(s) {
     }
 
     ans = call(s, verbose)
+
+    if (ans instanceof math.type.Unit) console.log('r.toNumber:', ans.clone().toNumber())
+
     return ans
   } catch(e) {
     console.log('error:', e)
