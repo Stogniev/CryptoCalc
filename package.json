@@ -6,7 +6,9 @@
   "author": "Alex_Y <yegupov@gmail.com>",
   "license": "",
   "scripts": {
-    "demo": "(cd ./demo && ./build-and-test2.sh)"
+    "demo-console": "(cd ./demo && ./build-and-test2.sh)",
+    "demo-console-debug": "(cd ./demo && DEBUG=1 ./build-and-test2.sh)",
+    "demo-site": "(cd ./demo-site && yarn run start)"
   },
   "dependencies": {
     "cryptocurrencies": "^1.1.1",

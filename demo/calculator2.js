@@ -26,6 +26,7 @@ math.createUnit('ZUAH', {definition: '28 USD'})
 math.createUnit('ZUSD', {definition: '1 USD'})
 math.createUnit('ZEUR', {definition: '1.1 USD'})
 
+const ALMOST=true
 
 
 // console.log(currencies.detect('Uah'))
@@ -199,10 +200,10 @@ assertEqual(call('5*(2 + 3)*4'), 100)
 
 
 // math constants
-assertEqual(call('e'), 2.7, almost=true)
-assertEqual(call('pi'), 3.14, almost=true)
-assertEqual(call('pi + 1'), 4.14, almost=true)
-assertEqual(call('1 + pi'), 4.14, almost=true)
+assertEqual(call('e'), 2.7, ALMOST)
+assertEqual(call('pi'), 3.14, ALMOST)
+assertEqual(call('pi + 1'), 4.14, ALMOST)
+assertEqual(call('1 + pi'), 4.14, ALMOST)
 
 // implicit multiplication "*"
 assertEqual(call('(3)7'), 21)
@@ -219,8 +220,8 @@ assertEqual(call('7 2'), 14)
 assertEqual(call('2 + 3 (2+4) / 2'), 11)
 assertEqual(call('1 + 3(5 + 4 - 6 / 3) / 2 * 4 - 3'), 40)
 
-assertEqual(call('3.139 * 1'), 3.14, almost=true)  //to constants
-assertEqual(call('pi (7 - 5) - pi'), 3.14, almost=true)  //to constants
+assertEqual(call('3.139 * 1'), 3.14, ALMOST)  //to constants
+assertEqual(call('pi (7 - 5) - pi'), 3.14, ALMOST)  //to constants
 assertEqual(call('pi(7 - 5)pi/(pi*pi) - 2'), 0)
 
 // exponents
@@ -229,11 +230,11 @@ assertEqual(call('2^3^2'), 512)
 assertEqual(call('(2^3)^2'), 64)
 assertEqual(call('2*3^2*3'), 54)
 assertEqual(call('2 * 3 ^ 2 * 3'), 54)
-assertEqual(call('2 * pi ^ 2 * 3'), 59.15, almost=true)
+assertEqual(call('2 * pi ^ 2 * 3'), 59.15, ALMOST)
 // exponent + braces
 assertEqual(call('2^2(3)'), 12)
-assertEqual(call('(3)2^2'), 12, almost=true)
-assertEqual(call('(2)pi^2(3)'), 59.15, almost=true)
+assertEqual(call('(3)2^2'), 12, ALMOST)
+assertEqual(call('(2)pi^2(3)'), 59.15, ALMOST)
 assertEqual(call('4^-2'), 4 ** -2, )
 
 
@@ -244,7 +245,7 @@ assertEqual(call('3 + 2'), 5)
 assertEqual(call('1 and 2 multiplied by 3'), 7)
 assertEqual(call('(1 and 2) multiplied by 3'), 9)
 assertEqual(call('1 with 62 without 2 times 3'), 57)
-assertEqual(call('4 mul 2 + 3 ^ 2'), 17, almost=true)
+assertEqual(call('4 mul 2 + 3 ^ 2'), 17, ALMOST)
 assertEqual(call('18 divide by 2 multiplied by 2 ^ 2'), 36)
 
 // bitwise shift
@@ -260,8 +261,8 @@ assertEqual(call('3 << 4 + 9 >> 2'), 6144)
 assertEqual(call('sqrt(81)'), 9)
 //assertEqual(call('sqrt(-4)'), NaN)
 
-assertEqual(call('sin(2 pi)'),  call('2 sin(pi) cos(pi)'), almost=true)
-assertEqual(call('tan(3 pi)'),  call('sin(3 pi)/cos(3 pi)'), almost=true)
+assertEqual(call('sin(2 pi)'),  call('2 sin(pi) cos(pi)'), ALMOST)
+assertEqual(call('tan(3 pi)'),  call('sin(3 pi)/cos(3 pi)'), ALMOST)
 assertEqual(call('ln(e^5)'), 5)
 
 
@@ -278,14 +279,14 @@ assertEqual(call('-(-2 - -1)'), 1)
 assertEqual(call('pi + e'), Math.PI + Math.E)
 
 // floats
-assertEqual(call('12.95 + 3.10'), 16.05, almost=true)
+assertEqual(call('12.95 + 3.10'), 16.05, ALMOST)
 
 // units
 assertEqual(call('10 cm'), '10 cm')
 assertEqual(call('-10 cm'), '-10 cm')
 
 assertEqual(call('3 cm + 2 cm'), '5 cm')
-assertEqual(call('3 km + 2m + 1  mm').value, 3002.001, almost=true)
+assertEqual(call('3 km + 2m + 1  mm').value, 3002.001, ALMOST)
 
 assertEqual(call('3 km - 500 m'), '2.5 km')
 
@@ -326,7 +327,7 @@ try {
 assertEqual(call('3(4kg - 2000 gram / 2) /2'), '4.5 kg')
 
 // negative units
-assertEqual(call('-2 m - (-3m)').value, 1, almost=true)
+assertEqual(call('-2 m - (-3m)').value, 1, ALMOST)
 
 
 try {
@@ -352,9 +353,9 @@ assertEqual(String(call('1 meter 20 cm + 2m 50 cm * 3').toSI()), '8.7 m')
 
 assertEqual(String(call('1 kg 300 gram / -2').toSI()), '-0.65 kg')
 
-assertEqual(String(call('1 m 70 cm + 1 ft').toSI().value), 2.0048, almost=true)
+assertEqual(String(call('1 m 70 cm + 1 ft').toSI().value), 2.0048, ALMOST)
 
-assertEqual(String(call('0.1km 11m 11 cm + 0.5 * 2 km 2 mm').toSI().value), 1111.111, almost=true)
+assertEqual(String(call('0.1km 11m 11 cm + 0.5 * 2 km 2 mm').toSI().value), 1111.111, ALMOST)
 
 
 
@@ -432,7 +433,7 @@ try {
 
 assertEqual(call('(3+5) 2 Euro * 2'), '32 EUR')
 
-assertEqual(call('1 UAH * pi').toNumber(), 3.14, almost=true)
+assertEqual(call('1 UAH * pi').toNumber(), 3.14, ALMOST)
 
 
 // mixed currencies
@@ -440,14 +441,14 @@ assertEqual(call('1 USD + 1 TENDOLL').toNumber('USD'), 11)
 assertEqual(call('1 TENDOLL + 1 USD').toNumber('USD'), 11)
 assertEqual(call('1 ZUAH + 1 USD + 1 ZEUR').value, 28 + 1 + 1.1)
 assertEqual(call('(1 USD)2 + 1 ZEUR').value, 1*2 + 1.1)
-assertEqual(call('1 USD + 1 EUR').value, call('1 EUR + 1 USD').value, almost=true)
+assertEqual(call('1 USD + 1 EUR').value, call('1 EUR + 1 USD').value, ALMOST)
 
 
 // rates checks
 //console.log('rcd:', rates['CAD'])
 assertEqual(call('$1 CAD').toNumber('USD'), rates['CAD'])
 assertEqual(call('$1 CAD + 1 EUR ').toNumber('USD'),
-            rates['CAD'] + rates['EUR'], almost=true)
+            rates['CAD'] + rates['EUR'], ALMOST)
 
 
 // % operations
@@ -459,8 +460,8 @@ assertEqual(call('8 times 9'), 72)
 assertEqual(call('1 meter 20 cm'), '1.2 meter')
 assertEqual(call('6(3)'), 18)
 assertEqual(call('$30 CAD + 5 USD - 7EUR').toNumber('USD'),
-            30 * rates['CAD'] + 5 - 7 * rates['EUR'], almost=true)
-assertEqual(call(`${1/rates['RUB']} roubles - 1 $`).toNumber('USD'), 0, almost=true)
+            30 * rates['CAD'] + 5 - 7 * rates['EUR'], ALMOST)
+assertEqual(call(`${1/rates['RUB']} roubles - 1 $`).toNumber('USD'), 0, ALMOST)
 // assertEqual(call(''), )
 // assertEqual(call(''), )
 // assertEqual(call(''), )
@@ -470,11 +471,8 @@ assertEqual(call(`${1/rates['RUB']} roubles - 1 $`).toNumber('USD'), 0, almost=t
 
 console.log('tests passed')
 
-//return
 
-// This is where the action is.
 function runmath(s) {
-  //console.log('s:', s)
   var ans;
   try {// We want to catch parse errors and die appropriately
 
@@ -508,16 +506,22 @@ function runmath(s) {
 }
 
 // node readline gunk. Nothing too exciting.
-var readline = require('readline'),
-    rl = readline.createInterface(process.stdin, process.stdout);
+let readline = require('readline')
 
-rl.setPrompt(PROMPT);
-rl.prompt();
+// quick solution
+if (readline.createInterface !== undefined) {
+  let rl = readline.createInterface(process.stdin, process.stdout);
 
-rl.on('line', function(line) {
-  console.log(runmath(line));
+  rl.setPrompt(PROMPT);
   rl.prompt();
-}).on('close', function() {
-  //console.log('\nBye.');
-  process.exit(0);
-});
+
+  rl.on('line', function(line) {
+    console.log(runmath(line));
+    rl.prompt();
+  }).on('close', function() {
+    //console.log('\nBye.');
+    process.exit(0);
+  });
+}
+
+module.exports = { runmath }
