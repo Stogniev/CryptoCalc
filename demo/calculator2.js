@@ -81,14 +81,21 @@ function prepareTxt(text, verbose=false) {
 
   // 35) Convert all currerncy names to ISO format (math.js doesn't support specsymbols like "$" or "฿"
 
-  // 35.1) "$18.5" -> "18.5 USD" for every currency SINGLE-chars
+  // 35.0) convert pre&post-sign: "$18.5 USD" -> "18.5 USD" for every currency SINGLE-chars
   const currSymbols = Object.keys(currencies.symbolToCode).map(escape).join('|')
+  txt = txt.replace(
+    new RegExp(`(\\W+|^)(${currSymbols})\\s*(\\d+(?:\\.\\d+)?)\\s*(${currSymbols})`, 'gi'),
+    (match, pre, curr1, amount, curr2) =>
+      `${pre}${amount} ${currencies.detect(curr2)}`
+  )
+
+  // 35.1) convert pre-sign: "$18.5" -> "18.5 USD" for every currency SINGLE-chars
   txt = txt.replace(
     new RegExp(`(\\W+|^)(${currSymbols})\\s*(\\d+(?:\\.\\d+)?)`, 'gi'),
     (match, pre, curr, amount) => `${pre}${amount} ${currencies.detect(curr)}`
   )
 
-  // 35. "$" -> "USD"
+  // 35.2) convert remained signs (probably past-): "$" -> "USD"
   txt = txt.replace(
     new RegExp(`([^A-Za-z_]+|^)(${currSymbols})(\\W+|$)`, 'gi'),
     (match, begin, curr, end) => `${begin} ${currencies.detect(curr)} ${end}`
@@ -363,12 +370,19 @@ assertEqual(call('€ 10'), '10 EUR')
 assertEqual(call('Eur10'), '10 EUR')
 assertEqual(call('eUro10'), '10 EUR')
 
-assertEqual(call('3 ₴'), '3 UAH')
-assertEqual(call('3₴'), '3 UAH')
-assertEqual(call('₴3'), '3 UAH')
+// different writing forms
+assertEqual(call('12.34 ₴'), '12.34 UAH')
+assertEqual(call('12.34₴'), '12.34 UAH')
+assertEqual(call('₴12.34'), '12.34 UAH')
+assertEqual(call('₴ 12.34'), '12.34 UAH')
+assertEqual(call('uAh12.34'), '12.34 UAH')
+assertEqual(call('uAh 12.34'), '12.34 UAH')
+assertEqual(call('12.34uAh'), '12.34 UAH')
+assertEqual(call('12.34 uAh'), '12.34 UAH')
+assertEqual(call('₴ 12.34 uaH'), '12.34 UAH')
+assertEqual(call('₴12.34uaH'), '12.34 UAH')
 
-assertEqual(call('Uah10'), '10 UAH')
-assertEqual(call('5Uah'), '5 UAH')
+
 assertEqual(call('2.5 $'), '2.5 USD')
 assertEqual(call('$ 2.5'), '2.5 USD')
 assertEqual(call('2.5 ₴'), '2.5 UAH')
@@ -429,16 +443,24 @@ assertEqual(call('(1 USD)2 + 1 ZEUR').value, 1*2 + 1.1)
 assertEqual(call('1 USD + 1 EUR').value, call('1 EUR + 1 USD').value, almost=true)
 
 
+// rates checks
+//console.log('rcd:', rates['CAD'])
+assertEqual(call('$1 CAD').toNumber('USD'), rates['CAD'])
+assertEqual(call('$1 CAD + 1 EUR ').toNumber('USD'),
+            rates['CAD'] + rates['EUR'], almost=true)
+
+
 // % operations
 //TODO
 
 
 // Tests from Specification
 assertEqual(call('8 times 9'), 72)
-assertEqual(String(call('1 meter 20 cm').toSI()), '1.2 m')
+assertEqual(call('1 meter 20 cm'), '1.2 meter')
 assertEqual(call('6(3)'), 18)
-//assertEqual(call('$30 CAD + 5 USD - 7EUR').value,  , almost=true)
-// assertEqual(call(''), )
+assertEqual(call('$30 CAD + 5 USD - 7EUR').toNumber('USD'),
+            30 * rates['CAD'] + 5 - 7 * rates['EUR'], almost=true)
+assertEqual(call(`${1/rates['RUB']} roubles - 1 $`).toNumber('USD'), 0, almost=true)
 // assertEqual(call(''), )
 // assertEqual(call(''), )
 // assertEqual(call(''), )

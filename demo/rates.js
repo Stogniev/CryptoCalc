@@ -19,7 +19,7 @@ const cryptoCurrencyRates = Object.assign(
   )
 )
 
-// Rates to USD:  {UAH: 28.11, USD: 1, EUR: 1.19...}
+// "<currency> _IN_ USD" dict - {UAH: 1/28.11, USD: 1, EUR: 1/1.19 ...}
 const rates = {...cryptoCurrencyRates, ...currencyRates}
 
 module.exports = rates
