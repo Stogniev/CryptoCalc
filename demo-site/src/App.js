@@ -223,17 +223,17 @@ pi + e
 (3+5) 2 kg * 2
 
 // mixed subunits
-assertEqual(String(call(1 meter 20 cm
-assertEqual(String(call(-1 meter 20 cm
+1 meter 20 cm
+-1 meter 20 cm
 
-assertEqual(String(call(1 meter 20 cm * 2
-assertEqual(String(call(1 meter 20 cm + 2m 50 cm * 3
+1 meter 20 cm * 2
+1 meter 20 cm + 2m 50 cm * 3
 
-assertEqual(String(call(1 kg 300 gram / -2
+1 kg 300 gram / -2
 
-assertEqual(String(call(1 m 70 cm + 1 ft
+1 m 70 cm + 1 ft
 
-assertEqual(String(call(0.1km 11m 11 cm + 0.5 * 2 km 2 mm
+0.1km 11m 11 cm + 0.5 * 2 km 2 mm
 
 
 
