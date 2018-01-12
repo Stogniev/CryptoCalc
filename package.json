@@ -9,7 +9,7 @@
     "demo-console": "(cd demo-site/src/demo && ./build-and-test2.sh)",
     "demo-console-debug": "(cd demo-site/src/demo && DEBUG=1 ./build-and-test2.sh)",
     "demo-site": "(cd ./demo-site && yarn run start)",
-    "demo-site-prod": "(cd ./demo-site && npm run build && cp -rf build/* ../docs/ && cd .. && sed -i 's/\/static/static/g' docs/index.html && (cd docs && python -m SimpleHTTPServer 3000))"
+    "demo-site-build-ex": "(cd ./demo-site && npm run build && rm -rf ../docs/* && cp -rf build/* ../docs/ && cd .. && sed -i 's/\\/static/static/g' docs/index.html && git add docs/static/js/\\*.js && (cd docs && python -m SimpleHTTPServer 3000))"
   },
   "dependencies": {
   }
