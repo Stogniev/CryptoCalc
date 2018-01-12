@@ -120,7 +120,7 @@ VALUE_UNIT ->
            }
 
            // not the case of same base unit
-           reject;
+           return reject;
         }
        %}
   | VALUE_NUM _ unit ";"    {%
@@ -134,7 +134,7 @@ VALUE_UNIT ->
            }
 
            // not the case of same base unit
-           reject;
+           // return reject;
         }
        %}
 
@@ -171,7 +171,7 @@ N -> float          {% id %}
             return reject;
         } else {
           if (false) {  // TODO: check/put variable here if exists
-            return variables(d[0])
+              //return variables(d[0])
           } else {
             //log('reject ident2')
             return reject;
@@ -182,7 +182,7 @@ N -> float          {% id %}
 
 # I use `float` to basically mean a number with a decimal point in it
 float -> int "." int   {% function(d) {return parseFloat(d[0] + d[1] + d[2])} %}
-       | int           {% function(d) {log('int', d); return parseInt(d[0])} %}
+| int           {% function(d) {log('int', d); return parseInt(d[0], 10)} %}
 
 int -> [0-9]:+      {% function(d) {/*log('int:', d[0].join(""));*/ return d[0].join(""); } %}
 

@@ -68,7 +68,7 @@ function prepareTxt(text, verbose=false) {
 
   // 1) put spaces around all math braces (to simplify implicit multiplication grammar)
   //txt = txt.replace(new RegExp('([\(\)])', 'gi'), ' $1 ')
-  txt = txt.replace(new RegExp('\\s*([\(\)])\\s*', 'gi'), ' $1 ')
+  txt = txt.replace(new RegExp('\\s*([()])\\s*', 'gi'), ' $1 ')
 
   // 2) remove spaces between standard function calls braces likd "sin(...)" (to avoid confusion with multiplication to variable)
   // Example: "sin (...)" => "sin(...)"
@@ -468,9 +468,7 @@ assertEqual(call(`${1/rates['RUB']} roubles - 1 $`).toNumber('USD'), 0, ALMOST)
 // assertEqual(call(''), )
 // assertEqual(call(''), )
 
-
 console.log('tests passed')
-
 
 function runmath(s) {
   var ans;
@@ -524,4 +522,4 @@ if (readline.createInterface !== undefined) {
   });
 }
 
-module.exports = { runmath }
+module.exports = { runmath, call }

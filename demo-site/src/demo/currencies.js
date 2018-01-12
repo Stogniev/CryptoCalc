@@ -253,12 +253,12 @@ codes.forEach( c => addCurrencyAlias(c, c) )
 
 
 // add some traditional names
-addCurrencyAliases('USD', ['$', 'DOLLAR', 'DOLLARS', 'BUCK', 'BUCKS'], force=true)
-addCurrencyAliases('RUB', ['₽', 'RUBLE', 'RUBLES', 'ROUBLE', 'ROUBLES'], force=true)
-addCurrencyAliases('UAH', ['₴', 'ГРИВНА', 'ГРИВНЫ', 'ГРИВЕН'], force=true)
-addCurrencyAliases('GBP', ['£', 'POUND', 'POUNDS'], force=true)
-addCurrencyAliases('EUR', ['€', 'EURO', 'EUROS'], force=true)
-addCurrencyAliases('BTC', ['฿', '₿', 'BITCOINS', 'BITCOIN'], force=true)
+addCurrencyAliases('USD', ['$', 'DOLLAR', 'DOLLARS', 'BUCK', 'BUCKS'], 'force')
+addCurrencyAliases('RUB', ['₽', 'RUBLE', 'RUBLES', 'ROUBLE', 'ROUBLES'], 'force')
+addCurrencyAliases('UAH', ['₴', 'ГРИВНА', 'ГРИВНЫ', 'ГРИВЕН'], 'force')
+addCurrencyAliases('GBP', ['£', 'POUND', 'POUNDS'], 'force')
+addCurrencyAliases('EUR', ['€', 'EURO', 'EUROS'], 'force')
+addCurrencyAliases('BTC', ['฿', '₿', 'BITCOINS', 'BITCOIN'], 'force')
 
 
 

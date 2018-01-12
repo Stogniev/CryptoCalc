@@ -73,7 +73,7 @@ var grammar = {
            }
         
            // not the case of same base unit
-           reject;
+           return reject;
         }
                },
     {"name": "VALUE_UNIT", "symbols": ["VALUE_NUM", "_", "unit", {"literal":";"}], "postprocess": 
@@ -87,7 +87,7 @@ var grammar = {
            }
         
            // not the case of same base unit
-           reject;
+           // return reject;
         }
                },
     {"name": "P_NUM", "symbols": [{"literal":"("}, "_", "OPS_NUM", "_", {"literal":")"}], "postprocess": function(d) {return d[2]; }},
@@ -122,7 +122,7 @@ var grammar = {
               return reject;
           } else {
             if (false) {  // TODO: check/put variable here if exists
-              return variables(d[0])
+                //return variables(d[0])
             } else {
               //log('reject ident2')
               return reject;
@@ -131,7 +131,7 @@ var grammar = {
         }
             },
     {"name": "float", "symbols": ["int", {"literal":"."}, "int"], "postprocess": function(d) {return parseFloat(d[0] + d[1] + d[2])}},
-    {"name": "float", "symbols": ["int"], "postprocess": function(d) {log('int', d); return parseInt(d[0])}},
+    {"name": "float", "symbols": ["int"], "postprocess": function(d) {log('int', d); return parseInt(d[0], 10)}},
     {"name": "int$ebnf$1", "symbols": [/[0-9]/]},
     {"name": "int$ebnf$1", "symbols": ["int$ebnf$1", /[0-9]/], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
     {"name": "int", "symbols": ["int$ebnf$1"], "postprocess": function(d) {/*log('int:', d[0].join(""));*/ return d[0].join(""); }},
