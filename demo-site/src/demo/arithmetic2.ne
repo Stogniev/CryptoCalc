@@ -3,11 +3,6 @@
 
 @{%
   const math = require("mathjs");
-  // TODO: add all
-  // const StandartFunctions = ['sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'sqrt', 'ln']
-
-  // TODO: add all
-  //const Units = ['cm', 'm', 'km', 'usd', 'uah', 'kg', 'g']
 
   function log() {
     if (process.env.DEBUG) {
@@ -15,17 +10,19 @@
     }
   }
 
+  // magic sum: "number ± unit" treat as "unit ± unit"
+  function magicSum(a, b, operation, relect) {
+    const n = [a, b].find(x => (typeof(x) === 'number'))
+    const u = [a, b].find(x => (x instanceof math.type.Unit))
+
+    // reject non-mixed arguments (to deny multiple parsing results)
+    if (n === undefined || u === undefined) return reject
+
+    const n2u = math.unit(n, u.units[0].unit.name)
+    return operation(u, n2u)
+  }
 %}
 
-
-# Required preparations
-# 0) remove multispaces
-# 1) put spaces around all math braces
-# 2) remove spaces between standard function calls braces likd "sin(...)"
-# 3) Add spaces before all +/- signs (to simplify unary/binary sign logic)
-# 4) wrap by space all units (USD, Gb, km...)
-#    reason: to parse '10 cm' and same time avoid "1 and 2 m"ul 3
-#    NOTE: cannot lowercase (mm & Mm)
 
 main -> _ OPS _ {% function(d) { log('>',d, typeof d[1]); return d[1]; } %}
 
@@ -35,7 +32,9 @@ OPS -> OPS_NUM        {% id %}
 
 OPS_NUM -> SHIFT        {% id %}
 
-OPS_UNIT -> AS_UNIT              {% id %}
+OPS_UNIT ->
+   AS_UNIT          {% id %}
+ | AS_UNIT_MAGIC    {% id %}
 
 # bitwise shift
 SHIFT -> SHIFT leftShift AS_NUM   {% (d,l, rej) => d[0] << d[2] %}
@@ -53,6 +52,14 @@ AS_UNIT ->
     | AS_UNIT minus MD_UNIT {% (d,l, rej) => math.subtract(d[0], d[2]) %}
     | MD_UNIT          {% id %}
 
+# magic sum: unit + number (converted to unit)
+AS_UNIT_MAGIC ->
+      AS_UNIT_MAGIC plus MD {% (d,l, rej) => magicSum(d[0], d[2], math.add, rej) %}
+    | AS_UNIT_MAGIC minus MD {% (d,l, rej) => magicSum(d[0], d[2], math.subtract, rej) %}
+    | MD       {% id %}
+
+MD -> MD_UNIT   {% id %}
+    | MD_NUM    {% id %}
 
 MD_NUM ->
      MD_NUM mul E_NUM   {% (d,l, rej) => math.multiply(d[0], d[2]) %}

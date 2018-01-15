@@ -4,11 +4,6 @@
 function id(x) {return x[0]; }
 
   const math = require("mathjs");
-  // TODO: add all
-  // const StandartFunctions = ['sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'sqrt', 'ln']
-
-  // TODO: add all
-  //const Units = ['cm', 'm', 'km', 'usd', 'uah', 'kg', 'g']
 
   function log() {
     if (process.env.DEBUG) {
@@ -16,6 +11,17 @@ function id(x) {return x[0]; }
     }
   }
 
+  // magic sum: "number ± unit" treat as "unit ± unit"
+  function magicSum(a, b, operation, relect) {
+    const n = [a, b].find(x => (typeof(x) === 'number'))
+    const u = [a, b].find(x => (x instanceof math.type.Unit))
+
+    // reject non-mixed arguments (to deny multiple parsing results)
+    if (n === undefined || u === undefined) return reject
+
+    const n2u = math.unit(n, u.units[0].unit.name)
+    return operation(u, n2u)
+  }
 var grammar = {
     Lexer: undefined,
     ParserRules: [
@@ -24,6 +30,7 @@ var grammar = {
     {"name": "OPS", "symbols": ["OPS_UNIT"], "postprocess": id},
     {"name": "OPS_NUM", "symbols": ["SHIFT"], "postprocess": id},
     {"name": "OPS_UNIT", "symbols": ["AS_UNIT"], "postprocess": id},
+    {"name": "OPS_UNIT", "symbols": ["AS_UNIT_MAGIC"], "postprocess": id},
     {"name": "SHIFT", "symbols": ["SHIFT", "leftShift", "AS_NUM"], "postprocess": (d,l, rej) => d[0] << d[2]},
     {"name": "SHIFT", "symbols": ["SHIFT", "rightShift", "AS_NUM"], "postprocess": (d,l, rej) => d[0] >> d[2]},
     {"name": "SHIFT", "symbols": ["AS_NUM"], "postprocess": id},
@@ -33,6 +40,11 @@ var grammar = {
     {"name": "AS_UNIT", "symbols": ["AS_UNIT", "plus", "MD_UNIT"], "postprocess": (d,l, rej) => math.add(d[0], d[2])},
     {"name": "AS_UNIT", "symbols": ["AS_UNIT", "minus", "MD_UNIT"], "postprocess": (d,l, rej) => math.subtract(d[0], d[2])},
     {"name": "AS_UNIT", "symbols": ["MD_UNIT"], "postprocess": id},
+    {"name": "AS_UNIT_MAGIC", "symbols": ["AS_UNIT_MAGIC", "plus", "MD"], "postprocess": (d,l, rej) => magicSum(d[0], d[2], math.add, rej)},
+    {"name": "AS_UNIT_MAGIC", "symbols": ["AS_UNIT_MAGIC", "minus", "MD"], "postprocess": (d,l, rej) => magicSum(d[0], d[2], math.subtract, rej)},
+    {"name": "AS_UNIT_MAGIC", "symbols": ["MD"], "postprocess": id},
+    {"name": "MD", "symbols": ["MD_UNIT"], "postprocess": id},
+    {"name": "MD", "symbols": ["MD_NUM"], "postprocess": id},
     {"name": "MD_NUM", "symbols": ["MD_NUM", "mul", "E_NUM"], "postprocess": (d,l, rej) => math.multiply(d[0], d[2])},
     {"name": "MD_NUM", "symbols": ["MD_NUM", "__", "E_NUM"], "postprocess": (d,l, rej) => math.multiply(d[0], d[2])},
     {"name": "MD_NUM", "symbols": ["MD_NUM", "divide", "E_NUM"], "postprocess": (d,l, rej) => math.divide(d[0], d[2])},

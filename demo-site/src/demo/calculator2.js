@@ -466,6 +466,13 @@ assertEqual(call('$1 CAD + 1 EUR ').toNumber('USD'),
             rates['CAD'] + rates['EUR'], ALMOST)
 
 
+// implicit conversion: "number + unit" treat as "unit + unit"
+assertEqual(call('3 USD + 2'), '5 USD')
+assertEqual(call('3 - 1 cad'), '2 CAD')
+
+
+
+
 // % operations
 //TODO
 
