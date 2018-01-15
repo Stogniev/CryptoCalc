@@ -31,21 +31,21 @@ class App extends Component {
 
   expressionChanged = (event) => {
     const lastExpression = event.target.value
-    this.setState( {lastExpression} )
+    let newState = { lastExpression }
 
     try {
       const answer = prepareAndParse(lastExpression, 'verbose')
-      this.setState({
+      newState = {...newState,
         expression: formatAnswerExpression(answer),
         result: answer && answer.results[0],
         error: null
-      })
+      }
     } catch(e) {
       let error = `${e}`
-      //console.log('Error', e)
-      // if (error.includes('Empty result')) error = null
-      this.setState( {error} )
+      newState = {...newState, error}
     }
+
+    this.setState( newState )
   }
 
   // componentWillUpdate(nextProps, nextState) {
