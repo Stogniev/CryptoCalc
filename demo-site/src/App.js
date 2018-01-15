@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import math from 'mathjs'
-import { call } from './demo/calculator2'
+import { prepareAndParse, formatAnswerExpression } from './demo/calculator2'
 
 //console.log('mmmmmmmmmmmmmm', math, math.eval('1+1'))
 
@@ -10,40 +10,41 @@ import { call } from './demo/calculator2'
 //console.log(r)
 
 
-function formatResult(r) {
-  let result = r
-  if (r instanceof math.type.Unit) {
-    console.log('r.toNumber:', r.clone().toNumber())
-    console.log('r:', r.clone())
-    result = r.toString()
-  }
-  result = result ? `= ${result}` : ''
-  return result
-}
 
 class App extends Component {
   state = {
-    expression: '',
-    result: null,
+    lastExpression: '',
+    expression: null, // succesful expression
+    result: null,     // succesful result
     error: null
   }
 
-  resultTo
+  formatResult = () => {
+    let { result } = this.state
+    if (result instanceof math.type.Unit) {
+      //console.log('redult.toNumber:', result.clone().toNumber())
+      //console.log('result:', result.clone())
+      result = result.clone().toString()
+    }
+    return result
+  }
 
   expressionChanged = (event) => {
-    const expression = event.target.value
-    let result = null
-    let error = null
+    const lastExpression = event.target.value
+    this.setState( {lastExpression} )
 
     try {
-      result = call(expression, 'verbose')
+      const answer = prepareAndParse(lastExpression, 'verbose')
+      this.setState({
+        expression: formatAnswerExpression(answer),
+        result: answer && answer.results[0],
+        error: null
+      })
     } catch(e) {
-      error = `${e}`
-      console.log('Error', e)
-      // !!for demo only
-      if (error.includes('Empty result')) error = null
-    } finally {
-      this.setState( {expression, result, error} )
+      let error = `${e}`
+      //console.log('Error', e)
+      // if (error.includes('Empty result')) error = null
+      this.setState( {error} )
     }
   }
 
@@ -54,6 +55,7 @@ class App extends Component {
   // }
 
   render() {
+    let { result, expression } = this.state
     return (
       <div className="App">
         <header className="App-header">
@@ -62,12 +64,16 @@ class App extends Component {
         </header>
         <p className="center">
           <input placeholder="2 + 2" onChange={this.expressionChanged} autoFocus={true}
-                 value={this.state.expression} />
-          {' '}
-          { formatResult(this.state.result) }
+                 value={this.state.lastExpression} /> <br />
+          { result
+            && [
+              <span className="successful-expression">{ expression }</span>,
+              <span> = { this.formatResult() }</span>
+            ]
+          }
         </p>
         <p className="center error">{ this.state.error }</p>
-        <p> <pre>{info}</pre></p>
+        <pre>{info}</pre>
       </div>
     );
   }
@@ -316,6 +322,6 @@ $1 CAD + 1 EUR
 1 meter 20 cm
 6(3)
 $30 CAD + 5 USD - 7EUR
-`;
+`
 
 export default App;

@@ -121,7 +121,7 @@ function prepareTxt(text, verbose=false) {
   txt = txt.replace(new RegExp('\\s+', 'gi'), ' ')
 
 
-  if (verbose || DEBUG) console.log(`"${text}" -p-> "${txt}"`)
+  if (verbose) console.log(`"${text}" -p-> "${txt}"`)
 
   return txt
 }
@@ -131,28 +131,30 @@ function prepareTxt(text, verbose=false) {
 //                        'sin( x ) + 3 ( 4-3 ) - cos( x ) /2 ( 4+8 ) -blasin ( 4+3 ) ')
 
 
-function call(txt, verbose=false) {
-  txt = prepareTxt(txt, verbose)
+function call(text, verbose=DEBUG) {
+  return prepareAndParse(text, verbose).results[0]
+}
 
-  verbose = verbose || DEBUG
+// TODO: refactor with call
+function prepareAndParse(text, verbose=false) {
+  let txt = prepareTxt(text, verbose)
 
   try {
-  let ans = new nearley.Parser(grammar.ParserRules, grammar.ParserStart).feed(txt);
+    let ans = new nearley.Parser(grammar.ParserRules, grammar.ParserStart).feed(txt);
 
-  //console.log('ans:', ans)
-  if (ans.results.length > 1) {
-    console.warn(`Multiple result for "${txt}": ${ans.results}`)
-  }
+    if (ans.results.length > 1) {
+      console.warn(`Multiple result for "${txt}": ${ans.results}`)
+    }
 
-  if (ans.results.length === 0) {
-    throw new Error(`Empty result for "${txt}"`)
-  }
+    if (ans.results.length === 0) {
+      throw new Error(`Empty result for "${txt}"`)
+    }
 
-  if (verbose) {
-    console.log(`"${txt}" -c-> "${ans.results}"`)
-  }
+    if (verbose) {
+      console.log(`"${txt}" -c-> "${ans.results}"`)
+    }
 
-  return ans.results[0]
+    return ans
 
   } catch(e) {
     if (verbose) {
@@ -162,6 +164,13 @@ function call(txt, verbose=false) {
   }
 }
 
+
+
+function formatAnswerExpression(answer) {
+  let r = answer.lexer.buffer
+  r = r.replace(new RegExp(';', 'g'), '')
+  return r
+}
 
 // mini-sandbox
 //
@@ -528,4 +537,4 @@ if (readline.createInterface !== undefined) {
   });
 }
 
-module.exports = { runmath, call }
+module.exports = { runmath, prepareAndParse, formatAnswerExpression }

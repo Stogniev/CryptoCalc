@@ -31,10 +31,15 @@
 }
 
 .error {
-  color: darkred
+  color: gray;
+  font-size: x-small;
 }
 
 
 .center {
   text-align: center;
+}
+
+.successful-expression {
+  /* color: gray; */
 }
