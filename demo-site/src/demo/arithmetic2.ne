@@ -214,27 +214,28 @@ unit ->
      %}
 
 plus -> _ "+" _
-     | __ "plus" __
-     | __ "and" __
-     | __ "with" __
+     | _ "plus" _
+     | _ "and" _
+     | _ "with" _
 
 minus -> _ "-" _
-     | __ "minus" __
-     | __ "subtract" __
-     | __ "without" __
+     | _ "minus" _
+     | _ "subtract" _
+     | _ "without" _
 
 mul -> _ "*" _
-     | __ "times" __
-     | __ "multiplied by" __
-     | __ "mul" __
+     | _ "times" _
+     | _ "multiplied by" _
+     | _ "mul" _
 
 divide -> _ "/" _
-     | __ "divide" __
-     | __ "divide by" __
+     | _ "divide" _
+     | _ "divide by" _
+     | _ "divided by" _
 
 exp -> _ "^" _
 
-mod -> __ "mod" __
+mod -> _ "mod" _
 
 leftShift -> _ "<<" _
 

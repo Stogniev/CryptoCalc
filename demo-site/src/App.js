@@ -77,7 +77,7 @@ const info = `
 Implemented:
   - math calculations
   - unit calculations (including same-type mixed dimensions, scales)
-  - currensy caltucations (including mixed)
+  - currensy caltucations (including mixed) (rates are just fixed for demo purpoces)
 
 Not implemented yet:
   - %-based expressions
@@ -163,6 +163,10 @@ pi(7 - 5)pi/(pi*pi) - 2
 1 with 62 without 2 times 3
 4 mul 2 + 3 ^ 2
 18 divide by 2 multiplied by 2 ^ 2
+
+// spaceless operations
+18divided by2plus2
+
 
 // bitwise shift
 3 << 4

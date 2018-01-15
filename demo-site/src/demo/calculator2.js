@@ -248,6 +248,12 @@ assertEqual(call('1 with 62 without 2 times 3'), 57)
 assertEqual(call('4 mul 2 + 3 ^ 2'), 17, ALMOST)
 assertEqual(call('18 divide by 2 multiplied by 2 ^ 2'), 36)
 
+// math operations space tolerancy
+assertEqual(call('18divide by2'), 9)
+assertEqual(call('18divided by2multiplied by2 ^ 2'), 36)
+assertEqual(call('18plus3minus1'), 20)
+
+
 // bitwise shift
 assertEqual(call('3 << 4'), 48)
 assertEqual(call('99 >> 4'), 6)
