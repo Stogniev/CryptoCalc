@@ -10,16 +10,40 @@
     }
   }
 
-  // magic sum: "number ± unit" treat as "unit ± unit"
-  function magicSum(a, b, operation, relect) {
-    const n = [a, b].find(x => (typeof(x) === 'number'))
-    const u = [a, b].find(x => (x instanceof math.type.Unit))
+  function isUnit(x) {
+    return x instanceof math.type.Unit
+  }
 
-    // reject non-mixed arguments (to deny multiple parsing results)
-    if (n === undefined || u === undefined) return reject
+  function isNumber(x) {
+    return typeof(x) === 'number'
+  }
 
-    const n2u = math.unit(n, u.units[0].unit.name)
-    return operation(u, n2u)
+  // magic sum: "number/unit ± unit" treat as "unit ± unit"
+  function magicSum(a, b, operation, reject) {
+    let operands = [a, b]
+    let unitName = null, numberIndex = null;
+    let numberCount = 0
+
+    for (let [i, x] of operands.entries()) {
+      if (isNumber(x)) {
+        numberIndex = i
+        numberCount++
+      } else if (isUnit(x)) {
+        unitName = x.units[0].unit.name
+      } else {
+        log('zzz1')
+        return reject
+      }
+    }
+    if (unitName === null || numberCount > 1 /*|| numberIndex === null*/)  return reject;
+
+    if (numberIndex !== null) {
+      operands[numberIndex] = math.unit(operands[numberIndex], unitName)
+    }
+
+    let r = operation(...operands)
+    log('magicSum:', operation.name, a, b, r)
+    return r
   }
 %}
 
@@ -33,8 +57,7 @@ OPS -> OPS_NUM        {% id %}
 OPS_NUM -> SHIFT        {% id %}
 
 OPS_UNIT ->
-   AS_UNIT          {% id %}
- | AS_UNIT_MAGIC    {% id %}
+   AS_UNIT                     {% id %}
 
 # bitwise shift
 SHIFT -> SHIFT leftShift AS_NUM   {% (d,l, rej) => d[0] << d[2] %}
@@ -46,20 +69,20 @@ AS_NUM ->
     | AS_NUM minus MD_NUM {% (d,l, rej) => math.subtract(d[0], d[2]) %}
     | MD_NUM  {% id %}
 
+AS_UNIT -> AS_UNIT_MAGIC_ONLY_UNITS       {% id %}
 
-AS_UNIT ->
-      AS_UNIT plus MD_UNIT {% (d,l, rej) => math.add(d[0], d[2]) %}
-    | AS_UNIT minus MD_UNIT {% (d,l, rej) => math.subtract(d[0], d[2]) %}
-    | MD_UNIT          {% id %}
+AS_UNIT_MAGIC_ONLY_UNITS ->
+   AS_UNIT_MAGIC {% (d,l, rej) => { log('AS_UNIT_MAGIC_ONLY_UNITS:', d);
+                                    return isUnit(d[0]) ? d[0] : rej}  %}
 
-# magic sum: unit + number (converted to unit)
+# magic sum: "unit ± number/unit" treated as "unit ± unit")
 AS_UNIT_MAGIC ->
       AS_UNIT_MAGIC plus MD {% (d,l, rej) => magicSum(d[0], d[2], math.add, rej) %}
     | AS_UNIT_MAGIC minus MD {% (d,l, rej) => magicSum(d[0], d[2], math.subtract, rej) %}
     | MD       {% id %}
 
-MD -> MD_UNIT   {% id %}
-    | MD_NUM    {% id %}
+MD -> MD_NUM    {% id %}
+    | MD_UNIT   {% id %}
 
 MD_NUM ->
      MD_NUM mul E_NUM   {% (d,l, rej) => math.multiply(d[0], d[2]) %}

@@ -12,12 +12,15 @@ import { prepareAndParse, formatAnswerExpression } from './demo/calculator2'
 
 
 class App extends Component {
-  state = {
+
+  static _defaultState = {
     lastExpression: '',
     expression: null, // succesful expression
     result: null,     // succesful result
     error: null
   }
+
+  state = App._defaultState
 
   formatResult = () => {
     let { result } = this.state
@@ -31,6 +34,12 @@ class App extends Component {
 
   expressionChanged = (event) => {
     const lastExpression = event.target.value
+
+    if (lastExpression === '') {
+      this.setState(App._defaultState)
+      return
+    }
+
     let newState = { lastExpression }
 
     try {
