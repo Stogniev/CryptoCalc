@@ -11,6 +11,8 @@ function id(x) {return x[0]; }
     }
   }
 
+  const common = require('./common')
+
   function isUnit(x) {
     return x instanceof math.type.Unit
   }
@@ -53,7 +55,9 @@ var grammar = {
     {"name": "OPS", "symbols": ["OPS_NUM"], "postprocess": id},
     {"name": "OPS", "symbols": ["OPS_UNIT"], "postprocess": id},
     {"name": "OPS_NUM", "symbols": ["SHIFT"], "postprocess": id},
-    {"name": "OPS_UNIT", "symbols": ["AS_UNIT"], "postprocess": id},
+    {"name": "OPS_UNIT", "symbols": ["CONVERSION"], "postprocess": id},
+    {"name": "CONVERSION", "symbols": ["AS_UNIT", "convert", "_", "unit", {"literal":";"}], "postprocess": (d,l,rej) => {log('convert:', d[0], d[3]); return d[0].to(d[3])}},
+    {"name": "CONVERSION", "symbols": ["AS_UNIT"], "postprocess": id},
     {"name": "SHIFT", "symbols": ["SHIFT", "leftShift", "AS_NUM"], "postprocess": (d,l, rej) => d[0] << d[2]},
     {"name": "SHIFT", "symbols": ["SHIFT", "rightShift", "AS_NUM"], "postprocess": (d,l, rej) => d[0] >> d[2]},
     {"name": "SHIFT", "symbols": ["AS_NUM"], "postprocess": id},
@@ -61,7 +65,7 @@ var grammar = {
     {"name": "AS_NUM", "symbols": ["AS_NUM", "minus", "MD_NUM"], "postprocess": (d,l, rej) => math.subtract(d[0], d[2])},
     {"name": "AS_NUM", "symbols": ["MD_NUM"], "postprocess": id},
     {"name": "AS_UNIT", "symbols": ["AS_UNIT_MAGIC_ONLY_UNITS"], "postprocess": id},
-    {"name": "AS_UNIT_MAGIC_ONLY_UNITS", "symbols": ["AS_UNIT_MAGIC"], "postprocess":  (d,l, rej) => { log('AS_UNIT_MAGIC:', d, isUnit(d[0]));
+    {"name": "AS_UNIT_MAGIC_ONLY_UNITS", "symbols": ["AS_UNIT_MAGIC"], "postprocess":  (d,l, rej) => { log('AS_UNIT_MAGIC_ONLY_UNITS:', d);
         return isUnit(d[0]) ? d[0] : rej}  },
     {"name": "AS_UNIT_MAGIC", "symbols": ["AS_UNIT_MAGIC", "plus", "MD"], "postprocess": (d,l, rej) => magicSum(d[0], d[2], math.add, rej)},
     {"name": "AS_UNIT_MAGIC", "symbols": ["AS_UNIT_MAGIC", "minus", "MD"], "postprocess": (d,l, rej) => magicSum(d[0], d[2], math.subtract, rej)},
@@ -179,10 +183,15 @@ var grammar = {
         function(d, l, reject) {
           //const val = (d[0].concat(d[1])).join('').toLocaleLowerCase()
           const val = d[0].join('')
-          //log('u:', val)
+          log('u:', d, val)
         
-          // problem:  1 and 2 m ultiplied by                  nUnexpected "u"
           //  don't check unit correctness (assume math.js will)
+        
+          if (common.confusingUnits.includes(val)) {
+            log('Denying confusing "${val}" unit')
+            return reject
+          }
+        
           return val
         
         
@@ -231,6 +240,14 @@ var grammar = {
     {"name": "leftShift", "symbols": ["_", "leftShift$string$1", "_"]},
     {"name": "rightShift$string$1", "symbols": [{"literal":">"}, {"literal":">"}], "postprocess": function joiner(d) {return d.join('');}},
     {"name": "rightShift", "symbols": ["_", "rightShift$string$1", "_"]},
+    {"name": "convert$string$1", "symbols": [{"literal":"i"}, {"literal":"n"}], "postprocess": function joiner(d) {return d.join('');}},
+    {"name": "convert", "symbols": ["__", "convert$string$1", "__"]},
+    {"name": "convert$string$2", "symbols": [{"literal":"i"}, {"literal":"n"}, {"literal":"t"}, {"literal":"o"}], "postprocess": function joiner(d) {return d.join('');}},
+    {"name": "convert", "symbols": ["__", "convert$string$2", "__"]},
+    {"name": "convert$string$3", "symbols": [{"literal":"a"}, {"literal":"s"}], "postprocess": function joiner(d) {return d.join('');}},
+    {"name": "convert", "symbols": ["__", "convert$string$3", "__"]},
+    {"name": "convert$string$4", "symbols": [{"literal":"t"}, {"literal":"o"}], "postprocess": function joiner(d) {return d.join('');}},
+    {"name": "convert", "symbols": ["__", "convert$string$4", "__"]},
     {"name": "_$ebnf$1", "symbols": []},
     {"name": "_$ebnf$1", "symbols": ["_$ebnf$1", /[\s]/], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
     {"name": "_", "symbols": ["_$ebnf$1"], "postprocess": function(d) {return null; }},

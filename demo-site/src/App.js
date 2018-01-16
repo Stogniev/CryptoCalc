@@ -69,7 +69,7 @@ class App extends Component {
       <div className="App">
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
-        <h1 className="App-title">Calculator demo,</h1>
+          <h1 className="App-title">Calculator demo (2018-01-16_20:34)</h1>
         </header>
         <p className="center">
           <input placeholder="2 + 2" onChange={this.expressionChanged} autoFocus={true}
@@ -92,14 +92,17 @@ const info = `
 Implemented:
   - math calculations
   - unit calculations (including same-type mixed dimensions, scales)
-  - currensy caltucations (including mixed) (rates are just fixed for demo purpoces)
+  - (NEW) implicit number-> unit conversion (Example: "1 + 2 USD" -> "3 USD")
+  - (NEW) currensy caltucations (including mixed) (rates are just fixed for demo purpoces)
+  - (NEW) unit and money conversions (see examples below)
 
 Not implemented yet:
   - %-based expressions
-  - unit and money conversions
   - summarizes, variables, prev, average, format
   - math scales
   - money scales
+
+
 
 Expression examples:
 
@@ -312,8 +315,8 @@ $8 / 2
 // mixed currencies
 1 USD + 1 TENDOLL
 1 TENDOLL + 1 USD
-1 ZUAH + 1 USD + 1 ZEUR
-(1 USD)2 + 1 ZEUR
+1 UAH + 1 USD + 1 EUR
+(1 USD)2 + 1 EUR
 1 USD + 1 EUR
 
 
@@ -331,6 +334,20 @@ $1 CAD + 1 EUR
 1 meter 20 cm
 6(3)
 $30 CAD + 5 USD - 7EUR
+
+// unit conversion
+1 kg to gram
+0.4 + 0.6 inch to cm
+4.5 kg to gram
+3(4km - 2000 m / 2) /200 to dm
+1 yard into cm
+'2 * 2 ft as mm
+0 degC to K
+
+// money conversion
+1 USD to UAH
+0.4 + 0.6 EUR in USD0.4 + 0.6 EUR in USD
+110 USD into EUR
 `
 
 export default App;

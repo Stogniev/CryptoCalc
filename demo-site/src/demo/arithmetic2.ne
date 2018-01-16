@@ -10,6 +10,8 @@
     }
   }
 
+  const common = require('./common')
+
   function isUnit(x) {
     return x instanceof math.type.Unit
   }
@@ -56,14 +58,18 @@ OPS -> OPS_NUM        {% id %}
 
 OPS_NUM -> SHIFT        {% id %}
 
-OPS_UNIT ->
-   AS_UNIT                     {% id %}
+OPS_UNIT -> CONVERSION   {% id %}
+
+CONVERSION ->
+     AS_UNIT convert _ unit ";"  {% (d,l,rej) => {log('convert:', d[0], d[3]); return d[0].to(d[3])} %}
+   | AS_UNIT    {% id %}
 
 # bitwise shift
 SHIFT -> SHIFT leftShift AS_NUM   {% (d,l, rej) => d[0] << d[2] %}
        | SHIFT rightShift AS_NUM  {% (d,l, rej) => d[0] >> d[2] %}
        | AS_NUM  {% id %}
 
+# add/subtract
 AS_NUM ->
       AS_NUM plus MD_NUM {% (d,l, rej) => math.add(d[0], d[2]) %}
     | AS_NUM minus MD_NUM {% (d,l, rej) => math.subtract(d[0], d[2]) %}
@@ -71,6 +77,7 @@ AS_NUM ->
 
 AS_UNIT -> AS_UNIT_MAGIC_ONLY_UNITS       {% id %}
 
+#  magic operations from (filter units only - no numbers
 AS_UNIT_MAGIC_ONLY_UNITS ->
    AS_UNIT_MAGIC {% (d,l, rej) => { log('AS_UNIT_MAGIC_ONLY_UNITS:', d);
                                     return isUnit(d[0]) ? d[0] : rej}  %}
@@ -225,10 +232,15 @@ unit ->
        function(d, l, reject) {
          //const val = (d[0].concat(d[1])).join('').toLocaleLowerCase()
          const val = d[0].join('')
-         //log('u:', val)
+         log('u:', d, val)
 
-         // problem:  1 and 2 m ultiplied by                  nUnexpected "u"
          //  don't check unit correctness (assume math.js will)
+
+         if (common.confusingUnits.includes(val)) {
+           log('Denying confusing "${val}" unit')
+           return reject
+         }
+
          return val
 
 
@@ -271,7 +283,10 @@ leftShift -> _ "<<" _
 
 rightShift -> _ ">>" _
 
-
+convert -> __ "in" __
+         | __ "into" __
+         | __ "as" __
+         | __ "to" __
 
 
 # Whitespace. The important thing here is that the postprocessor

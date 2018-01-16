@@ -10,6 +10,7 @@ const DEBUG = process.env.DEBUG
 const currencies = require('./currencies')
 const rates = require('./rates')
 
+const common = require('./common')
 
 // Create units for every currency code (without subunits)
 math.createUnit('USD')
@@ -22,7 +23,7 @@ currencies.codes.forEach( code => {
 
 // artificional currencies for tesing
 math.createUnit('TENDOLL', {definition: '10 USD'})
-math.createUnit('ZUAH', {definition: '28 USD'})
+math.createUnit('ZUAH', {definition: `${1/28} USD`})
 math.createUnit('ZUSD', {definition: '1 USD'})
 math.createUnit('ZEUR', {definition: '1.1 USD'})
 
@@ -117,9 +118,12 @@ function prepareTxt(text, verbose=false) {
   // console.log('UN', UN)
   txt = txt.replace(new RegExp(`([^a-zA-Z])(${UP})(${UN})((?:[^a-zA-Z]|$))`, 'gi'), '$1 $2$3; $4')
 
+  //4a) back: remove ";" from confusing units (
+  const CU = common.confusingUnits.map(escape).join('|')
+  txt = txt.replace(new RegExp(` (${CU}); `, 'gi'), ' $1 ')
+
   // remove multispace (produced user, 4)) reason: to avoid multiresults
   txt = txt.replace(new RegExp('\\s+', 'gi'), ' ')
-
 
   if (verbose) console.log(`"${text}" -p-> "${txt}"`)
 
@@ -173,9 +177,6 @@ function formatAnswerExpression(answer) {
 }
 
 // mini-sandbox
-//assertEqual(call('3 USD + 2'), '5 USD')
-//
-//assertEqual(call('123'), 123)
 //assertEqual(call('3 - 1 cad').toNumber('CAD'), 2, ALMOST)
 //return
 
@@ -457,7 +458,7 @@ assertEqual(call('1 UAH * pi').toNumber(), 3.14, ALMOST)
 // mixed currencies
 assertEqual(call('1 USD + 1 TENDOLL').toNumber('USD'), 11)
 assertEqual(call('1 TENDOLL + 1 USD').toNumber('USD'), 11)
-assertEqual(call('1 ZUAH + 1 USD + 1 ZEUR').value, 28 + 1 + 1.1)
+assertEqual(call('1 ZUAH + 1 USD + 1 ZEUR').toNumber('ZUAH'), 1 + 28 + 28*1.1, ALMOST)
 assertEqual(call('(1 USD)2 + 1 ZEUR').value, 1*2 + 1.1)
 assertEqual(call('1 USD + 1 EUR').value, call('1 EUR + 1 USD').value, ALMOST)
 
@@ -475,6 +476,24 @@ assertEqual(call('3 + 2 USD'), '5 USD')
 assertEqual(call('3 - 1 cad').toNumber('CAD'), 2, ALMOST)
 assertEqual(call('3 CAD - 1').toNumber('CAD'), 2, ALMOST)
 
+
+// units conversion
+assertEqual(call('1 kg to gram'), '1000 gram')
+assertEqual(call('0.4 + 0.6 inch to cm'), '2.54 cm')
+assertEqual(call('4.5 kg to gram'), '4500 gram')
+assertEqual(call('3(4km - 2000 m / 2) /200 to dm'), '450 dm')
+assertEqual(call('1 yard into cm'), '91.44 cm')
+assertEqual(call('2 * 2 ft as mm'), '1219.2 mm')
+assertEqual(call('0 degC to K'), '273.15 K')
+
+
+
+// money conversion (used z-prefixes artifictial fixed-rate currencies for testing)
+assertEqual(call('1 ZUSD to ZUAH'), '28 ZUAH')
+assertEqual(call('0.4 + 0.6 ZEUR in ZUSD'), '1.1 ZUSD')
+assertEqual(call('110 USD to ZEUR').toNumber('ZEUR'), 100, ALMOST)
+assertEqual(call('56 ZUAH in ZUSD').toNumber('ZUSD'), 2, ALMOST)
+assertEqual(call('56 ZUAH into ZUSD').toNumber('ZUSD'), 2, ALMOST)
 
 
 
@@ -505,15 +524,17 @@ function runmath(s) {
     //console.log('Initial', grammar.ParserRules, grammar.ParserStart, s )
     //ans = new nearley.Parser(grammar.ParserRules, grammar.ParserStart).feed(s);
 
-    let verbose = false      // hack for debugging
-    if (s[0] === '!') {
-      s = s.slice(1)
-      verbose = true
+    // let verbose = false      // hack for debugging
+    // if (s[0] === '!') {
+    //   s = s.slice(1)
+    //   verbose = true
+    // }
+
+    ans = call(s, DEBUG)
+
+    if (ans instanceof math.type.Unit) {
+      console.log('r.toNumber:', ans.clone().toNumber(), 'r.toString:', ans.clone().toString())
     }
-
-    ans = call(s, verbose)
-
-    if (ans instanceof math.type.Unit) console.log('r.toNumber:', ans.clone().toNumber())
 
     return ans
   } catch(e) {

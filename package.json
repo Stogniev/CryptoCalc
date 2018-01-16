@@ -6,10 +6,11 @@
   "author": "Alex_Y <yegupov@gmail.com>",
   "license": "",
   "scripts": {
-    "demo-console": "(cd demo-site/src/demo && ./build-and-test2.sh)",
-    "demo-console-debug": "(cd demo-site/src/demo && DEBUG=1 ./build-and-test2.sh)",
-    "demo-site": "(cd ./demo-site && yarn run start)",
-    "demo-site-build-ex": "(cd ./demo-site && npm run build && rm -rf ../docs/* && cp -rf build/* ../docs/ && cd .. && sed -i 's/\\/static/static/g' docs/index.html && git add docs/static/js/\\*.js)"
+    "console": "(cd demo-site/src/demo && ./build-and-test2.sh)",
+    "console-debug": "(cd demo-site/src/demo && DEBUG=1 ./build-and-test2.sh)",
+    "dev": "(cd ./demo-site && yarn run start)",
+    "build": "(cd ./demo-site && npm run build && rm -rf ../docs/* && cp -rf build/* ../docs/ && cd .. && sed -i 's/\\/static/static/g' docs/index.html && git add docs/static/js/\\*.js)",
+    "build-and-run": "npm run build && (cd docs && python -m SimpleHTTPServer 9000)"
   },
   "dependencies": {
   }
