@@ -12,4 +12,4 @@ const confusingUnits = [
 
 const lexemSeparator = ';'
 
-module.exports = { confusingUnits }
+module.exports = { confusingUnits, lexemSeparator }

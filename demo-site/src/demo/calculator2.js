@@ -34,9 +34,6 @@ const ALMOST=true
 //create percent unit
 math.createUnit('PERCENT')
 
-// console.log(currencies.detect('Uah'))
-// return
-
 
 function assertEqual(a, b, almost=false) {
   function getValue(v) {
@@ -68,24 +65,24 @@ const UnitPrefixes = Object.keys(math.type.Unit.PREFIXES.SHORTLONG)
 function prepareTxt(text, verbose=false) {
   let txt = text
 
-  // 0) remove multispaces
+  // 5) remove multispaces
   txt = txt.replace(new RegExp('\\s+', 'gi'), ' ')
 
-  // 1) put spaces around all math braces (to simplify implicit multiplication grammar)
+  // 10) put spaces around all math braces (to simplify implicit multiplication grammar)
   //txt = txt.replace(new RegExp('([\(\)])', 'gi'), ' $1 ')
   txt = txt.replace(new RegExp('\\s*([()])\\s*', 'gi'), ' $1 ')
 
-  // 2) remove spaces between standard function calls braces likd "sin(...)" (to avoid confusion with multiplication to variable)
+  // 20) remove spaces between standard function calls braces likd "sin(...)" (to avoid confusion with multiplication to variable)
   // Example: "sin (...)" => "sin(...)"
   const st = StandartFunctions.join('|')  // 'sin|cos|tag|asin|acos|atan|sqrt|ln'
   //txt = txt.replace(new RegExp(`(${st})\s+`, 'gi'), ' $1')
   txt = txt.replace(new RegExp(`(\\W+|^)(${st})\\s*\\(`, 'gi'), '$1$2(')
 
 
-  // 3) Add spaces before all +/- signs (to simplify unary/binary sign logic)
+  // 30) Add spaces before all +/- signs (to simplify unary/binary sign logic)
   txt = txt.replace(new RegExp(`\\s*([+-])`, 'gi'), ' $1')
 
-  // 35) Convert all currerncy names to ISO format (math.js doesn't support specsymbols like "$" or "฿"
+  // 35) Convert currerncies to ISO format (math.js doesn't support specsymbols like "$" or "฿")
 
   // 35.0) convert pre&post-sign: "$18.5 USD" -> "18.5 USD" for every currency SINGLE-chars
   const currSymbols = Object.keys(currencies.symbolToCode).map(escape).join('|')
@@ -95,7 +92,7 @@ function prepareTxt(text, verbose=false) {
       `${pre}${amount} ${currencies.detect(curr2)}`
   )
 
-  // 35.1) convert pre-sign: "$18.5" -> "18.5 USD" for every currency SINGLE-chars
+  // 35.1) convert currencies pre-sign to ISO: "$18.5" -> "18.5 USD" for every currency SINGLE-chars
   txt = txt.replace(
     new RegExp(`(\\W+|^)(${currSymbols})\\s*(\\d+(?:\\.\\d+)?)`, 'gi'),
     (match, pre, curr, amount) => `${pre}${amount} ${currencies.detect(curr)}`
@@ -114,20 +111,27 @@ function prepareTxt(text, verbose=false) {
   // )
 
 
-  // 4) wrap all units (USD, Gb, kg...) by semicolon: " kg;"
+  // 36) replace '%' to 'PERCENT' (mathjs not support % sign)
+  txt = txt.replace(new RegExp(`%`, 'gi'), 'PERCENT')
+
+  // 40) wrap all units (USD, Gb, kg...) by lexem separator: " kg;"
   //    reason: to parse '10 cm' and same time avoid word cropping "1 and 2 m"ul 3
   const UP = UnitPrefixes.map(escape).join('|')
   const UN = UnitNames.map(escape).join('|')
   // console.log('UP', UP)
   // console.log('UN', UN)
-  txt = txt.replace(new RegExp(`([^a-zA-Z])(${UP})(${UN})((?:[^a-zA-Z]|$))`, 'gi'), '$1 $2$3; $4')
 
-  //4a) back: remove ";" from confusing units (
+  txt = txt.replace(new RegExp(`([^a-zA-Z])(${UP})(${UN})((?:[^a-zA-Z]|$))`, 'gi'), `$1 $2$3${common.lexemSeparator} $4`)
+
+  //41) back: remove ";" from confusing units (
   const CU = common.confusingUnits.map(escape).join('|')
   txt = txt.replace(new RegExp(` (${CU}); `, 'gi'), ' $1 ')
 
-  // remove multispace (produced user, 4)) reason: to avoid multiresults
+
+
+  // 50) remove multispace (produced user, 4)) reason: to avoid multiresults
   txt = txt.replace(new RegExp('\\s+', 'gi'), ' ')
+
 
   if (verbose) console.log(`"${text}" -p-> "${txt}"`)
 
@@ -176,13 +180,28 @@ function prepareAndParse(text, verbose=false) {
 
 function formatAnswerExpression(answer) {
   let r = answer.lexer.buffer
-  r = r.replace(new RegExp(common.lexemSeparator, 'g'), '')
+  r = r.replace(new RegExp(common.lexemSeparator, 'g'), '')  // clear all ";" separators
+  r = r.replace(new RegExp('PERCENT', 'g'), '%')  // PERCENT -> %
   return r
 }
 
 // mini-sandbox
-//assertEqual(call('3 - 1 cad').toNumber('CAD'), 2, ALMOST)
-//return
+
+// %: simple operations
+assertEqual(call('10 %'), '10 PERCENT')
+assertEqual(call('3+2 %'), '5 PERCENT')  //implicit conversion
+assertEqual(call('10% + 5%'), '15 PERCENT')
+assertEqual(call('-3%+5 %').toNumber('PERCENT'), 2, ALMOST)  /
+assertEqual(call('7% / 2'), '3.5 PERCENT')
+
+// // %: mixed operations
+// assertEqual(call('10 '), '10 PERCENT')
+
+
+
+// return
+
+
 
 // math expressions
 assertEqual(call('123'), 123)
