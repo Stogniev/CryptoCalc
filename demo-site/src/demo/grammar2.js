@@ -34,7 +34,6 @@ function id(x) {return x[0]; }
       } else if (isUnit(x)) {
         unitName = x.units[0].unit.name
       } else {
-        log('zzz1')
         return reject
       }
     }
@@ -56,7 +55,7 @@ var grammar = {
     {"name": "OPS", "symbols": ["OPS_UNIT"], "postprocess": id},
     {"name": "OPS_NUM", "symbols": ["SHIFT"], "postprocess": id},
     {"name": "OPS_UNIT", "symbols": ["CONVERSION"], "postprocess": id},
-    {"name": "CONVERSION", "symbols": ["AS_UNIT", "convert", "_", "unit", {"literal":";"}], "postprocess": (d,l,rej) => {log('convert:', d[0], d[3]); return d[0].to(d[3])}},
+    {"name": "CONVERSION", "symbols": ["AS_UNIT", "convert", "_", "unit"], "postprocess": (d,l,rej) => {log('convert:', d[0], d[3]); return d[0].to(d[3])}},
     {"name": "CONVERSION", "symbols": ["AS_UNIT"], "postprocess": id},
     {"name": "SHIFT", "symbols": ["SHIFT", "leftShift", "AS_NUM"], "postprocess": (d,l, rej) => d[0] << d[2]},
     {"name": "SHIFT", "symbols": ["SHIFT", "rightShift", "AS_NUM"], "postprocess": (d,l, rej) => d[0] >> d[2]},
@@ -94,7 +93,7 @@ var grammar = {
     {"name": "VALUE_NUM", "symbols": ["P_NUM"], "postprocess": id},
     {"name": "VALUE_NUM", "symbols": ["N"], "postprocess": id},
     {"name": "VALUE_UNIT", "symbols": ["P_UNIT"], "postprocess": id},
-    {"name": "VALUE_UNIT", "symbols": ["VALUE_UNIT", "__", "VALUE_NUM", "_", "unit", {"literal":";"}], "postprocess":  // example: "1m 20 cm 30 mm"
+    {"name": "VALUE_UNIT", "symbols": ["VALUE_UNIT", "__", "VALUE_NUM", "_", "unit"], "postprocess":  // example: "1m 20 cm 30 mm"
          function(d,l, reject) {
            let u1 = d[0]
            let u2
@@ -115,7 +114,7 @@ var grammar = {
            return reject;
         }
                },
-    {"name": "VALUE_UNIT", "symbols": ["VALUE_NUM", "_", "unit", {"literal":";"}], "postprocess": 
+    {"name": "VALUE_UNIT", "symbols": ["VALUE_NUM", "_", "unit"], "postprocess": 
          function(d,l, reject) {
            try {
              log('value with unit:', d[0], d[2]);
@@ -179,7 +178,7 @@ var grammar = {
     {"name": "ident", "symbols": ["ident$ebnf$1"], "postprocess": function(d) {return d[0].join(""); }},
     {"name": "unit$ebnf$1", "symbols": [/[a-zA-Z0-9]/]},
     {"name": "unit$ebnf$1", "symbols": ["unit$ebnf$1", /[a-zA-Z0-9]/], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
-    {"name": "unit", "symbols": ["unit$ebnf$1"], "postprocess": 
+    {"name": "unit", "symbols": ["unit$ebnf$1", "separator"], "postprocess": 
         function(d, l, reject) {
           //const val = (d[0].concat(d[1])).join('').toLocaleLowerCase()
           const val = d[0].join('')
@@ -205,6 +204,7 @@ var grammar = {
         
         }
              },
+    {"name": "separator", "symbols": [{"literal":";"}]},
     {"name": "plus", "symbols": ["_", {"literal":"+"}, "_"]},
     {"name": "plus$string$1", "symbols": [{"literal":"p"}, {"literal":"l"}, {"literal":"u"}, {"literal":"s"}], "postprocess": function joiner(d) {return d.join('');}},
     {"name": "plus", "symbols": ["_", "plus$string$1", "_"]},

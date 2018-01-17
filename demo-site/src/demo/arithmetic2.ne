@@ -33,7 +33,6 @@
       } else if (isUnit(x)) {
         unitName = x.units[0].unit.name
       } else {
-        log('zzz1')
         return reject
       }
     }
@@ -61,7 +60,7 @@ OPS_NUM -> SHIFT        {% id %}
 OPS_UNIT -> CONVERSION   {% id %}
 
 CONVERSION ->
-     AS_UNIT convert _ unit ";"  {% (d,l,rej) => {log('convert:', d[0], d[3]); return d[0].to(d[3])} %}
+     AS_UNIT convert _ unit    {% (d,l,rej) => {log('convert:', d[0], d[3]); return d[0].to(d[3])} %}
    | AS_UNIT    {% id %}
 
 # bitwise shift
@@ -139,7 +138,7 @@ VALUE_NUM ->
 
 VALUE_UNIT ->
     P_UNIT        {% id %}
-  | VALUE_UNIT __ VALUE_NUM _ unit ";"    {%         // example: "1m 20 cm 30 mm"
+  | VALUE_UNIT __ VALUE_NUM _ unit   {%         // example: "1m 20 cm 30 mm"
          function(d,l, reject) {
            let u1 = d[0]
            let u2
@@ -160,7 +159,7 @@ VALUE_UNIT ->
            return reject;
         }
        %}
-  | VALUE_NUM _ unit ";"    {%
+  | VALUE_NUM _ unit    {%
          function(d,l, reject) {
            try {
              log('value with unit:', d[0], d[2]);
@@ -227,7 +226,7 @@ ident -> [a-zA-Z]:+    {% function(d) {return d[0].join(""); } %}
 
 unit ->
   # ([a-zA-Z]:+ [a-zA-Z0-9]:*)         # problem: multiple results
-  [a-zA-Z0-9]:+                        # problem: number-started units
+  [a-zA-Z0-9]:+ separator                       # problem: number-started units
     {%
        function(d, l, reject) {
          //const val = (d[0].concat(d[1])).join('').toLocaleLowerCase()
@@ -254,6 +253,8 @@ unit ->
 
        }
      %}
+
+separator -> ";"    #  common.lexemSeparator
 
 plus -> _ "+" _
      | _ "plus" _

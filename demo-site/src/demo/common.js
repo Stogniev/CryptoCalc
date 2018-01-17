@@ -10,5 +10,6 @@ const confusingUnits = [
   'as', 'in'  // used for money conversion
 ]
 
+const lexemSeparator = ';'
 
 module.exports = { confusingUnits }

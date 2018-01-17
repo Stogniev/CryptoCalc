@@ -21,6 +21,8 @@ currencies.codes.forEach( code => {
   math.createUnit(code, {definition: `${rates[code]} USD`})
 })
 
+
+
 // artificional currencies for tesing
 math.createUnit('TENDOLL', {definition: '10 USD'})
 math.createUnit('ZUAH', {definition: `${1/28} USD`})
@@ -29,6 +31,8 @@ math.createUnit('ZEUR', {definition: '1.1 USD'})
 
 const ALMOST=true
 
+//create percent unit
+math.createUnit('PERCENT')
 
 // console.log(currencies.detect('Uah'))
 // return
@@ -172,7 +176,7 @@ function prepareAndParse(text, verbose=false) {
 
 function formatAnswerExpression(answer) {
   let r = answer.lexer.buffer
-  r = r.replace(new RegExp(';', 'g'), '')
+  r = r.replace(new RegExp(common.lexemSeparator, 'g'), '')
   return r
 }
 

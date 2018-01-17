@@ -93,7 +93,7 @@ Implemented:
   - math calculations
   - unit calculations (including same-type mixed dimensions, scales)
   - (NEW) implicit number-> unit conversion (Example: "1 + 2 USD" -> "3 USD")
-  - (NEW) currensy caltucations (including mixed) (rates are just fixed for demo purpoces)
+  - (NEW) currensy calculations (including mixed) (rates are just fixed for demo purpoces)
   - (NEW) unit and money conversions (see examples below)
 
 Not implemented yet:
