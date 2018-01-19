@@ -13,15 +13,32 @@ function id(x) {return x[0]; }
 
   const common = require('./common')
 
+  function getUnitName(u) {
+    return u.units[0].prefix.name + u.units[0].unit.name
+  }
+
   function isUnit(x) {
     return x instanceof math.type.Unit
+  }
+
+  function isPercent(x) {
+    return isUnit(x) && getUnitName(x) === 'PERCENT'
+  }
+
+  function isMeasure(x) {
+    return isUnit(x) && !isPercent(x)
   }
 
   function isNumber(x) {
     return typeof(x) === 'number'
   }
 
-  // magic sum: "number/unit ± unit" treat as "unit ± unit"
+  // convert n to baseUnit unit
+  function toUnit(n, baseUnit) {
+    return math.unit(n, getUnitName(baseUnit))
+  }
+
+  // magic sum: "Number/Unit ± Unit" treat as "Unit ± Unit"
   function magicSum(a, b, operation, reject) {
     let operands = [a, b]
     let unitName = null, numberIndex = null;
@@ -60,17 +77,37 @@ var grammar = {
     {"name": "SHIFT", "symbols": ["SHIFT", "leftShift", "AS_NUM"], "postprocess": (d,l, rej) => d[0] << d[2]},
     {"name": "SHIFT", "symbols": ["SHIFT", "rightShift", "AS_NUM"], "postprocess": (d,l, rej) => d[0] >> d[2]},
     {"name": "SHIFT", "symbols": ["AS_NUM"], "postprocess": id},
-    {"name": "AS_NUM", "symbols": ["AS_NUM", "plus", "MD_NUM"], "postprocess": (d,l, rej) => math.add(d[0], d[2])},
-    {"name": "AS_NUM", "symbols": ["AS_NUM", "minus", "MD_NUM"], "postprocess": (d,l, rej) => math.subtract(d[0], d[2])},
+    {"name": "AS_UNIT", "symbols": ["AS_MEASURE"], "postprocess": id},
+    {"name": "AS_UNIT", "symbols": ["AS_PERCENT"], "postprocess": id},
+    {"name": "AS_MEASURE", "symbols": ["AS_NUM", "plus", "AS_MEASURE"], "postprocess": (d,l,rej) => math.add(toUnit(d[0], d[2]), d[2])},
+    {"name": "AS_MEASURE", "symbols": ["AS_MEASURE", "plus", "MD_NUM"], "postprocess": (d,l,rej) => math.add(d[0], toUnit(d[2], d[0]))},
+    {"name": "AS_MEASURE", "symbols": ["AS_NUM", "minus", "AS_MEASURE"], "postprocess": (d,l,rej) => math.subtract(toUnit(d[0], d[2]), d[2])},
+    {"name": "AS_MEASURE", "symbols": ["AS_MEASURE", "minus", "MD_NUM"], "postprocess": (d,l,rej) => math.subtract(d[0], toUnit(d[2], d[0]))},
+    {"name": "AS_MEASURE", "symbols": ["AS_MEASURE", "plus", "MD_MEASURE"], "postprocess": (d,l,rej) => math.add(d[0], d[2])},
+    {"name": "AS_MEASURE", "symbols": ["AS_MEASURE", "minus", "MD_MEASURE"], "postprocess": (d,l,rej) => math.subtract(d[0], d[2])},
+    {"name": "AS_MEASURE", "symbols": ["AS_MEASURE", "plus", "MD_PERCENT"], "postprocess":  ([u,,p], l, rej) => {
+           log('m-%', u,p)
+           u.value = u.value + u.value/100*p.toNumber()
+           return u
+        } },
+    {"name": "AS_MEASURE", "symbols": ["AS_MEASURE", "minus", "MD_PERCENT"], "postprocess":  ([u,,p], l, rej) => {
+           log('m-%', u,p)
+           u.value = u.value - u.value/100*p.toNumber()
+           return u
+        } },
+    {"name": "AS_MEASURE", "symbols": ["MD_MEASURE"], "postprocess": id},
+    {"name": "AS_PERCENT", "symbols": ["AS_PERCENT", "plus", "MD_PERCENT"], "postprocess": (d,l,rej) => math.add(d[0], d[2])},
+    {"name": "AS_PERCENT", "symbols": ["AS_PERCENT", "minus", "MD_PERCENT"], "postprocess": (d,l,rej) => math.subtract(d[0], d[2])},
+    {"name": "AS_PERCENT", "symbols": ["AS_PERCENT", "plus", "AS_NUM"], "postprocess": ([p,,n],l,rej) => math.add(p, toUnit(n, p))},
+    {"name": "AS_PERCENT", "symbols": ["AS_PERCENT", "minus", "AS_NUM"], "postprocess": ([p,,n],l,rej) => math.subtract(p, toUnit(n, p))},
+    {"name": "AS_PERCENT", "symbols": ["MD_PERCENT"], "postprocess": id},
+    {"name": "MD_PERCENT", "symbols": ["MD_UNIT"], "postprocess": (d,l, rej) => isPercent(d[0]) ? d[0] : rej},
+    {"name": "MD_MEASURE", "symbols": ["MD_UNIT"], "postprocess": (d,l, rej) => isMeasure(d[0]) ? d[0] : rej},
+    {"name": "AS_NUM", "symbols": ["AS_NUM", "plus", "MD_NUM"], "postprocess": (d,l,rej) => math.add(d[0], d[2])},
+    {"name": "AS_NUM", "symbols": ["AS_NUM", "minus", "MD_NUM"], "postprocess": (d,l,rej) => math.subtract(d[0], d[2])},
+    {"name": "AS_NUM", "symbols": ["AS_NUM", "plus", "MD_PERCENT"], "postprocess": ([n,,p],l,rej) => math.add(n, n/100*p.toNumber())},
+    {"name": "AS_NUM", "symbols": ["AS_NUM", "minus", "MD_PERCENT"], "postprocess": ([n,,p],l,rej) => math.subtract(d[0], n/100*p.toNumber())},
     {"name": "AS_NUM", "symbols": ["MD_NUM"], "postprocess": id},
-    {"name": "AS_UNIT", "symbols": ["AS_UNIT_MAGIC_ONLY_UNITS"], "postprocess": id},
-    {"name": "AS_UNIT_MAGIC_ONLY_UNITS", "symbols": ["AS_UNIT_MAGIC"], "postprocess":  (d,l, rej) => { log('AS_UNIT_MAGIC_ONLY_UNITS:', d);
-        return isUnit(d[0]) ? d[0] : rej}  },
-    {"name": "AS_UNIT_MAGIC", "symbols": ["AS_UNIT_MAGIC", "plus", "MD"], "postprocess": (d,l, rej) => magicSum(d[0], d[2], math.add, rej)},
-    {"name": "AS_UNIT_MAGIC", "symbols": ["AS_UNIT_MAGIC", "minus", "MD"], "postprocess": (d,l, rej) => magicSum(d[0], d[2], math.subtract, rej)},
-    {"name": "AS_UNIT_MAGIC", "symbols": ["MD"], "postprocess": id},
-    {"name": "MD", "symbols": ["MD_NUM"], "postprocess": id},
-    {"name": "MD", "symbols": ["MD_UNIT"], "postprocess": id},
     {"name": "MD_NUM", "symbols": ["MD_NUM", "mul", "E_NUM"], "postprocess": (d,l, rej) => math.multiply(d[0], d[2])},
     {"name": "MD_NUM", "symbols": ["MD_NUM", "__", "E_NUM"], "postprocess": (d,l, rej) => math.multiply(d[0], d[2])},
     {"name": "MD_NUM", "symbols": ["MD_NUM", "divide", "E_NUM"], "postprocess": (d,l, rej) => math.divide(d[0], d[2])},
@@ -185,6 +222,8 @@ var grammar = {
           log('u:', d, val)
         
           //  don't check unit correctness (assume math.js will)
+         if (val === 'PERCENT') reject
+        
         
           if (common.confusingUnits.includes(val)) {
             log('Denying confusing "${val}" unit')

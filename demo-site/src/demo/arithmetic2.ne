@@ -12,15 +12,32 @@
 
   const common = require('./common')
 
+  function getUnitName(u) {
+    return u.units[0].prefix.name + u.units[0].unit.name
+  }
+
   function isUnit(x) {
     return x instanceof math.type.Unit
+  }
+
+  function isPercent(x) {
+    return isUnit(x) && getUnitName(x) === 'PERCENT'
+  }
+
+  function isMeasure(x) {
+    return isUnit(x) && !isPercent(x)
   }
 
   function isNumber(x) {
     return typeof(x) === 'number'
   }
 
-  // magic sum: "number/unit ± unit" treat as "unit ± unit"
+  // convert n to baseUnit unit
+  function toUnit(n, baseUnit) {
+    return math.unit(n, getUnitName(baseUnit))
+  }
+
+  // magic sum: "Number/Unit ± Unit" treat as "Unit ± Unit"
   function magicSum(a, b, operation, reject) {
     let operands = [a, b]
     let unitName = null, numberIndex = null;
@@ -63,32 +80,94 @@ CONVERSION ->
      AS_UNIT convert _ unit    {% (d,l,rej) => {log('convert:', d[0], d[3]); return d[0].to(d[3])} %}
    | AS_UNIT    {% id %}
 
+
 # bitwise shift
 SHIFT -> SHIFT leftShift AS_NUM   {% (d,l, rej) => d[0] << d[2] %}
        | SHIFT rightShift AS_NUM  {% (d,l, rej) => d[0] >> d[2] %}
        | AS_NUM  {% id %}
 
-# add/subtract
+
+
+# prev 18.01
+# AS_UNIT -> AS_UNIT_MAGIC_ONLY_UNITS       {% id %}
+# 
+# #  filter magic operations (to avoid multiresults) - only units allow (no numbers)
+# AS_UNIT_MAGIC_ONLY_UNITS ->
+#    AS_UNIT_MAGIC {% (d,l, rej) => { log('AS_UNIT_MAGIC_ONLY_UNITS:', d);
+#                                     return isUnit(d[0]) ? d[0] : rej}  %}
+# 
+# # magic sum: "Unit ± Number/Unit" treated as "Unit ± Unit"
+# AS_UNIT_MAGIC ->
+#       AS_UNIT_MAGIC plus MD {% (d,l, rej) => magicSum(d[0], d[2], math.add, rej) %}
+#     | AS_UNIT_MAGIC minus MD {% (d,l, rej) => magicSum(d[0], d[2], math.subtract, rej) %}
+#     | MD       {% id %}
+# 
+# MD -> MD_NUM    {% id %}
+#     | MD_UNIT   {% id %}
+
+
+# MD_ - multiple/division
+# AS_ - add/subtract
+#
+# MEASURE - measure (kg, cm...) and money ($, UAH, ...) units
+# PERCENT - percent units
+# UNIT - any unit ($, cm, %)
+# NUMBER - number (integer, float)
+
+
+AS_UNIT ->
+   AS_MEASURE       {% id %}
+ | AS_PERCENT       {% id %}
+
+# AS_MEASURE -> AS_UNIT  {% (d,l, rej) => isMeasure(d[0]) ? d[0] : rej %}
+# AS_PERCENT -> AS_UNIT  {% (d,l, rej) => isPercent(d[0]) ? d[0] : rej %}
+
+
+AS_MEASURE ->
+   AS_NUM plus AS_MEASURE      {% (d,l,rej) => math.add(toUnit(d[0], d[2]), d[2]) %}
+ | AS_MEASURE plus MD_NUM      {% (d,l,rej) => math.add(d[0], toUnit(d[2], d[0])) %}
+ | AS_NUM minus AS_MEASURE     {% (d,l,rej) => math.subtract(toUnit(d[0], d[2]), d[2]) %}
+ | AS_MEASURE minus MD_NUM     {% (d,l,rej) => math.subtract(d[0], toUnit(d[2], d[0])) %}
+
+ | AS_MEASURE plus MD_MEASURE  {% (d,l,rej) => math.add(d[0], d[2]) %}
+ | AS_MEASURE minus MD_MEASURE {% (d,l,rej) => math.subtract(d[0], d[2]) %}
+
+ | AS_MEASURE plus MD_PERCENT  {% ([u,,p], l, rej) => {
+      log('m-%', u,p)
+      u.value = u.value + u.value/100*p.toNumber()
+      return u
+   } %}
+ | AS_MEASURE minus MD_PERCENT {% ([u,,p], l, rej) => {
+      log('m-%', u,p)
+      u.value = u.value - u.value/100*p.toNumber()
+      return u
+   } %}
+ | MD_MEASURE                   {% id %}
+
+
+AS_PERCENT ->
+   AS_PERCENT plus MD_PERCENT   {% (d,l,rej) => math.add(d[0], d[2]) %}
+ | AS_PERCENT minus MD_PERCENT  {% (d,l,rej) => math.subtract(d[0], d[2]) %} #!!
+ | AS_PERCENT plus AS_NUM       {% ([p,,n],l,rej) => math.add(p, toUnit(n, p)) %}
+ | AS_PERCENT minus AS_NUM      {% ([p,,n],l,rej) => math.subtract(p, toUnit(n, p)) %}
+ | MD_PERCENT                   {% id %}
+
+MD_PERCENT -> MD_UNIT {% (d,l, rej) => isPercent(d[0]) ? d[0] : rej %}
+
+MD_MEASURE -> MD_UNIT {% (d,l, rej) => isMeasure(d[0]) ? d[0] : rej %}
+
+
+
+
+
 AS_NUM ->
-      AS_NUM plus MD_NUM {% (d,l, rej) => math.add(d[0], d[2]) %}
-    | AS_NUM minus MD_NUM {% (d,l, rej) => math.subtract(d[0], d[2]) %}
-    | MD_NUM  {% id %}
+   AS_NUM plus MD_NUM   {% (d,l,rej) => math.add(d[0], d[2]) %}
+ | AS_NUM minus MD_NUM  {% (d,l,rej) => math.subtract(d[0], d[2]) %}
+ | AS_NUM plus MD_PERCENT {% ([n,,p],l,rej) => math.add(n, n/100*p.toNumber()) %}
+ | AS_NUM minus MD_PERCENT {% ([n,,p],l,rej) => math.subtract(d[0], n/100*p.toNumber()) %}
+ | MD_NUM  {% id %}
 
-AS_UNIT -> AS_UNIT_MAGIC_ONLY_UNITS       {% id %}
 
-#  magic operations from (filter units only - no numbers
-AS_UNIT_MAGIC_ONLY_UNITS ->
-   AS_UNIT_MAGIC {% (d,l, rej) => { log('AS_UNIT_MAGIC_ONLY_UNITS:', d);
-                                    return isUnit(d[0]) ? d[0] : rej}  %}
-
-# magic sum: "unit ± number/unit" treated as "unit ± unit")
-AS_UNIT_MAGIC ->
-      AS_UNIT_MAGIC plus MD {% (d,l, rej) => magicSum(d[0], d[2], math.add, rej) %}
-    | AS_UNIT_MAGIC minus MD {% (d,l, rej) => magicSum(d[0], d[2], math.subtract, rej) %}
-    | MD       {% id %}
-
-MD -> MD_NUM    {% id %}
-    | MD_UNIT   {% id %}
 
 MD_NUM ->
      MD_NUM mul E_NUM   {% (d,l, rej) => math.multiply(d[0], d[2]) %}
@@ -224,6 +303,7 @@ int -> [0-9]:+      {% function(d) {/*log('int:', d[0].join(""));*/ return d[0].
 
 ident -> [a-zA-Z]:+    {% function(d) {return d[0].join(""); } %}
 
+
 unit ->
   # ([a-zA-Z]:+ [a-zA-Z0-9]:*)         # problem: multiple results
   [a-zA-Z0-9]:+ separator                       # problem: number-started units
@@ -234,6 +314,8 @@ unit ->
          log('u:', d, val)
 
          //  don't check unit correctness (assume math.js will)
+        if (val === 'PERCENT') reject
+
 
          if (common.confusingUnits.includes(val)) {
            log('Denying confusing "${val}" unit')

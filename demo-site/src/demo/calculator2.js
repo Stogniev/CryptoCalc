@@ -170,7 +170,7 @@ function prepareAndParse(text, verbose=false) {
 
   } catch(e) {
     if (verbose) {
-      console.log(`"${txt}" -E-> "${e.message}"`)
+      console.log(`"${txt}" -E-> `, e)
     }
     throw e
   }
@@ -189,17 +189,45 @@ function formatAnswerExpression(answer) {
 
 // %: simple operations
 assertEqual(call('10 %'), '10 PERCENT')
-assertEqual(call('3+2 %'), '5 PERCENT')  //implicit conversion
+assertEqual(call('3%+2'), '5 PERCENT')  //implicit conversion
 assertEqual(call('10% + 5%'), '15 PERCENT')
 assertEqual(call('-3%+5 %').toNumber('PERCENT'), 2, ALMOST)  /
 assertEqual(call('7% / 2'), '3.5 PERCENT')
 
-// // %: mixed operations
-// assertEqual(call('10 '), '10 PERCENT')
+
+// % operations (by sheet order)
+assertEqual(call('2%+3%'), '5 PERCENT')
+assertEqual(call('2% - 3%'), '-1 PERCENT')
+assertEqual(call('2% + 5'), '7 PERCENT')
+assertEqual(call('200 + 3%'), 206)
+assertEqual(call('2% - 5'), '-3 PERCENT')
+assertEqual(call('300% - 6'), '294 PERCENT')
+
+try {
+  call('6% + 3cm')
+} catch(e) {
+  assert(e.message.includes('Empty result'))
+}
+
+assertEqual(call('400 km + 5%'), '420 km')
+
+try {
+  call('7% + 3kg')
+} catch(e) {
+  assert(e.message.includes('Empty result'))
+}
+
+assertEqual(call('500 kg - 120%'), '-100 kg')
 
 
+// random complex operations with %
+assertEqual(call('(3%+2%) (1 +1)'), '10 PERCENT')  //implicit conversion
 
-// return
+// TODO: mul& div with percents
+//?assertEqual(call('(100 + 10%)4%/2'), '10 PERCENT')  //implicit conversion
+
+
+return
 
 
 
