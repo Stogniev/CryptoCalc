@@ -225,11 +225,11 @@ var grammar = {
           log('u:', d, val)
         
           //  don't check unit correctness (assume math.js will)
-         if (val === 'PERCENT') reject
+          //?? if (val === 'PERCENT') reject
         
         
           if (common.confusingUnits.includes(val)) {
-            log('Denying confusing "${val}" unit')
+            log(`Denying confusing "${val}" unit`)
             return reject
           }
         

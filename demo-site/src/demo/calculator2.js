@@ -535,7 +535,7 @@ assertEqual(call('56 ZUAH into ZUSD').toNumber('ZUSD'), 2, ALMOST)
 assertEqual(call('10 %'), '10 PERCENT')
 assertEqual(call('3%+2'), '5 PERCENT')  //implicit conversion
 assertEqual(call('10% + 5%'), '15 PERCENT')
-assertEqual(call('-3%+5 %').toNumber('PERCENT'), 2, ALMOST)  /
+assertEqual(call('-3%+5 %').toNumber('PERCENT'), 2, ALMOST)
 assertEqual(call('7% / 2'), '3.5 PERCENT')
 
 // % operations (by sheet order)
