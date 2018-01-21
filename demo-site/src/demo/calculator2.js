@@ -110,9 +110,23 @@ function prepareTxt(text, verbose=false) {
   //   (match, amount, curr, end) => `${amount} ${currencies.detect(curr)}${end}`
   // )
 
-  // 35.3) replace 'as a % of' to 'as_a_percent_of'
+  // 35.3)
   txt = txt.replace(new RegExp(`as a % of`, 'gi'), 'asapercentof')
 
+  // 35.4)
+  txt = txt.replace(new RegExp(`as a % on`, 'gi'), 'asapercenton')
+
+  // 35.5)
+  txt = txt.replace(new RegExp(`as a % off`, 'gi'), 'asapercentoff')
+
+  // 35.6)
+  txt = txt.replace(new RegExp(`of what is`, 'gi'), 'ofwhatis')
+
+  // 35.7)
+  txt = txt.replace(new RegExp(`on what is`, 'gi'), 'onwhatis')
+
+  // 35.8)
+  txt = txt.replace(new RegExp(`off what is`, 'gi'), 'offwhatis')
 
   // 36) replace '%' to 'PERCENT' (mathjs not support % sign)
   txt = txt.replace(new RegExp(`%`, 'gi'), 'PERCENT')
@@ -575,8 +589,13 @@ assertEqual(call('20% of 10$'), '2 USD')
 assertEqual(call('5% on $30'), '31.5 USD')
 assertEqual(call('6% off 40 EUR'), '37.6 EUR')
 assertEqual(call('50$ as a % of 100$'), '50 PERCENT')
-assertEqual(call('50$ as a % of 100$'), '50 PERCENT') //TODO: check priority
+assertEqual(call('50$ as a % of 100$'), '50 PERCENT')
 assertEqual(call('50 kg as a % of 1 tonne'), '5 PERCENT')
+assertEqual(call('$70 as a % on $20'), '250 PERCENT')
+assertEqual(call('$20 as a % off $70').value, 28.57, ALMOST) // 20/0.7
+assertEqual(call('5% of what is 6 EUR').toNumber('USD'), 0.3, ALMOST)
+assertEqual(call('5% on what is 6 EUR').toNumber('EUR'), 6.3, ALMOST)
+assertEqual(call('5% off what is 6 EUR').toNumber('EUR'), 5.7, ALMOST)
 // assertEqual(call(''), )
 // assertEqual(call(''), )
 // assertEqual(call(''), )
