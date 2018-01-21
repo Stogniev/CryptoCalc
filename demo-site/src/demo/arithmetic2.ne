@@ -144,7 +144,7 @@ AS_MEASURE ->
 
 AS_PERCENT ->
    AS_PERCENT plus MD_PERCENT   {% (d,l,rej) => math.add(d[0], d[2]) %}
- | AS_PERCENT minus MD_PERCENT  {% (d,l,rej) => math.subtract(d[0], d[2]) %} #!!
+ | AS_PERCENT minus MD_PERCENT  {% (d,l,rej) => math.subtract(d[0], d[2]) %}
  | AS_PERCENT plus AS_NUM       {% ([p,,n],l,rej) => math.add(p, toUnit(n, p)) %}
  | AS_PERCENT minus AS_NUM      {% ([p,,n],l,rej) => math.subtract(p, toUnit(n, p)) %}
  | MD_PERCENT                   {% id %}

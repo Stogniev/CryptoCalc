@@ -240,7 +240,7 @@ assertEqual(call('200kg / 5%').to('kg'), '4000 kg')
 //?assertEqual(call('(100 + 10%)4%/2'), '10 PERCENT')  //implicit conversion
 
 
-return
+//return
 
 
 
@@ -391,7 +391,7 @@ try {
 try {
   assertEqual(call('2 tonne * 4 gram '), '6 kg^2')
 } catch(e) {
-  assert(e.message.includes('Unexpected'))
+  assert(e.message.includes('Empty result'))
 }
 
 assertEqual(call('4 kg  2'), '8 kg')
@@ -422,7 +422,7 @@ try {
 try {
   call('12 / 2kg ')
 } catch(e) {
-  assert(e.message.includes('Unexpected '))
+  assert(e.message.includes('Empty result '))
 }
 
 assertEqual(call('(3+5) 2 kg * 2').value, 32)
@@ -511,7 +511,7 @@ try {
 try {
   call('12 / 2UAH ')
 } catch(e) {
-  assert(e.message.includes('Unexpected '))
+  assert(e.message.includes('Empty result'))
 }
 
 assertEqual(call('(3+5) 2 Euro * 2'), '32 EUR')
