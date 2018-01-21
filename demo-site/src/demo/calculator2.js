@@ -187,43 +187,55 @@ function formatAnswerExpression(answer) {
 
 // mini-sandbox
 
-// %: simple operations
-assertEqual(call('10 %'), '10 PERCENT')
-assertEqual(call('3%+2'), '5 PERCENT')  //implicit conversion
-assertEqual(call('10% + 5%'), '15 PERCENT')
-assertEqual(call('-3%+5 %').toNumber('PERCENT'), 2, ALMOST)  /
-assertEqual(call('7% / 2'), '3.5 PERCENT')
-
-
-// % operations (by sheet order)
-assertEqual(call('2%+3%'), '5 PERCENT')
-assertEqual(call('2% - 3%'), '-1 PERCENT')
-assertEqual(call('2% + 5'), '7 PERCENT')
-assertEqual(call('200 + 3%'), 206)
-assertEqual(call('2% - 5'), '-3 PERCENT')
-assertEqual(call('300% - 6'), '294 PERCENT')
-
-try {
-  call('6% + 3cm')
-} catch(e) {
-  assert(e.message.includes('Empty result'))
-}
-
-assertEqual(call('400 km + 5%'), '420 km')
-
-try {
-  call('7% + 3kg')
-} catch(e) {
-  assert(e.message.includes('Empty result'))
-}
-
-assertEqual(call('500 kg - 120%'), '-100 kg')
-
-
-// random complex operations with %
-assertEqual(call('(3%+2%) (1 +1)'), '10 PERCENT')  //implicit conversion
+// // %: simple operations
+// assertEqual(call('10 %'), '10 PERCENT')
+// assertEqual(call('3%+2'), '5 PERCENT')  //implicit conversion
+// assertEqual(call('10% + 5%'), '15 PERCENT')
+// assertEqual(call('-3%+5 %').toNumber('PERCENT'), 2, ALMOST)  /
+// assertEqual(call('7% / 2'), '3.5 PERCENT')
+// 
+// 
+// // % operations (by sheet order)
+// assertEqual(call('2%+3%'), '5 PERCENT')
+// assertEqual(call('2% - 3%'), '-1 PERCENT')
+// assertEqual(call('2% + 5'), '7 PERCENT')
+// assertEqual(call('200 + 3%'), 206)
+// assertEqual(call('2% - 5'), '-3 PERCENT')
+// assertEqual(call('300% - 6'), '294 PERCENT')
+// 
+// try {
+//   call('6% + 3cm')
+// } catch(e) {
+//   assert(e.message.includes('Empty result'))
+// }
+// 
+// assertEqual(call('400 km + 5%'), '420 km')
+// 
+// try {
+//   call('7% + 3kg')
+// } catch(e) {
+//   assert(e.message.includes('Empty result'))
+// }
+// 
+// assertEqual(call('500 kg - 120%'), '-100 kg')
+// 
+// 
+// // random complex operations with %
+// assertEqual(call('(3%+2%) (1 +1)'), '10 PERCENT')
 
 // TODO: mul& div with percents
+assertEqual(call('200 * 10%'), 20)
+
+assertEqual(call('200 / 5%'), 4000 )
+// 
+assertEqual(call('200% * 2'), '400 PERCENT')
+assertEqual(call('-100% * 3'), '-300 PERCENT')
+
+assertEqual(call('200kg * 10%'), '20 kg')
+assertEqual(call('200kg / 5%').to('kg'), '4000 kg')
+
+
+
 //?assertEqual(call('(100 + 10%)4%/2'), '10 PERCENT')  //implicit conversion
 
 

@@ -119,9 +119,6 @@ AS_UNIT ->
    AS_MEASURE       {% id %}
  | AS_PERCENT       {% id %}
 
-# AS_MEASURE -> AS_UNIT  {% (d,l, rej) => isMeasure(d[0]) ? d[0] : rej %}
-# AS_PERCENT -> AS_UNIT  {% (d,l, rej) => isPercent(d[0]) ? d[0] : rej %}
-
 
 AS_MEASURE ->
    AS_NUM plus AS_MEASURE      {% (d,l,rej) => math.add(toUnit(d[0], d[2]), d[2]) %}
@@ -152,12 +149,9 @@ AS_PERCENT ->
  | AS_PERCENT minus AS_NUM      {% ([p,,n],l,rej) => math.subtract(p, toUnit(n, p)) %}
  | MD_PERCENT                   {% id %}
 
-MD_PERCENT -> MD_UNIT {% (d,l, rej) => isPercent(d[0]) ? d[0] : rej %}
 
-MD_MEASURE -> MD_UNIT {% (d,l, rej) => isMeasure(d[0]) ? d[0] : rej %}
-
-
-
+#MD_PERCENT -> MD_UNIT {% (d,l, rej) => isPercent(d[0]) ? d[0] : rej %}
+#MD_MEASURE -> MD_UNIT {% (d,l, rej) => isMeasure(d[0]) ? d[0] : rej %}
 
 
 AS_NUM ->
@@ -168,29 +162,55 @@ AS_NUM ->
  | MD_NUM  {% id %}
 
 
+# MD_UNIT ->
+#     MD_MEASURE       {% id %}
+#   | MD_PERCENT       {% id %}
+
+MD_MEASURE ->
+     MD_MEASURE mul SIGNED_NUM  {% (d,l, rej) => math.multiply(d[0], d[2]) %}
+   | MD_NUM mul SIGNED_MEASURE  {% (d,l, rej) => math.multiply(d[0], d[2]) %}
+
+   | MD_MEASURE mul VALUE_PERCENT  {% ([m,,p],l, rej) =>{console.log('m*p', m,p); return math.multiply(m, p.value/100) } %}
+
+   | MD_MEASURE divide VALUE_PERCENT  {% ([m,,p],l, rej) => {console.log('m/p', m,p,p.value); return math.divide(m, p.value/100) } %}
+
+   # implicit multiplication (NOTE: always require spaces around parentheses)
+   | MD_MEASURE __ VALUE_NUM   {% (d,l, rej) => math.multiply(d[0], d[2]) %}
+   | MD_NUM __ VALUE_MEASURE   {% (d,l, rej) => math.multiply(d[0], d[2]) %}
+
+   | MD_MEASURE divide SIGNED_NUM  {% (d,l, rej) => math.divide(d[0], d[2]) %}
+   | SIGNED_MEASURE                 {% id %}
+
+MD_PERCENT ->
+    MD_PERCENT mul VALUE_NUM  {% ([p,,n],l, rej) => {log(`%*n`,p,n, p.value); return math.multiply(p, n)} %}
+  | MD_PERCENT __ VALUE_NUM   {% ([p,,n],l, rej) => math.multiply(p/100, n) %}
+  | SIGNED_PERCENT       {% id %}
+
+#    | SIGNED_PERCENT mul MD_NUM  {% ([p,,n],l, rej) => math.multiply(n/100*p, n) %}
 
 MD_NUM ->
      MD_NUM mul E_NUM   {% (d,l, rej) => math.multiply(d[0], d[2]) %}
+   | MD_NUM mul SIGNED_PERCENT  {% ([n,,p],l,rej) => n * p.value/100 %}
 
    # implicit multiplication (NOTE: always require spaces around parentheses)
    | MD_NUM __ E_NUM    {% (d,l, rej) => math.multiply(d[0], d[2]) %}
+#   | MD_NUM __ SIGNED_PERCENT  {% ([n,,p],l,rej) => n * p.value/100 %}
 
    | MD_NUM divide E_NUM  {% (d,l, rej) => math.divide(d[0], d[2]) %}
+   | MD_NUM divide SIGNED_PERCENT  {% ([n,,p],l,rej) => n / p.value*100 %}
    | MD_NUM mod E_NUM  {% (d,l, rej) => math.mod(d[0], d[2]) %}
    | E_NUM     {% id %}
 
 
-# Multiplication and division
-MD_UNIT ->
-     MD_UNIT mul SIGNED_NUM  {% (d,l, rej) => math.multiply(d[0], d[2]) %}
-   | MD_NUM mul SIGNED_UNIT  {% (d,l, rej) => math.multiply(d[0], d[2]) %}
+SIGNED_PERCENT -> SIGNED_UNIT {% (d,l, rej) => isPercent(d[0]) ? d[0] : rej %}
+SIGNED_MEASURE -> SIGNED_UNIT {% (d,l, rej) => isMeasure(d[0]) ? d[0] : rej %}
+VALUE_MEASURE -> VALUE_UNIT {% (d,l, rej) => isMeasure(d[0]) ? d[0] : rej %}
+VALUE_PERCENT -> VALUE_UNIT {% (d,l, rej) => isPercent(d[0]) ? d[0] : rej %}
 
-   # implicit multiplication (NOTE: always require spaces around parentheses)
-   | MD_UNIT __ VALUE_NUM   {% (d,l, rej) => math.multiply(d[0], d[2]) %}
-   | MD_NUM __ VALUE_UNIT   {% (d,l, rej) => math.multiply(d[0], d[2]) %}
 
-   | MD_UNIT divide SIGNED_NUM  {% (d,l, rej) => math.divide(d[0], d[2]) %}
-   | SIGNED_UNIT                 {% id %}
+
+
+
 
 # Exponents
 E_NUM ->
