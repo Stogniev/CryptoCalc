@@ -150,9 +150,6 @@ AS_PERCENT ->
  | MD_PERCENT                   {% id %}
 
 
-#MD_PERCENT -> MD_UNIT {% (d,l, rej) => isPercent(d[0]) ? d[0] : rej %}
-#MD_MEASURE -> MD_UNIT {% (d,l, rej) => isMeasure(d[0]) ? d[0] : rej %}
-
 
 AS_NUM ->
    AS_NUM plus MD_NUM   {% (d,l,rej) => math.add(d[0], d[2]) %}
@@ -162,17 +159,13 @@ AS_NUM ->
  | MD_NUM  {% id %}
 
 
-# MD_UNIT ->
-#     MD_MEASURE       {% id %}
-#   | MD_PERCENT       {% id %}
-
 MD_MEASURE ->
      MD_MEASURE mul SIGNED_NUM  {% (d,l, rej) => math.multiply(d[0], d[2]) %}
    | MD_NUM mul SIGNED_MEASURE  {% (d,l, rej) => math.multiply(d[0], d[2]) %}
 
-   | MD_MEASURE mul VALUE_PERCENT  {% ([m,,p],l, rej) =>{console.log('m*p', m,p); return math.multiply(m, p.value/100) } %}
+   | MD_MEASURE mul VALUE_PERCENT  {% ([m,,p],l, rej) =>{log('m*p', m,p); return math.multiply(m, p.value/100) } %}
 
-   | MD_MEASURE divide VALUE_PERCENT  {% ([m,,p],l, rej) => {console.log('m/p', m,p,p.value); return math.divide(m, p.value/100) } %}
+   | MD_MEASURE divide VALUE_PERCENT  {% ([m,,p],l, rej) => {log('m/p', m,p,p.value); return math.divide(m, p.value/100) } %}
 
    # implicit multiplication (NOTE: always require spaces around parentheses)
    | MD_MEASURE __ VALUE_NUM   {% (d,l, rej) => math.multiply(d[0], d[2]) %}
@@ -182,11 +175,10 @@ MD_MEASURE ->
    | SIGNED_MEASURE                 {% id %}
 
 MD_PERCENT ->
-    MD_PERCENT mul VALUE_NUM  {% ([p,,n],l, rej) => {log(`%*n`,p,n, p.value); return math.multiply(p, n)} %}
-  | MD_PERCENT __ VALUE_NUM   {% ([p,,n],l, rej) => math.multiply(p/100, n) %}
+    MD_PERCENT mul VALUE_NUM  {% ([p,,n],l, rej) => {log(`%*n`,p,n); return math.multiply(p, n)} %}
+  | MD_PERCENT __ VALUE_NUM   {% ([p,,n],l, rej) =>  math.multiply(p, n) %}
+  | MD_PERCENT divide VALUE_NUM  {% ([p,,n],l, rej) => {log(`%/n`,p,n); return math.divide(p, n)} %}
   | SIGNED_PERCENT       {% id %}
-
-#    | SIGNED_PERCENT mul MD_NUM  {% ([p,,n],l, rej) => math.multiply(n/100*p, n) %}
 
 MD_NUM ->
      MD_NUM mul E_NUM   {% (d,l, rej) => math.multiply(d[0], d[2]) %}
@@ -206,9 +198,6 @@ SIGNED_PERCENT -> SIGNED_UNIT {% (d,l, rej) => isPercent(d[0]) ? d[0] : rej %}
 SIGNED_MEASURE -> SIGNED_UNIT {% (d,l, rej) => isMeasure(d[0]) ? d[0] : rej %}
 VALUE_MEASURE -> VALUE_UNIT {% (d,l, rej) => isMeasure(d[0]) ? d[0] : rej %}
 VALUE_PERCENT -> VALUE_UNIT {% (d,l, rej) => isPercent(d[0]) ? d[0] : rej %}
-
-
-
 
 
 
