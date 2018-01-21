@@ -7,7 +7,8 @@
 
 
 const confusingUnits = [
-  'as', 'in'  // used for money conversion
+  'as', 'in',   // used for money conversion
+  'a' // used as word in "as a % of"
 ]
 
 const lexemSeparator = ';'

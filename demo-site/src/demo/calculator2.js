@@ -110,6 +110,9 @@ function prepareTxt(text, verbose=false) {
   //   (match, amount, curr, end) => `${amount} ${currencies.detect(curr)}${end}`
   // )
 
+  // 35.3) replace 'as a % of' to 'as_a_percent_of'
+  txt = txt.replace(new RegExp(`as a % of`, 'gi'), 'asapercentof')
+
 
   // 36) replace '%' to 'PERCENT' (mathjs not support % sign)
   txt = txt.replace(new RegExp(`%`, 'gi'), 'PERCENT')
@@ -126,6 +129,7 @@ function prepareTxt(text, verbose=false) {
   //41) back: remove ";" from confusing units (
   const CU = common.confusingUnits.map(escape).join('|')
   txt = txt.replace(new RegExp(` (${CU}); `, 'gi'), ' $1 ')
+
 
 
 
@@ -567,7 +571,12 @@ assertEqual(call('6(3)'), 18)
 assertEqual(call('$30 CAD + 5 USD - 7EUR').toNumber('USD'),
             30 * rates['CAD'] + 5 - 7 * rates['EUR'], ALMOST)
 assertEqual(call(`${1/rates['RUB']} roubles - 1 $`).toNumber('USD'), 0, ALMOST)
-// assertEqual(call(''), )
+assertEqual(call('20% of 10$'), '2 USD')
+assertEqual(call('5% on $30'), '31.5 USD')
+assertEqual(call('6% off 40 EUR'), '37.6 EUR')
+assertEqual(call('50$ as a % of 100$'), '50 PERCENT')
+assertEqual(call('50$ as a % of 100$'), '50 PERCENT') //TODO: check priority
+assertEqual(call('50 kg as a % of 1 tonne'), '5 PERCENT')
 // assertEqual(call(''), )
 // assertEqual(call(''), )
 // assertEqual(call(''), )
@@ -576,7 +585,7 @@ assertEqual(call(`${1/rates['RUB']} roubles - 1 $`).toNumber('USD'), 0, ALMOST)
 console.log('tests passed')
 
 function runmath(s) {
-  var ans;
+   var ans;
   try {// We want to catch parse errors and die appropriately
 
     // Make a parser and feed the input

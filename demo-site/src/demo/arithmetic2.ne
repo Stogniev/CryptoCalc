@@ -164,6 +164,11 @@ MD_MEASURE ->
    | MD_NUM mul SIGNED_MEASURE  {% (d,l, rej) => math.multiply(d[0], d[2]) %}
 
    | MD_MEASURE mul VALUE_PERCENT  {% ([m,,p],l, rej) =>{log('m*p', m,p); return math.multiply(m, p.value/100) } %}
+   | VALUE_PERCENT __ "of" __ MD_MEASURE  {% ([p,,,,m],l, rej) =>{log('p of m', p, m); return math.multiply(m, p.value/100) } %}
+
+   | VALUE_PERCENT __ "on" __ MD_MEASURE  {% ([p,,,,m],l, rej) =>{log('p on m', p, m); return math.add(m, math.multiply(math.divide(m, 100), p.value)) } %}
+
+   | VALUE_PERCENT __ "off" __ MD_MEASURE  {% ([p,,,,m],l, rej) =>{log('p off m', p, m); return math.subtract(m, math.multiply(math.divide(m, 100), p.value)) } %}
 
    | MD_MEASURE divide VALUE_PERCENT  {% ([m,,p],l, rej) => {log('m/p', m,p,p.value); return math.divide(m, p.value/100) } %}
 
@@ -178,6 +183,8 @@ MD_PERCENT ->
     MD_PERCENT mul VALUE_NUM  {% ([p,,n],l, rej) => {log(`%*n`,p,n); return math.multiply(p, n)} %}
   | MD_PERCENT __ VALUE_NUM   {% ([p,,n],l, rej) =>  math.multiply(p, n) %}
   | MD_PERCENT divide VALUE_NUM  {% ([p,,n],l, rej) => {log(`%/n`,p,n); return math.divide(p, n)} %}
+   | MD_MEASURE __ "asapercentof" __ MD_MEASURE  {% ([m1,,,,m2],l, rej) => {log('m1 as a % of m2', m1, m2); return math.unit(math.divide(m1, math.divide(m2, 100)), 'PERCENT') } %}
+   # | MD_MEASURE __ "asapercenton" __ MD_MEASURE  {% ([m1,,,,m2],l, rej) => {log('m1 as a % on m2', m1, m2); return  } %}
   | SIGNED_PERCENT       {% id %}
 
 MD_NUM ->
