@@ -29,41 +29,16 @@ function id(x) {return x[0]; }
     return isUnit(x) && !isPercent(x)
   }
 
-  function isNumber(x) {
-    return typeof(x) === 'number'
-  }
+  // function isNumber(x) {
+  //   return typeof(x) === 'number'
+  // }
 
   // convert n to baseUnit unit
   function toUnit(n, baseUnit) {
     return math.unit(n, getUnitName(baseUnit))
   }
 
-  // magic sum: "Number/Unit ± Unit" treat as "Unit ± Unit"
-  function magicSum(a, b, operation, reject) {
-    let operands = [a, b]
-    let unitName = null, numberIndex = null;
-    let numberCount = 0
 
-    for (let [i, x] of operands.entries()) {
-      if (isNumber(x)) {
-        numberIndex = i
-        numberCount++
-      } else if (isUnit(x)) {
-        unitName = x.units[0].unit.name
-      } else {
-        return reject
-      }
-    }
-    if (unitName === null || numberCount > 1 /*|| numberIndex === null*/)  return reject;
-
-    if (numberIndex !== null) {
-      operands[numberIndex] = math.unit(operands[numberIndex], unitName)
-    }
-
-    let r = operation(...operands)
-    log('magicSum:', operation.name, a, b, r)
-    return r
-  }
 var grammar = {
     Lexer: undefined,
     ParserRules: [
@@ -104,7 +79,7 @@ var grammar = {
     {"name": "AS_NUM", "symbols": ["AS_NUM", "plus", "MD_NUM"], "postprocess": (d,l,rej) => math.add(d[0], d[2])},
     {"name": "AS_NUM", "symbols": ["AS_NUM", "minus", "MD_NUM"], "postprocess": (d,l,rej) => math.subtract(d[0], d[2])},
     {"name": "AS_NUM", "symbols": ["AS_NUM", "plus", "MD_PERCENT"], "postprocess": ([n,,p],l,rej) => math.add(n, n/100*p.toNumber())},
-    {"name": "AS_NUM", "symbols": ["AS_NUM", "minus", "MD_PERCENT"], "postprocess": ([n,,p],l,rej) => math.subtract(d[0], n/100*p.toNumber())},
+    {"name": "AS_NUM", "symbols": ["AS_NUM", "minus", "MD_PERCENT"], "postprocess": ([n,,p],l,rej) => math.subtract(n, n/100*p.toNumber())},
     {"name": "AS_NUM", "symbols": ["MD_NUM"], "postprocess": id},
     {"name": "MD_MEASURE", "symbols": ["MD_MEASURE", "mul", "SIGNED_NUM"], "postprocess": (d,l, rej) => math.multiply(d[0], d[2])},
     {"name": "MD_MEASURE", "symbols": ["MD_NUM", "mul", "SIGNED_MEASURE"], "postprocess": (d,l, rej) => math.multiply(d[0], d[2])},

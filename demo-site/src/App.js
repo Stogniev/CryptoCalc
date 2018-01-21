@@ -92,12 +92,12 @@ const info = `
 Implemented:
   - math calculations
   - unit calculations (including same-type mixed dimensions, scales)
-  - (NEW) implicit number-> unit conversion (Example: "1 + 2 USD" -> "3 USD")
-  - (NEW) currensy calculations (including mixed) (rates are just fixed for demo purpoces)
-  - (NEW) unit and money conversions (see examples below)
+  - implicit number-> unit conversion (Example: "1 + 2 USD" -> "3 USD")
+  - currensy calculations (including mixed) (rates are just fixed for demo purpoces)
+  - unit and money conversions (see examples below)
+  - (NEW) %-based expressions
 
 Not implemented yet:
-  - %-based expressions
   - summarizes, variables, prev, average, format
   - math scales
   - money scales
@@ -348,6 +348,18 @@ $30 CAD + 5 USD - 7EUR
 1 USD to UAH
 0.4 + 0.6 EUR in USD0.4 + 0.6 EUR in USD
 110 USD into EUR
+
+// percentage
+$10 - 40%
+20% of $10
+5% on $30
+6% off 40 EUR
+$50 as a % of $100
+$70 as a % on $20
+$20 as a % off $70
+5% of what is 6 EUR
+5% on what is 6 EUR
+5% off what is 6 EUR
 `
 
 export default App;

@@ -543,6 +543,7 @@ assertEqual(call('2%+3%'), '5 PERCENT')
 assertEqual(call('2% - 3%'), '-1 PERCENT')
 assertEqual(call('2% + 5'), '7 PERCENT')
 assertEqual(call('200 + 3%'), 206)
+assertEqual(call('200 - 3%'), 194)
 assertEqual(call('2% - 5'), '-3 PERCENT')
 assertEqual(call('300% - 6'), '294 PERCENT')
 

@@ -28,41 +28,16 @@
     return isUnit(x) && !isPercent(x)
   }
 
-  function isNumber(x) {
-    return typeof(x) === 'number'
-  }
+  // function isNumber(x) {
+  //   return typeof(x) === 'number'
+  // }
 
   // convert n to baseUnit unit
   function toUnit(n, baseUnit) {
     return math.unit(n, getUnitName(baseUnit))
   }
 
-  // magic sum: "Number/Unit ± Unit" treat as "Unit ± Unit"
-  function magicSum(a, b, operation, reject) {
-    let operands = [a, b]
-    let unitName = null, numberIndex = null;
-    let numberCount = 0
 
-    for (let [i, x] of operands.entries()) {
-      if (isNumber(x)) {
-        numberIndex = i
-        numberCount++
-      } else if (isUnit(x)) {
-        unitName = x.units[0].unit.name
-      } else {
-        return reject
-      }
-    }
-    if (unitName === null || numberCount > 1 /*|| numberIndex === null*/)  return reject;
-
-    if (numberIndex !== null) {
-      operands[numberIndex] = math.unit(operands[numberIndex], unitName)
-    }
-
-    let r = operation(...operands)
-    log('magicSum:', operation.name, a, b, r)
-    return r
-  }
 %}
 
 
@@ -155,7 +130,7 @@ AS_NUM ->
    AS_NUM plus MD_NUM   {% (d,l,rej) => math.add(d[0], d[2]) %}
  | AS_NUM minus MD_NUM  {% (d,l,rej) => math.subtract(d[0], d[2]) %}
  | AS_NUM plus MD_PERCENT {% ([n,,p],l,rej) => math.add(n, n/100*p.toNumber()) %}
- | AS_NUM minus MD_PERCENT {% ([n,,p],l,rej) => math.subtract(d[0], n/100*p.toNumber()) %}
+ | AS_NUM minus MD_PERCENT {% ([n,,p],l,rej) => math.subtract(n, n/100*p.toNumber()) %}
  | MD_NUM  {% id %}
 
 
@@ -337,7 +312,7 @@ unit ->
          log('u:', d, val)
 
          //  don't check unit correctness (assume math.js will)
-        if (val === 'PERCENT') reject
+         if (val === 'PERCENT') reject
 
 
          if (common.confusingUnits.includes(val)) {
