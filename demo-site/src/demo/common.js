@@ -6,11 +6,13 @@
 
 
 
+const scales = ["k", "thousand", "thousands", "M", "million", "millions", "billion", "billions"]
+
 const confusingUnits = [
   'as', 'in',   // used for money conversion
-  'a' // used as word in "as a % of"
+//!!?  'a' // used as word in "as a % of"
 ]
 
 const lexemSeparator = ';'
 
-module.exports = { confusingUnits, lexemSeparator }
+module.exports = { confusingUnits, lexemSeparator, scales }

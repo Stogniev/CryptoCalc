@@ -4,7 +4,7 @@ const nearley = require('nearley')
 const grammar = require('./grammar2.js')
 const assert = require('assert')
 const math = require('mathjs')
-const escape = require('regexp.escape');
+const escape = require('regexp.escape')
 
 const DEBUG = process.env.DEBUG
 const currencies = require('./currencies')
@@ -82,6 +82,13 @@ function prepareTxt(text, verbose=false) {
   // 30) Add spaces before all +/- signs (to simplify unary/binary sign logic)
   txt = txt.replace(new RegExp(`\\s*([+-])`, 'gi'), ' $1')
 
+
+
+  // 34) replace scale prefixes by separator (to not confuse with units like "km")
+  const S = common.scales.join('|')
+  txt = txt.replace(new RegExp(`([^a-zA-Z])(${S})((?:[^a-zA-Z]|$))`, 'g'), `$1 $2${common.lexemSeparator} $3`)
+
+
   // 35) Convert currerncies to ISO format (math.js doesn't support specsymbols like "$" or "฿")
 
   // 35.0) convert pre&post-sign: "$18.5 USD" -> "18.5 USD" for every currency SINGLE-chars
@@ -135,12 +142,12 @@ function prepareTxt(text, verbose=false) {
   //    reason: to parse '10 cm' and same time avoid word cropping "1 and 2 m"ul 3
   const UP = UnitPrefixes.map(escape).join('|')
   const UN = UnitNames.map(escape).join('|')
-  // console.log('UP', UP)
-  // console.log('UN', UN)
+  //console.log('UP', UP)
+  //console.log('UN', UN)
 
-  txt = txt.replace(new RegExp(`([^a-zA-Z])(${UP})(${UN})((?:[^a-zA-Z]|$))`, 'gi'), `$1 $2$3${common.lexemSeparator} $4`)
+  txt = txt.replace(new RegExp(`([^a-zA-Z])(${UP})(${UN})((?:[^a-zA-Z]|$))`, 'g'), `$1 $2$3${common.lexemSeparator} $4`)
 
-  //41) back: remove ";" from confusing units (
+  //40-2) back: remove ";" from confusing units (   ??!! better way (just not add first)
   const CU = common.confusingUnits.map(escape).join('|')
   txt = txt.replace(new RegExp(` (${CU}); `, 'gi'), ' $1 ')
 
@@ -412,11 +419,6 @@ assertEqual(String(call('1 m 70 cm + 1 ft').toSI().value), 2.0048, ALMOST)
 
 assertEqual(String(call('0.1km 11m 11 cm + 0.5 * 2 km 2 mm').toSI().value), 1111.111, ALMOST)
 
-
-
-
-
-
 //money
 assertEqual(call('10 USD'), '10 USD')
 assertEqual(call('10 usd'), '10 USD')
@@ -597,10 +599,19 @@ assertEqual(call('$20 as a % off $70').value, 28.57, ALMOST) // 20/0.7
 assertEqual(call('5% of what is 6 EUR').toNumber('USD'), 0.3, ALMOST)
 assertEqual(call('5% on what is 6 EUR').toNumber('EUR'), 6.3, ALMOST)
 assertEqual(call('5% off what is 6 EUR').toNumber('EUR'), 5.7, ALMOST)
-// assertEqual(call(''), )
-// assertEqual(call(''), )
-// assertEqual(call(''), )
-// assertEqual(call(''), )
+
+
+// Scales
+assertEqual(call('4k'), 4000)
+assertEqual(call('1.5thousand'), 1500)
+assertEqual(call('5M'), 5000000)
+assertEqual(call('6 billion'), 6000000000)
+assertEqual(call('1k-4M'), -3999000)
+
+assertEqual(call('2k K').toString(), '2000 K') // 2k Kelvins
+//assertEqual(call('$2k').toString(), '2000 USD')
+
+
 
 console.log('tests passed')
 

@@ -37,11 +37,10 @@
     return math.unit(n, getUnitName(baseUnit))
   }
 
-
 %}
 
 
-main -> _ OPS _ {% function(d) { log('>',d, typeof d[1]); return d[1]; } %}
+main -> _ OPS _ {% function(d) { /*log('>',d, typeof d[1]);*/ return d[1]; } %}
 
 # Operations (all)
 OPS -> OPS_NUM        {% id %}
@@ -209,8 +208,18 @@ SIGNED_UNIT ->
 
 
 VALUE_NUM ->
-    P_NUM         {% id %}
+    VALUE_NUM _ SCALE separator  {% ([n,,scale],l,r) => {log('ns',n, scale); return n * scale} %}
+  | P_NUM         {% id %}
   | N             {% id %}
+
+SCALE ->
+   SCALE_K  {% () => 1000 %}
+ | SCALE_M  {% () => 1000000 %}
+ | SCALE_B  {% () => 1000000000 %}
+
+SCALE_K -> "k" | "thousand" | "thousands"
+SCALE_M -> "M" | "million" | "millions"
+SCALE_B -> "billion" | "billions"
 
 
 VALUE_UNIT ->
@@ -311,7 +320,7 @@ unit ->
          const val = d[0].join('')
          log('u:', d, val)
 
-         //  don't check unit correctness (assume math.js will)
+         //  dont check unit correctness (assume math.js will)
          //?? if (val === 'PERCENT') reject
 
 

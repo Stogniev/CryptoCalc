@@ -38,11 +38,10 @@ function id(x) {return x[0]; }
     return math.unit(n, getUnitName(baseUnit))
   }
 
-
 var grammar = {
     Lexer: undefined,
     ParserRules: [
-    {"name": "main", "symbols": ["_", "OPS", "_"], "postprocess": function(d) { log('>',d, typeof d[1]); return d[1]; }},
+    {"name": "main", "symbols": ["_", "OPS", "_"], "postprocess": function(d) { /*log('>',d, typeof d[1]);*/ return d[1]; }},
     {"name": "OPS", "symbols": ["OPS_NUM"], "postprocess": id},
     {"name": "OPS", "symbols": ["OPS_UNIT"], "postprocess": id},
     {"name": "OPS_NUM", "symbols": ["SHIFT"], "postprocess": id},
@@ -130,8 +129,26 @@ var grammar = {
     {"name": "SIGNED_UNIT", "symbols": ["__", {"literal":"+"}, "_", "VALUE_UNIT"], "postprocess": function(d) { log('u+'); return d[3]; }},
     {"name": "SIGNED_UNIT", "symbols": ["__", {"literal":"-"}, "_", "VALUE_UNIT"], "postprocess": function(d) { log('u-'); return math.multiply(-1, d[3]) }},
     {"name": "SIGNED_UNIT", "symbols": ["VALUE_UNIT"], "postprocess": function(d) {log('value+unit:', d[0]); return d[0]; }},
+    {"name": "VALUE_NUM", "symbols": ["VALUE_NUM", "_", "SCALE", "separator"], "postprocess": ([n,,scale],l,r) => {log('ns',n, scale); return n * scale}},
     {"name": "VALUE_NUM", "symbols": ["P_NUM"], "postprocess": id},
     {"name": "VALUE_NUM", "symbols": ["N"], "postprocess": id},
+    {"name": "SCALE", "symbols": ["SCALE_K"], "postprocess": () => 1000},
+    {"name": "SCALE", "symbols": ["SCALE_M"], "postprocess": () => 1000000},
+    {"name": "SCALE", "symbols": ["SCALE_B"], "postprocess": () => 1000000000},
+    {"name": "SCALE_K", "symbols": [{"literal":"k"}]},
+    {"name": "SCALE_K$string$1", "symbols": [{"literal":"t"}, {"literal":"h"}, {"literal":"o"}, {"literal":"u"}, {"literal":"s"}, {"literal":"a"}, {"literal":"n"}, {"literal":"d"}], "postprocess": function joiner(d) {return d.join('');}},
+    {"name": "SCALE_K", "symbols": ["SCALE_K$string$1"]},
+    {"name": "SCALE_K$string$2", "symbols": [{"literal":"t"}, {"literal":"h"}, {"literal":"o"}, {"literal":"u"}, {"literal":"s"}, {"literal":"a"}, {"literal":"n"}, {"literal":"d"}, {"literal":"s"}], "postprocess": function joiner(d) {return d.join('');}},
+    {"name": "SCALE_K", "symbols": ["SCALE_K$string$2"]},
+    {"name": "SCALE_M", "symbols": [{"literal":"M"}]},
+    {"name": "SCALE_M$string$1", "symbols": [{"literal":"m"}, {"literal":"i"}, {"literal":"l"}, {"literal":"l"}, {"literal":"i"}, {"literal":"o"}, {"literal":"n"}], "postprocess": function joiner(d) {return d.join('');}},
+    {"name": "SCALE_M", "symbols": ["SCALE_M$string$1"]},
+    {"name": "SCALE_M$string$2", "symbols": [{"literal":"m"}, {"literal":"i"}, {"literal":"l"}, {"literal":"l"}, {"literal":"i"}, {"literal":"o"}, {"literal":"n"}, {"literal":"s"}], "postprocess": function joiner(d) {return d.join('');}},
+    {"name": "SCALE_M", "symbols": ["SCALE_M$string$2"]},
+    {"name": "SCALE_B$string$1", "symbols": [{"literal":"b"}, {"literal":"i"}, {"literal":"l"}, {"literal":"l"}, {"literal":"i"}, {"literal":"o"}, {"literal":"n"}], "postprocess": function joiner(d) {return d.join('');}},
+    {"name": "SCALE_B", "symbols": ["SCALE_B$string$1"]},
+    {"name": "SCALE_B$string$2", "symbols": [{"literal":"b"}, {"literal":"i"}, {"literal":"l"}, {"literal":"l"}, {"literal":"i"}, {"literal":"o"}, {"literal":"n"}, {"literal":"s"}], "postprocess": function joiner(d) {return d.join('');}},
+    {"name": "SCALE_B", "symbols": ["SCALE_B$string$2"]},
     {"name": "VALUE_UNIT", "symbols": ["P_UNIT"], "postprocess": id},
     {"name": "VALUE_UNIT", "symbols": ["VALUE_UNIT", "__", "VALUE_NUM", "_", "unit"], "postprocess":  // example: "1m 20 cm 30 mm"
          function(d,l, reject) {
@@ -224,7 +241,7 @@ var grammar = {
           const val = d[0].join('')
           log('u:', d, val)
         
-          //  don't check unit correctness (assume math.js will)
+          //  dont check unit correctness (assume math.js will)
           //?? if (val === 'PERCENT') reject
         
         
