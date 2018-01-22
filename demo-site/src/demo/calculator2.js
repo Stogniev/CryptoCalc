@@ -10,7 +10,8 @@ const DEBUG = process.env.DEBUG
 const currencies = require('./currencies')
 const rates = require('./rates')
 
-const common = require('./common')
+const { scales, isUnit, lexemSeparator, confusingUnits
+      } = require('./common')
 
 // Create units for every currency code (without subunits)
 math.createUnit('USD')
@@ -21,13 +22,6 @@ currencies.codes.forEach( code => {
   math.createUnit(code, {definition: `${rates[code]} USD`})
 })
 
-
-
-// artificional currencies for tesing
-math.createUnit('TENDOLL', {definition: '10 USD'})
-math.createUnit('ZUAH', {definition: `${1/28} USD`})
-math.createUnit('ZUSD', {definition: '1 USD'})
-math.createUnit('ZEUR', {definition: '1.1 USD'})
 
 const ALMOST=true
 
@@ -83,13 +77,14 @@ function prepareTxt(text, verbose=false) {
   txt = txt.replace(new RegExp(`\\s*([+-])`, 'gi'), ' $1')
 
 
+  // 34) convert scaled numbers (2.3k -> 2300) (in prepare to avoid confusing with units)
+  const S = Object.keys(scales).join('|')
+  txt = txt.replace(
+    new RegExp(`([0-9]+(?:\\.\\d+)?)(?:\\s*)(${S})((?:[^a-zA-Z]|$))`, 'g'),
+    (m, number,    scale,post) => `${Number(number)*scales[scale]}${post}`
+  )
 
-  // 34) replace scale prefixes by separator (to not confuse with units like "km")
-  const S = common.scales.join('|')
-  txt = txt.replace(new RegExp(`([^a-zA-Z])(${S})((?:[^a-zA-Z]|$))`, 'g'), `$1 $2${common.lexemSeparator} $3`)
-
-
-  // 35) Convert currerncies to ISO format (math.js doesn't support specsymbols like "$" or "฿")
+  // 35) Convert currencies to ISO format (math.js not support symbols like "$" or "฿")
 
   // 35.0) convert pre&post-sign: "$18.5 USD" -> "18.5 USD" for every currency SINGLE-chars
   const currSymbols = Object.keys(currencies.symbolToCode).map(escape).join('|')
@@ -110,29 +105,13 @@ function prepareTxt(text, verbose=false) {
     new RegExp(`([^A-Za-z_]+|^)(${currSymbols})(\\W+|$)`, 'gi'),
     (match, begin, curr, end) => `${begin} ${currencies.detect(curr)} ${end}`
   )
-  // old:  (not support operations like "(5+3)$"
-  // 35.2) "18.5 $" -> "18.5 USD"
-  // txt = txt.replace(
-  //   new RegExp(`(\\d+(?:\\.\\d+)?)\\s*(${currSymbols})(\\W+|$)`, 'gi'),
-  //   (match, amount, curr, end) => `${amount} ${currencies.detect(curr)}${end}`
-  // )
 
-  // 35.3)
+  // 35.9)
   txt = txt.replace(new RegExp(`as a % of`, 'gi'), 'asapercentof')
-
-  // 35.4)
   txt = txt.replace(new RegExp(`as a % on`, 'gi'), 'asapercenton')
-
-  // 35.5)
   txt = txt.replace(new RegExp(`as a % off`, 'gi'), 'asapercentoff')
-
-  // 35.6)
   txt = txt.replace(new RegExp(`of what is`, 'gi'), 'ofwhatis')
-
-  // 35.7)
   txt = txt.replace(new RegExp(`on what is`, 'gi'), 'onwhatis')
-
-  // 35.8)
   txt = txt.replace(new RegExp(`off what is`, 'gi'), 'offwhatis')
 
   // 36) replace '%' to 'PERCENT' (mathjs not support % sign)
@@ -142,17 +121,11 @@ function prepareTxt(text, verbose=false) {
   //    reason: to parse '10 cm' and same time avoid word cropping "1 and 2 m"ul 3
   const UP = UnitPrefixes.map(escape).join('|')
   const UN = UnitNames.map(escape).join('|')
-  //console.log('UP', UP)
-  //console.log('UN', UN)
-
-  txt = txt.replace(new RegExp(`([^a-zA-Z])(${UP})(${UN})((?:[^a-zA-Z]|$))`, 'g'), `$1 $2$3${common.lexemSeparator} $4`)
+  txt = txt.replace(new RegExp(`([^a-zA-Z])(${UP})(${UN})((?:[^a-zA-Z]|$))`, 'g'), `$1 $2$3${lexemSeparator} $4`)
 
   //40-2) back: remove ";" from confusing units (   ??!! better way (just not add first)
-  const CU = common.confusingUnits.map(escape).join('|')
+  const CU = confusingUnits.map(escape).join('|')
   txt = txt.replace(new RegExp(` (${CU}); `, 'gi'), ' $1 ')
-
-
-
 
   // 50) remove multispace (produced user, 4)) reason: to avoid multiresults
   txt = txt.replace(new RegExp('\\s+', 'gi'), ' ')
@@ -162,11 +135,6 @@ function prepareTxt(text, verbose=false) {
 
   return txt
 }
-
-// test prepareTxt
-// assertEqual(prepareTxt('sin (x)+ 3(4-3) - cos(x)/2(4+8) -blasin(4+3)'),
-//                        'sin( x ) + 3 ( 4-3 ) - cos( x ) /2 ( 4+8 ) -blasin ( 4+3 ) ')
-
 
 function call(text, verbose=DEBUG) {
   return prepareAndParse(text, verbose).results[0]
@@ -205,7 +173,7 @@ function prepareAndParse(text, verbose=false) {
 
 function formatAnswerExpression(answer) {
   let r = answer.lexer.buffer
-  r = r.replace(new RegExp(common.lexemSeparator, 'g'), '')  // clear all ";" separators
+  r = r.replace(new RegExp(lexemSeparator, 'g'), '')  // clear all ";" separators
   r = r.replace(new RegExp('PERCENT', 'g'), '%')  // PERCENT -> %
   return r
 }
@@ -600,18 +568,22 @@ assertEqual(call('5% of what is 6 EUR').toNumber('USD'), 0.3, ALMOST)
 assertEqual(call('5% on what is 6 EUR').toNumber('EUR'), 6.3, ALMOST)
 assertEqual(call('5% off what is 6 EUR').toNumber('EUR'), 5.7, ALMOST)
 
-
 // Scales
 assertEqual(call('4k'), 4000)
+assertEqual(call('-1000 + 4.5k + 1000'), 4500)
 assertEqual(call('1.5thousand'), 1500)
 assertEqual(call('5M'), 5000000)
 assertEqual(call('6 billion'), 6000000000)
 assertEqual(call('1k-4M'), -3999000)
+assertEqual(call('1000k - 1M'), 0)
 
 assertEqual(call('2k K').toString(), '2000 K') // 2k Kelvins
-//assertEqual(call('$2k').toString(), '2000 USD')
+assertEqual(call('$2k').toString(), '2000 USD')
+assertEqual(call('2M eur').toNumber('EUR'), 2000000)
 
+assertEqual(call('2k mm + 2m').toString(), '4 m')
 
+assertEqual(call('$2.2k in ZEUR').toNumber('ZEUR'), 2000, ALMOST)
 
 console.log('tests passed')
 
@@ -631,8 +603,8 @@ function runmath(s) {
 
     ans = call(s, DEBUG)
 
-    if (ans instanceof math.type.Unit) {
-      console.log('r.toNumber:', ans.clone().toNumber(), 'r.toString:', ans.clone().toString())
+    if (isUnit(ans)) {
+      console.log([ans.clone().toNumber(), ans.clone().format({notation: 'fixed', precision:2}), ans.clone().toString()].join('/'))
     }
 
     return ans

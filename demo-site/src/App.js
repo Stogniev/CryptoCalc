@@ -4,12 +4,6 @@ import './App.css';
 import math from 'mathjs'
 import { prepareAndParse, formatAnswerExpression } from './demo/calculator2'
 
-//console.log('mmmmmmmmmmmmmm', math, math.eval('1+1'))
-
-//const r = runmath('2 UAH + 1 USD ')  //math.eval('1+1')
-//console.log(r)
-
-
 
 class App extends Component {
 
@@ -69,7 +63,7 @@ class App extends Component {
       <div className="App">
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Calculator demo</h1>
+          <h1 className="App-title">Calculator demo 2018-01-22_18:38</h1>
         </header>
         <p className="center">
           <input placeholder="2 + 2" onChange={this.expressionChanged} autoFocus={true}
@@ -96,6 +90,8 @@ Implemented:
   - currensy calculations (including mixed) (rates are just fixed for demo purpoces)
   - unit and money conversions (see examples below)
   - (NEW) %-based expressions
+  - (NEW) math scales
+  - (NEW) money and units scales
 
 Not implemented yet:
   - summarizes, variables, prev, average, format
@@ -360,6 +356,19 @@ $20 as a % off $70
 5% of what is 6 EUR
 5% on what is 6 EUR
 5% off what is 6 EUR
+
+4k
+-1000 + 4.5k + 1000
+1.5thousand
+5M
+6 billion
+1k-4M
+
+2k K
+$2k
+2M eur
+2k mm + 2m
+$2.2k in ZEUR
 `
 
 export default App;

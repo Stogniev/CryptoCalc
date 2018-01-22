@@ -239,6 +239,14 @@ const openexchangeratesCurrencies = {
   ZMW: {name: 'Zambian Kwacha', },
 }
 
+
+// Artificial currencies for tests
+openexchangeratesCurrencies['TENDOLL'] = {}
+openexchangeratesCurrencies['ZUAH'] = {}
+openexchangeratesCurrencies['ZUSD'] = {}
+openexchangeratesCurrencies['ZEUR'] = {}
+
+
 // ALL currency codes
 const codes = [...new Set([
   //...Object.keys(cryptoCurrencies),

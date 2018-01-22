@@ -10,32 +10,7 @@
     }
   }
 
-  const common = require('./common')
-
-  function getUnitName(u) {
-    return u.units[0].prefix.name + u.units[0].unit.name
-  }
-
-  function isUnit(x) {
-    return x instanceof math.type.Unit
-  }
-
-  function isPercent(x) {
-    return isUnit(x) && getUnitName(x) === 'PERCENT'
-  }
-
-  function isMeasure(x) {
-    return isUnit(x) && !isPercent(x)
-  }
-
-  // function isNumber(x) {
-  //   return typeof(x) === 'number'
-  // }
-
-  // convert n to baseUnit unit
-  function toUnit(n, baseUnit) {
-    return math.unit(n, getUnitName(baseUnit))
-  }
+  const { isPercent, isMeasure, toUnit, confusingUnits } = require('./common')
 
 %}
 
@@ -208,18 +183,8 @@ SIGNED_UNIT ->
 
 
 VALUE_NUM ->
-    VALUE_NUM _ SCALE separator  {% ([n,,scale],l,r) => {log('ns',n, scale); return n * scale} %}
-  | P_NUM         {% id %}
+    P_NUM         {% id %}
   | N             {% id %}
-
-SCALE ->
-   SCALE_K  {% () => 1000 %}
- | SCALE_M  {% () => 1000000 %}
- | SCALE_B  {% () => 1000000000 %}
-
-SCALE_K -> "k" | "thousand" | "thousands"
-SCALE_M -> "M" | "million" | "millions"
-SCALE_B -> "billion" | "billions"
 
 
 VALUE_UNIT ->
@@ -324,7 +289,7 @@ unit ->
          //?? if (val === 'PERCENT') reject
 
 
-         if (common.confusingUnits.includes(val)) {
+         if (confusingUnits.includes(val)) {
            log(`Denying confusing "${val}" unit`)
            return reject
          }
@@ -343,7 +308,7 @@ unit ->
        }
      %}
 
-separator -> ";"    #  common.lexemSeparator
+separator -> ";"    #  lexemSeparator
 
 plus -> _ "+" _
      | _ "plus" _

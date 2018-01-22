@@ -11,32 +11,7 @@ function id(x) {return x[0]; }
     }
   }
 
-  const common = require('./common')
-
-  function getUnitName(u) {
-    return u.units[0].prefix.name + u.units[0].unit.name
-  }
-
-  function isUnit(x) {
-    return x instanceof math.type.Unit
-  }
-
-  function isPercent(x) {
-    return isUnit(x) && getUnitName(x) === 'PERCENT'
-  }
-
-  function isMeasure(x) {
-    return isUnit(x) && !isPercent(x)
-  }
-
-  // function isNumber(x) {
-  //   return typeof(x) === 'number'
-  // }
-
-  // convert n to baseUnit unit
-  function toUnit(n, baseUnit) {
-    return math.unit(n, getUnitName(baseUnit))
-  }
+  const { isPercent, isMeasure, toUnit, confusingUnits } = require('./common')
 
 var grammar = {
     Lexer: undefined,
@@ -129,26 +104,8 @@ var grammar = {
     {"name": "SIGNED_UNIT", "symbols": ["__", {"literal":"+"}, "_", "VALUE_UNIT"], "postprocess": function(d) { log('u+'); return d[3]; }},
     {"name": "SIGNED_UNIT", "symbols": ["__", {"literal":"-"}, "_", "VALUE_UNIT"], "postprocess": function(d) { log('u-'); return math.multiply(-1, d[3]) }},
     {"name": "SIGNED_UNIT", "symbols": ["VALUE_UNIT"], "postprocess": function(d) {log('value+unit:', d[0]); return d[0]; }},
-    {"name": "VALUE_NUM", "symbols": ["VALUE_NUM", "_", "SCALE", "separator"], "postprocess": ([n,,scale],l,r) => {log('ns',n, scale); return n * scale}},
     {"name": "VALUE_NUM", "symbols": ["P_NUM"], "postprocess": id},
     {"name": "VALUE_NUM", "symbols": ["N"], "postprocess": id},
-    {"name": "SCALE", "symbols": ["SCALE_K"], "postprocess": () => 1000},
-    {"name": "SCALE", "symbols": ["SCALE_M"], "postprocess": () => 1000000},
-    {"name": "SCALE", "symbols": ["SCALE_B"], "postprocess": () => 1000000000},
-    {"name": "SCALE_K", "symbols": [{"literal":"k"}]},
-    {"name": "SCALE_K$string$1", "symbols": [{"literal":"t"}, {"literal":"h"}, {"literal":"o"}, {"literal":"u"}, {"literal":"s"}, {"literal":"a"}, {"literal":"n"}, {"literal":"d"}], "postprocess": function joiner(d) {return d.join('');}},
-    {"name": "SCALE_K", "symbols": ["SCALE_K$string$1"]},
-    {"name": "SCALE_K$string$2", "symbols": [{"literal":"t"}, {"literal":"h"}, {"literal":"o"}, {"literal":"u"}, {"literal":"s"}, {"literal":"a"}, {"literal":"n"}, {"literal":"d"}, {"literal":"s"}], "postprocess": function joiner(d) {return d.join('');}},
-    {"name": "SCALE_K", "symbols": ["SCALE_K$string$2"]},
-    {"name": "SCALE_M", "symbols": [{"literal":"M"}]},
-    {"name": "SCALE_M$string$1", "symbols": [{"literal":"m"}, {"literal":"i"}, {"literal":"l"}, {"literal":"l"}, {"literal":"i"}, {"literal":"o"}, {"literal":"n"}], "postprocess": function joiner(d) {return d.join('');}},
-    {"name": "SCALE_M", "symbols": ["SCALE_M$string$1"]},
-    {"name": "SCALE_M$string$2", "symbols": [{"literal":"m"}, {"literal":"i"}, {"literal":"l"}, {"literal":"l"}, {"literal":"i"}, {"literal":"o"}, {"literal":"n"}, {"literal":"s"}], "postprocess": function joiner(d) {return d.join('');}},
-    {"name": "SCALE_M", "symbols": ["SCALE_M$string$2"]},
-    {"name": "SCALE_B$string$1", "symbols": [{"literal":"b"}, {"literal":"i"}, {"literal":"l"}, {"literal":"l"}, {"literal":"i"}, {"literal":"o"}, {"literal":"n"}], "postprocess": function joiner(d) {return d.join('');}},
-    {"name": "SCALE_B", "symbols": ["SCALE_B$string$1"]},
-    {"name": "SCALE_B$string$2", "symbols": [{"literal":"b"}, {"literal":"i"}, {"literal":"l"}, {"literal":"l"}, {"literal":"i"}, {"literal":"o"}, {"literal":"n"}, {"literal":"s"}], "postprocess": function joiner(d) {return d.join('');}},
-    {"name": "SCALE_B", "symbols": ["SCALE_B$string$2"]},
     {"name": "VALUE_UNIT", "symbols": ["P_UNIT"], "postprocess": id},
     {"name": "VALUE_UNIT", "symbols": ["VALUE_UNIT", "__", "VALUE_NUM", "_", "unit"], "postprocess":  // example: "1m 20 cm 30 mm"
          function(d,l, reject) {
@@ -245,7 +202,7 @@ var grammar = {
           //?? if (val === 'PERCENT') reject
         
         
-          if (common.confusingUnits.includes(val)) {
+          if (confusingUnits.includes(val)) {
             log(`Denying confusing "${val}" unit`)
             return reject
           }

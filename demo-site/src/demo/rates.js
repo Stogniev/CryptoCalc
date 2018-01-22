@@ -10,6 +10,12 @@ const currencyRates = Object.assign(
   )
 )
 
+// # Artificial currencies with fixed rates for tests
+currencyRates['TENDOLL'] = 10/1
+currencyRates['ZUAH'] = 1/28
+currencyRates['ZUSD'] = 1/1
+currencyRates['ZEUR'] = 1.1/1
+
 
 const cryptoCurrencyRates = Object.assign(
   {},
