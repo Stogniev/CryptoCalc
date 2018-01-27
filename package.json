@@ -13,5 +13,7 @@
     "build-and-run": "npm run build && (cd docs && python -m SimpleHTTPServer 9000)"
   },
   "dependencies": {
+    "prop-types": "^15.6.0",
+    "react-helmet": "^5.2.0"
   }
 }

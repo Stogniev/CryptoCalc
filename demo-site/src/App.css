@@ -43,3 +43,90 @@
 .successful-expression {
   /* color: gray; */
 }
+
+
+.hl-plus {
+  color: red;
+}
+
+.hl-number {
+  color: pink;
+}
+
+.hl-blue {
+  color: blue;
+}
+
+#textholder {
+  z-index: -2;
+  color: rgba(0,0,0, 0.1);
+  caret-color: black;
+}
+
+.autodraw, #textholder {
+  width: 460px;
+  height: 180px;
+  font: 20px/28px 'Open Sans', sans-serif;
+  /* letter-spacing: 1px; */
+}
+
+#textholder ul {
+  margin: 0px;
+  padding: 0;
+  list-style-type: none;
+}
+
+#textholder ul li {
+  margin-bottom: 1.2em;
+  height: 1.2em;
+}
+
+#textholder ul li:last-child {
+  margin-bottom: unset;
+}
+
+.autodraw {
+  position: absolute;
+  z-index: -1;
+  border: 2px solid #685972;
+  background-color: #fff;
+  overflow: auto;
+  pointer-events: none;
+  transition: transform 1s;
+}
+
+.highlights {
+  position:absolute;
+}
+
+.highlights ul {
+  margin: 0px;
+  padding: 0;
+  list-style-type: none;
+}
+
+.highlights ul li {
+  margin-bottom: 1.2em;
+  height: 1.2em;
+}
+
+.results {
+  /* ?? white-space: pre-wrap; */
+  word-wrap: break-word;
+  ZZcolor: red;
+}
+
+.results ul {
+  padding: 0;
+  list-style-type: none;
+}
+
+.results ul li {
+  margin-top: 1.2em;
+  margin-bottom: 1.2em;
+  height: 1.2em;
+}
+
+.results ul li:last-child {
+  margin-bottom: unset;
+}

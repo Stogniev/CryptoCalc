@@ -1,20 +1,83 @@
-import React, { Component } from 'react';
+import React from 'react';
+//import PropTypes from 'prop-types';
 import logo from './logo.svg';
 import './App.css';
 import math from 'mathjs'
 import { prepareAndParse, formatAnswerExpression } from './demo/calculator2'
+import Helmet from 'react-helmet'
+
+/*eslint no-use-before-define: ["error", { "variables": false }]*/
+
+function getTextNodeAtPosition(root, index) {
+  //let lastNode = null;
+
+  const treeWalker = document.createTreeWalker(
+    root, NodeFilter.SHOW_TEXT, function next(elem) {
+      if (index > elem.textContent.length) {
+        index -= elem.textContent.length
+        //lastNode = elem;
+        return NodeFilter.FILTER_REJECT
+      }
+      return NodeFilter.FILTER_ACCEPT
+    })
+  const c = treeWalker.nextNode();
+  return {
+    node: c || root,
+    position: c ? index: 0
+  }
+}
+
+function saveCaretPosition(context) {
+  const selection = window.getSelection()
+  let range = selection.getRangeAt(0)
+  range.setStart(context, 0)
+  const len = range.toString().length
+
+  return function restore() {
+    const pos = getTextNodeAtPosition(context, len)
+    selection.removeAllRanges()
+    range = new Range()
+    range.setStart(pos.node ,pos.position)
+    selection.addRange(range)
+  }
+}
 
 
-class App extends Component {
+function reactReplace(s, oldStr, fun) {
+  let l = s.split(oldStr);
+  if (l.length > 1) {
+    l = l.reduce( (o, v, i) => {
+      o.push(v);
+      if (i < l.length - 1) o.push(fun(v));
+      return o
+    }, [])
+  }
+  return l
+}
 
+
+class App extends React.Component {
   static _defaultState = {
     lastExpression: '',
     expression: null, // succesful expression
     result: null,     // succesful result
-    error: null
+    error: null,
+    inputs: [], // input lines
+
+    e1: 'e1',
+    e1HTML: '33 + 22',
+    e2: '10 + 5',
+    r1: 'r1',
+    r1HTML: 'r1HTML',
+    r2: '15'
   }
 
-  state = App._defaultState
+  constructor(props) {
+    super(props)
+    this.state = App._defaultState
+  }
+
+  //state = App._defaultState
 
   formatResult = () => {
     let { result } = this.state
@@ -57,17 +120,29 @@ class App extends Component {
   //   }
   // }
 
-  render() {
-    let { result, expression } = this.state
+
+  render0() {
+    const { result, expression } = this.state
     return (
       <div className="App">
+
+        <Helmet>
+          <meta charSet="UTF-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=1.0, user-scalable=0" />
+          <title>Cripto Calc</title>
+          <link rel="stylesheet" href="css/light.css" />
+          {/*<link rel="stylesheet" href="dark.css">*/}
+          <link rel="stylesheet" href="css/fonts.css" />
+        </Helmet>
+
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
           <h1 className="App-title">Calculator demo 2018-01-22_18:38</h1>
         </header>
         <p className="center">
-          <input placeholder="2 + 2" onChange={this.expressionChanged} autoFocus={true}
-                 value={this.state.lastExpression} /> <br />
+          <input placeholder="2 + 2" onChange={this.expressionChanged} autoFocus
+                 value={this.state.lastExpression} />
+          <br />
           { result
             && [
               <span className="successful-expression">{ expression }</span>,
@@ -78,8 +153,274 @@ class App extends Component {
         <p className="center error">{ this.state.error }</p>
         <pre>{info}</pre>
       </div>
-    );
+    )
   }
+
+  test = () => {
+    const textHolder = document.getElementById('textHolder')
+
+    const restore = saveCaretPosition(textHolder)
+    let text = textHolder.textContent
+    text = text.replace(/[0-9]+/g, '<span class="hl-number">$&</span>')
+    text = text.replace(/EQ/g, `<br />\n=15`)
+    textHolder.innerHTML = text
+
+    restore()
+  }
+
+  onInput2 = (event) => {
+    const expressionHolder = document.getElementById('expressionHolder')
+
+    const restore = saveCaretPosition(document.getElementById('textHolder'))
+    const text = expressionHolder.textContent
+
+
+    console.log(text, this.renderEHTML(text))
+
+    this.setState( {
+      e1: text,
+      e1HTML: this.renderEHTML(text),
+      r1: '=10',
+      r1HTML: this.renderRHTML(text),
+    }, restore)
+
+    /* text = text.replace(/[0-9]+/g, '<span class="hl-number">$&</span>')
+     * text = text.replace(/EQ/g, `<br />\n=15`)
+     * textHolder.innerHTML = text*/
+
+    //restore()
+  }
+
+  renderEHTML(e) {
+    //let html = e
+    //html = html.replace(/[0-9]+/g, '<span class="hl-number">$&</span>')
+    //return html
+    return <div>{e}<span className="hl-number">+</span>22</div>
+  }
+
+  renderRHTML(e) {
+    //let html = e
+    //html = html.replace(/[0-9]+/g, '<span class="hl-number">$&</span>')
+    //return html
+    return <div>=<span className="hl-blue">r of: {e}</span></div>
+  }
+
+  renderE(e) {
+    return this.state.e1HTML
+  }
+
+  renderR() {
+    return <div contentEditable={false}>=<span>{this.state.e1HTML}</span></div>
+  }
+
+  onInput = () => {
+    const inputs = [...document.getElementById('inputList').getElementsByTagName('li')]
+      .map(x => x.textContent)
+    console.log(inputs)
+    this.setState( {inputs} )
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+//    this.state.inputs
+  }
+
+  componentDidMount() {
+    // make here to surpress react warning (1)
+    document.getElementById('inputList').setAttribute('contenteditable', true)
+  }
+
+  // html-format expression
+  formatExpression(exp) {
+    //return exp.split('+'), <mark>+</mark>)
+    //return exp
+    exp = reactReplace(exp, '+', v => (<span className="hl-plus">+</span>))
+    //exp = reactReplace(exp, '$', v => (<span className="blue-color">$</span>))
+
+    return exp
+  }
+
+  render() {
+    const { inputs } = this.state
+    return (
+      <div>
+        <div className="autodraw">
+          <div className="highlights">
+            <ul>
+              { inputs.map(inp => <li>{this.formatExpression(inp)}</li>) }
+              {/* <li>1 <mark>+</mark> 1</li>
+              <li>3 <mark>+</mark> 2</li>
+              <li>5 <mark>+</mark> 10</li> */}
+            </ul>
+          </div>
+          <div className="results">
+            <ul>
+              <li>=<mark>2</mark></li>
+              <li>=<mark>5</mark></li>
+              <li>=<mark>10</mark></li>
+            </ul>
+          </div>
+        </div>
+        <div id="textholder" >
+          <ul id="inputList" onInput={this.onInput} /* contentEditable (1) */ >
+            {/* { inputs.map( inp => <li>{inp}</li> ) } */}
+            <li></li>
+            {/* <li>I + I</li>
+                <li>З + Z</li>
+                <li>S + IО</li> */}
+          </ul>
+        </div>
+        {/* <div contentEditable>
+            <ul>
+            <li>1</li>
+            <li>2</li>
+            <li>3</li>
+            <li>4</li>
+            </ul>
+            </div> */}
+        {/* <div id="textHolder" contentEditable onInput={this.onInput2}>
+            <span id="expressionHolder" >{ this.state.e1HTML }</span>
+            <div contentEditable={false}>=<span>{this.state.r1HTML}</span></div>
+            <span id="expressionHolder2" >e2</span>
+            <div contentEditable={false}>=<span>=er2</span></div>
+            {/ * { this.renderE(this.state.e2) }
+            { this.renderR(this.state.r2) } * /}
+
+            {/ * <div>2<span className="hl-plus">with</span>3</div>
+            <div contentEditable="false">5</div>
+            <div>10<span className="hl-plus">with</span>5</div>
+            <div contentEditable="false">10+5=15</div>
+          * /}
+            </div> */}
+        <button onClick={this.test}>test</button>
+        <Helmet>
+          <meta charSet="UTF-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=1.0, user-scalable=0" />
+          <title>Cripto Calc</title>
+          <link rel="stylesheet" href="css/light.css" />
+          {/*<link rel="stylesheet" href="dark.css">*/}
+          <link rel="stylesheet" href="css/fonts.css" />
+        </Helmet>
+
+        <header>
+          <div className="container">
+            <a className="logo light" href="#">
+              <img src="img/logo-light.svg" alt="logo" />cryptocalc
+            </a>
+            <a className="logo dark" href="#">
+              <img src="img/logo-dark.svg" alt="logo" />cryptocalc
+            </a>
+            <ul className="menu">
+              <li><a href="#">Calculator</a></li>
+              <li><a href="#">Docs</a></li>
+            </ul>
+          </div>
+        </header>
+        <main className="main">
+          <section className="change">
+            <div className="container">
+              <div className="switch">
+                <img src="img/light-icon.svg" alt="light" className="light" />
+                <img src="img/sun.svg" alt="light" className="dark" />
+                <div>
+                  <input type="checkbox" className="checkbox" id="checkbox" />
+                  <label htmlFor="checkbox" />
+                </div>
+                <img src="img/dark-icon.svg" alt="dark" className="change-img-light" />
+                <img src="img/dark-icon-change.svg" alt="dark" className="change-img-dark" />
+              </div>
+              <div className="total"><span>Tolal:</span><span>€ 1,000,000,00</span></div>
+              <div className="holder">
+                <span className="plus-black"><img src="img/plus.svg" alt="plus" /></span>
+                <span className="plus-white"><img src="img/plus-white.svg" alt="plus" /></span>
+                <span className="open-search black"><img src="img/burger.svg" alt="burger" /></span>
+                <span className="open-search white"><img src="img/burger-white.svg" alt="burger" /></span>
+                <form className="search-form">
+                  <input type="text" defaultValue="text" />
+                  <ul>
+                    <li>Summary</li>
+                    <li>1 add 1 <span /></li>
+                    <li>Sample</li>
+                  </ul>
+                </form>
+              </div>
+            </div>
+          </section>
+          <div className="container">
+            <div className="calc-example">
+              <div>
+                <span className="grey-color"># Example</span>
+                <p><span className="blue-color">$</span>30 <span className="blue-color">CAD</span> + 5 <span className="blue-color">USD</span> - 7<span className="blue-color">EUR</span></p>
+                <p>1000 <span className="orange-color">times</span> 1</p>
+                <p><span className="blue-color">$</span>50 <span className="orange-color"> as a % of </span> <span className="blue-color">$</span>100</p>
+              </div>
+              <div>
+                <span className="green-bg sum">100,000,000</span>
+                <div className="copy">
+                  <span>Click to copy</span>
+                </div>
+                <span className="green-color">50%</span>
+              </div>
+            </div>
+            <div className="calc-example_results">
+              <div>
+                <p className="grey-color"># User write long verbal math expression</p>
+                <p>6 <span className="orange-color">divided by </span>2 plus 7 multiply by 2</p>
+                <div className="result sum">
+                  <p className="grey-bg"><span className="grey-color">6</span> <span className="red-color">/</span> <span className="grey-color">2</span> <span className="red-color">+</span> <span className="grey-color">7</span> <span className="red-color">*</span> <span className="grey-color">2</span></p>
+                  <p><span className="grey-color">=</span>17</p>
+                </div>
+                <p className="grey-color"># User calculate results that consist several different
+                  inner calculations.
+                </p>
+                <div className="result">
+                  <p><span className="violet-color">v</span> <span className="orange-color">=</span> <span className="blue-color">$</span>20
+                  </p>
+                  <p><span className="grey-color">=</span>$20</p>
+                </div>
+                <div className="result">
+                  <p><span className="violet-color">v2</span> <span className="orange-color">=</span> 5%</p>
+                  <p><span className="grey-color">=</span>5%</p>
+                </div>
+                <div className="result">
+                  <p><span className="violet-color">v</span> <span className="orange-color">times</span> 7 <span className="orange-color">-</span> v2</p>
+                </div>
+                <div className="result sum">
+                  <p className="grey-bg">
+                    <span className="blue-color">$</span><span className="grey-color">20</span> <span className="red-color">*</span> <span className="grey-color">7</span> <span className="red-color">-</span> <span className="grey-color">5%</span>
+                  </p>
+                  <p><span className="grey-color">=</span>$133</p>
+                </div>
+                <div className="result">
+                  <p><span className="violet-color">v</span><span className="orange-color"> += </span><span className="blue-color">$</span>10
+                  </p>
+                  <p><span className="grey-color">=</span>$30</p>
+                </div>
+                <p className="grey-color"># User calculate several different calculation.</p>
+                <div className="result">
+                  <p><span className="violet-color">Line 1</span> <span className="blue-color">$10</span></p>
+                  <p><span className="grey-color">=</span>$10</p>
+                </div>
+                <div className="result">
+                  <p><span className="violet-color">Line 2</span> <span className="blue-color">$15</span></p>
+                  <p><span className="grey-color">=</span>$15</p>
+                </div>
+                <div className="result">
+                  <p><span className="violet-color">Result:</span> <span className="orange-color">sum</span></p>
+                </div>
+                <div className="result sum">
+                  <p className="grey-bg">
+                    <span className="blue-color">$</span><span className="grey-color">10</span> <span className="red-color">+</span> <span className="blue-color">$</span><span className="grey-color">15</span>
+                  </p>
+                  <p><span className="grey-color">=</span>$25</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    )
+  }
+  
 }
 
 const info = `
@@ -89,14 +430,15 @@ Implemented:
   - implicit number-> unit conversion (Example: "1 + 2 USD" -> "3 USD")
   - currensy calculations (including mixed) (rates are just fixed for demo purpoces)
   - unit and money conversions (see examples below)
-  - (NEW) %-based expressions
-  - (NEW) math scales
-  - (NEW) money and units scales
+  - %-based expressions
+  - math scales
+  - money and units scales
 
 Not implemented yet:
-  - summarizes, variables, prev, average, format
-  - math scales
-  - money scales
+  - multiline input
+  - summarizes, average,
+  - variables, prev,
+  - format
 
 
 

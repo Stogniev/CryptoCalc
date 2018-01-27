@@ -42,7 +42,15 @@
       no-multiple-empty-lines: "off",
       spaced-comment: "off",
       keyword-spacing: ["error", { "overrides": { "catch": { "after": false }, } }],
-      space-infix-ops: "off // disabled until spaceless func named params support
+      space-infix-ops: "off", // disabled until spaceless func named params support
+      react/jsx-filename-extension: off,
+      react/jsx-first-prop-new-line: off,
+      react/jsx-max-props-per-line: off,
+      react/jsx-indent-props: off,
+      jsx-a11y/no-autofocus: off,
+      react/jsx-closing-bracket-location: off,
+      no-underscore-dangle: off,
+      class-methods-use-this: off,
     },
     "plugins": [
         "react",

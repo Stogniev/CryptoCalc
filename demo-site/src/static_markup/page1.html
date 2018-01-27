@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=1.0, user-scalable=0">
+    <title>Cripto Calc</title>
+    <!--<link rel="stylesheet" href="light.css">-->
+    <link rel="stylesheet" href="css/dark.css">
+    <link rel="stylesheet" href="css/fonts.css">
+</head>
+<body>
+<header>
+    <div class="container">
+        <a class="logo light" href="#">
+            <img src="img/logo-light.svg" alt="logo">cryptocalc
+        </a>
+        <a class="logo dark" href="#">
+            <img src="img/logo-dark.svg" alt="logo">cryptocalc
+        </a>
+        <ul class="menu">
+            <li><a href="#">Calculator</a></li>
+            <li><a href="#">Docs</a></li>
+        </ul>
+    </div>
+</header>
+<main>
+    <div class="container">
+        <section class="conversion">
+            <h2>Unit Conversion</h2>
+            <p>With <span class="orange-color">in</span> (<span class="orange-color">into, as, to</span>) you can convert one unit into another.
+                Numi will automatically convert units to perform operations if it's needed during conversion.
+            </p>
+            <div class="example">
+                <p><span class="blue-color">$</span>30 <span class="orange-color">in Euro</span></p>
+                <p><span class="blue-color">$</span>30 <span class="blue-color">CAD + </span>5 <span class="blue-color">USD - </span>7<span class="blue-color">EUR</span></p>
+            </div>
+        </section>
+        <section class="currency">
+            <h2>Currency</h2>
+            <p>
+                You can use <u>ISO 4217</u> codes for currency (like <span class="blue-color">USD, RUB, CAD</span> etc).
+                You can also use common currency names and signs, like <span class="blue-color">$</span> for the <span class="blue-color">US dollars</span>,
+                roubles for Russian roubles, or <span class="blue-color">€</span> for Euro.
+                Numi updates currency rates several times a day using <u>open exchange rates</u> service.
+                You can use All <u>coinmarketcap</u> coins and tokens (API should update live every minute).
+            </p>
+            <h3>Operations</h3>
+            <p>You can use sign and word operators. Several expressions might be stacked together.
+               Notice, expressions will be multiplied if used in parentheses one after another.
+            </p>
+            <div class="example">
+                <p>8 <span class="red-color">times</span> 9</p>
+                <p>1 <span class="blue-color">meter</span> 20 <span class="blue-color">cm</span> <span class="orange-color">=</span> 120 <span class="blue-color">cm</span></p>
+                <p>6 (3) <span class="orange-color">=</span> 18</p>
+            </div>
+            <div class="currency-table">
+                <ul>
+                    <li><span>Operation</span><span>Sample</span></li>
+                    <li><span>Addition</span><span>+, plus, and, with</span></li>
+                    <li><span>Subtraction</span><span>-, minus, subtract,</span></li>
+                    <li><span>Multiplication</span><span>*, times, multiplied by, mul</span></li>
+                    <li><span>Division</span><span>/, divide, divide by</span></li>
+                    <li><span>Exponent</span><span>^</span></li>
+                    <li><span>Left Shift</span><span><<</span></li>
+                    <li><span>Right Shift</span><span>>></span></li>
+                    <li><span>Modulo</span><span>mod</span></li>
+                </ul>
+            </div>
+            <h2>Currency</h2>
+            <p>In addition to general percentage operations like adding or subtracting percent of value ($10 - 40%),
+                you also can use additional operations:
+            </p>
+            <div class="currency-table-percent">
+                <ul>
+                    <li><span>Operation</span><span>Sample</span></li>
+                    <li><span>Percentage value</span><p>20% <span class="red-color">of</span> <span class="blue-color">$</span>10</p></li>
+                    <li><span>Adding percentage</span><p>5% <span class="red-color">on</span> <span class="blue-color">$</span>30</p></li>
+                    <li><span>Substracting percentage</span><p>6% <span class="red-color">off</span> 40<span class="blue-color">EUR</span></p></li>
+                    <li><span>Percentage value of one value relative to another</span><p><span class="blue-color">$</span>50 <span class="red-color"></span>as a % of <span class="blue-color">$</span>100</p></li>
+                    <li><span>Percentage addition of one value relative to another</span><p><span class="blue-color">$</span>70 <span class="red-color"></span>as a % on <span class="blue-color">$</span>20</p></li>
+                    <li><span>Percentage subtraction of one value relative to another</span><p><span class="blue-color">$</span>20 <span class="red-color"></span>as a % off <span class="blue-color">$</span>70</p></li>
+                    <li><span>Value by percent partt</span><p>5% <span class="red-color">of what is</span> 6 <span class="blue-color">EUR</span></p></li>
+                    <li><span>Value by percent addition</span><p>5% <span class="red-color">of what is</span> 6 <span class="blue-color">EUR</span></p></li>
+                    <li><span>Value by percent substraction</span><p>5% <span class="red-color">of what is</span> 6 <span class="blue-color">EUR</span></p></li>
+                </ul>
+            </div>
+            <div class="scales">
+                <h2>Scales</h2>
+                <p>Scales used for shorter form of writing big numbers.
+                    Please note that one-letter scales are case-sensitive, since <span class="blue-color">m</span> used for meters, and <span class="blue-color">K</span> used for Kelvins.
+                    Supported scales: thousands (<span class="blue-color">k</span>, <span class="blue-color">thousand</span>), millions (<span class="blue-color">M, million</span>), billions (<span class="blue-color">billion</span>)
+                </p>
+                <div class="example">
+                    <p><span class="blue-color">$</span>2<span class="blue-color">k</span></p>
+                    <p>2<span class="blue-color">M eur</span></p>
+                </div>
+            </div>
+            <div class="variables">
+                <h2>Variables</h2>
+                <p>You can declare variables and reuse them using the <span class="red-color">=</span> operator.
+                    Please note some characters and keywords cannot be used as a variable.
+                    For example, <span class="blue-color">K</span> might be used as a temperature unit in Kelvin.
+                    Variable names should not contain whitespaces or special characters, and should not start with number:
+                </p>
+                <div class="example">
+                    <p><span class="violet-color">v</span> <span class="orange-color">=</span> <span class="blue-color">$</span>20</p>
+                    <p><span class="violet-color">v2</span> <span>=</span> 5%</p>
+                    <p><span class="violet-color">v</span> <span class="orange-color">times</span> 7 <span class="orange-color">-</span> <span class="violet-color">v2</span></p>
+                    <p><span class="violet-color">v</span> <span class="orange-color">+=</span> <span class="blue-color">$</span>10</p>
+                </div>
+            </div>
+            <div class="previous-result">
+                <h2>Previous Result</h2>
+                <p>Use <span class="red-color">prev</span> token to use result from previous line</p>
+                <div class="example">
+                    <p><span class="violet-color">Cost:</span> <span class="blue-color">$</span>20 <span class="red-color">+</span> 56 <span class="blue-color">EUR</span></p>
+                    <p><span class="violet-color">Discounted: prev</span> <span class="red-color">-</span> 5% discount</p>
+                </div>
+            </div>
+            <div class="sum">
+                <h2>Sum</h2>
+                <p>You can calculate sum of all lines above (until empty line) using <span class="violet-color">sum</span> (<span class="violet-color">total</span> ) operator.</p>
+                <div class="example">
+                    <p><span class="violet-color">Line 1:</span> <span class="blue-color">$</span>20</p>
+                    <p><span class="violet-color">Line 2:</span> <span class="blue-color">$</span>15</p>
+                    <p><span class="violet-color">Result: sum</span></p>
+                </div>
+            </div>
+            <div class="average">
+                <h2>Average</h2>
+                <p>You can calculate sum of all lines above (until empty line) using <span class="violet-color">average</span> (<span class="violet-color">avg</span> ) operator.</p>
+                <div class="example">
+                    <p><span class="violet-color">Line 1:</span> <span class="blue-color">$</span>20</p>
+                    <p><span class="violet-color">Line 2:</span> <span class="blue-color">$</span>15</p>
+                    <p><span class="violet-color">Result: average</span></p>
+                </div>
+            </div>
+            <div class="format">
+                <h2>Format</h2>
+                <p>Use hash symbol at the beginning of the line to make a header.
+                    If you want to comment part of the line, use double quotes.
+                    To comment all line, use double slash. Use colon to make a label (label will not be evaluated).
+                </p>
+                <div class="example">
+                    <p class="grey-color"># This is header</p>
+                    <p><span class="blue-color">$</span>275 <span class="red-color">for the</span> "Model 227"</p>
+                    <p class="grey-color">// This is comment</p>
+                    <p><span class="violet-color">Price:</span> <span class="blue-color">$</span>11 <span class="red-color">+</span> <span class="blue-color">$</span>34.45</p>
+                </div>
+            </div>
+            <div class="shortcuts">
+                <h2>Shortcuts (should support also in PCs shortcuts)</h2>
+                <div class="shortcuts-table">
+                    <ul>
+                        <li><span>Surround with parentheses</span><span>⇧⌘0</span></li>
+                        <li><span>Copy result on current line</span><span>⇧⌘C</span></li>
+                        <li><span>Select all</span><span>⌘A</span></li>
+                        <li><span>Delete all</span><span>⎇⌘⌫</span></li>
+                        <li><span>Copy all	</span><span>⎇⌘C</span></li>
+                        <li><span>Import</span><span>⌘O</span></li>
+                        <li><span>Export</span><span>⌘S</span></li>
+                        <li><span>Print</span><span>⌘P</span></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="constants">
+                <h2>Constants</h2>
+                <div class="constants-table">
+                    <ul>
+                        <li><span>Description</span><span>Value</span></li>
+                        <li><span>Pi</span><span>3.1415926536</span></li>
+                        <li><span>E</span><span>2.7182818285</span></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+</body>
+</html>
