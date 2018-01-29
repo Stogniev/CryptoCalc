@@ -53,12 +53,41 @@ function isNumber(x) {
   return typeof(x) === 'number'
 }
 
-// for human
-function formatAnswerExpression(answer) {
-  let r = answer.lexer.buffer
-  r = r.replace(new RegExp(lexemSeparator, 'g'), '')  // clear all ";" separators
-  r = r.replace(new RegExp('PERCENT', 'g'), '%')  // PERCENT -> %
+// // for human
+// function formatAnswerExpression(answer) {
+//   let r = answer.lexer.buffer
+//   r = r.replace(new RegExp(lexemSeparator, 'g'), '')  // clear all ";" separators
+//   r = r.replace(new RegExp('PERCENT', 'g'), '%')  // PERCENT -> %
+//   return r
+// }
+
+
+
+// used to humanize back parsed expression
+const answerExpressionHumanizers = {
+  'ofwhatis': 'of what is',
+  'onwhatis': 'on what is',
+  'offwhatis': 'off what is',
+  'asapercentof': 'as a % of',
+  'asapercenton': 'as a % on',
+  'asapercentoff': 'as a % off',
+  lexemSeparator: '',
+}
+
+function formatAnswerExpression(text) {
+  let r = text
+  //r = r.replace(new RegExp(lexemSeparator, 'g'), '')  // clear all ";" separators
+
+  // TODO: refactor (https://stackoverflow.com/a/15604206/1948511)
+  Object.entries(answerExpressionHumanizers).forEach(
+    ([from, to]) => r = r.replace(new RegExp(from, 'g'), to)
+  )
+
   return r
 }
 
+
+
+
 module.exports = { getUnitName, isUnit, isPercent, isMeasure, isNumber, toUnit, confusingUnits, lexemSeparator, scales, formatAnswerExpression }
+

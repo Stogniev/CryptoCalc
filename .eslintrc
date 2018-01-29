@@ -51,6 +51,11 @@
       react/jsx-closing-bracket-location: off,
       no-underscore-dangle: off,
       class-methods-use-this: off,
+      jsx-a11y/href-no-hash: off,
+      no-continue: off,
+      no-cond-assign: off, //["error", { except-parens: true}],
+      //quotes: ["single", "backtick", { "allowTemplateLiterals": true }],
+      max-len: off,
     },
     "plugins": [
         "react",

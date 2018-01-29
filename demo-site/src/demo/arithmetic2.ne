@@ -2,6 +2,15 @@
 # The _'s are defined as whitespace below. This is a mini-idiom.
 
 @{%
+    /*const moo = require("moo");
+   
+  const lexer = moo.compile({
+    ws:     /[ \t]+/,
+    number: /[0-9]+/,
+    word: /[a-z]+/,
+    times:  /\*|x/
+    }); */
+
   const math = require("mathjs");
 
   function log() {
@@ -13,6 +22,9 @@
   const { isPercent, isMeasure, toUnit, confusingUnits } = require('./common')
 
 %}
+
+#  @lexer lexer
+
 
 
 main -> _ OPS _ {% function(d) { /*log('>',d, typeof d[1]);*/ return d[1]; } %}
@@ -101,8 +113,8 @@ AS_PERCENT ->
 
 
 AS_NUM ->
-   AS_NUM plus MD_NUM   {% (d,l,rej) => math.add(d[0], d[2]) %}
- | AS_NUM minus MD_NUM  {% (d,l,rej) => math.subtract(d[0], d[2]) %}
+   AS_NUM plus MD_NUM   {% ([a,,b], l,rej) => math.add(a, b) %}
+ | AS_NUM minus MD_NUM  {% ([a,,b],l,rej) => math.subtract(a, b) %}
  | AS_NUM plus MD_PERCENT {% ([n,,p],l,rej) => math.add(n, n/100*p.toNumber()) %}
  | AS_NUM minus MD_PERCENT {% ([n,,p],l,rej) => math.subtract(n, n/100*p.toNumber()) %}
  | MD_NUM  {% id %}

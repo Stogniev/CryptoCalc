@@ -3,6 +3,15 @@
 (function () {
 function id(x) {return x[0]; }
 
+    /*const moo = require("moo");
+   
+  const lexer = moo.compile({
+    ws:     /[ \t]+/,
+    number: /[0-9]+/,
+    word: /[a-z]+/,
+    times:  /\*|x/
+    }); */
+
   const math = require("mathjs");
 
   function log() {
@@ -50,8 +59,8 @@ var grammar = {
     {"name": "AS_PERCENT", "symbols": ["AS_PERCENT", "plus", "AS_NUM"], "postprocess": ([p,,n],l,rej) => math.add(p, toUnit(n, p))},
     {"name": "AS_PERCENT", "symbols": ["AS_PERCENT", "minus", "AS_NUM"], "postprocess": ([p,,n],l,rej) => math.subtract(p, toUnit(n, p))},
     {"name": "AS_PERCENT", "symbols": ["MD_PERCENT"], "postprocess": id},
-    {"name": "AS_NUM", "symbols": ["AS_NUM", "plus", "MD_NUM"], "postprocess": (d,l,rej) => math.add(d[0], d[2])},
-    {"name": "AS_NUM", "symbols": ["AS_NUM", "minus", "MD_NUM"], "postprocess": (d,l,rej) => math.subtract(d[0], d[2])},
+    {"name": "AS_NUM", "symbols": ["AS_NUM", "plus", "MD_NUM"], "postprocess": ([a,,b], l,rej) => math.add(a, b)},
+    {"name": "AS_NUM", "symbols": ["AS_NUM", "minus", "MD_NUM"], "postprocess": ([a,,b],l,rej) => math.subtract(a, b)},
     {"name": "AS_NUM", "symbols": ["AS_NUM", "plus", "MD_PERCENT"], "postprocess": ([n,,p],l,rej) => math.add(n, n/100*p.toNumber())},
     {"name": "AS_NUM", "symbols": ["AS_NUM", "minus", "MD_PERCENT"], "postprocess": ([n,,p],l,rej) => math.subtract(n, n/100*p.toNumber())},
     {"name": "AS_NUM", "symbols": ["MD_NUM"], "postprocess": id},

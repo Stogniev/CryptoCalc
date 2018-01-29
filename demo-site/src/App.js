@@ -5,8 +5,17 @@ import './App.css';
 import math from 'mathjs'
 import { prepareAndParse, formatAnswerExpression } from './demo/calculator2'
 import Helmet from 'react-helmet'
+//import nearley from 'nearley'
+//import grammar from './demo/grammar2'
 
+// const moo = require('moo')
+import { tokenize } from './demo/test_moo'
 /*eslint no-use-before-define: ["error", { "variables": false }]*/
+
+
+
+
+const B = true
 
 function getTextNodeAtPosition(root, index) {
   //let lastNode = null;
@@ -75,6 +84,7 @@ class App extends React.Component {
   constructor(props) {
     super(props)
     this.state = App._defaultState
+    //this.parser = new nearley.Parser(grammar.ParserRules, grammar.ParserStart) //.feed(txt);
   }
 
   //state = App._defaultState
@@ -100,10 +110,11 @@ class App extends React.Component {
     let newState = { lastExpression }
 
     try {
-      const answer = prepareAndParse(lastExpression, 'verbose')
+      const parser = prepareAndParse(lastExpression, 'verbose')
+      console.log('parser:', parser)
       newState = {...newState,
-        expression: formatAnswerExpression(answer),
-        result: answer && answer.results[0],
+        expression: formatAnswerExpression(parser.lexer.buffer),
+        result: parser && parser.results[0],
         error: null
       }
     } catch(e) {
@@ -226,17 +237,18 @@ class App extends React.Component {
 
   componentDidMount() {
     // make here to surpress react warning (1)
-    document.getElementById('inputList').setAttribute('contenteditable', true)
+    if (B) document.getElementById('inputList').setAttribute('contenteditable', true)
   }
 
   // html-format expression
   formatExpression(exp) {
+    let r;
     //return exp.split('+'), <mark>+</mark>)
     //return exp
-    exp = reactReplace(exp, '+', v => (<span className="hl-plus">+</span>))
+    r = reactReplace(exp, '+', v => (<span className="hl-plus">+</span>))
     //exp = reactReplace(exp, '$', v => (<span className="blue-color">$</span>))
 
-    return exp
+    return r
   }
 
   render() {

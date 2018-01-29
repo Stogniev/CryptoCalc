@@ -13,6 +13,8 @@
     "build-and-run": "npm run build && (cd docs && python -m SimpleHTTPServer 9000)"
   },
   "dependencies": {
+    "escape-string-regexp": "^1.0.5",
+    "moo": "^0.4.3",
     "prop-types": "^15.6.0",
     "react-helmet": "^5.2.0"
   }

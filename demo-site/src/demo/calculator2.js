@@ -4,14 +4,16 @@ const nearley = require('nearley')
 const grammar = require('./grammar2.js')
 const assert = require('assert')
 const math = require('mathjs')
-const escape = require('regexp.escape')
+//const escape = require('regexp.escape') not sure need convert $ to smth like %u060B than \\$ that works badly with moo
+const escapeStringRegexp = require('escape-string-regexp');
 
 const DEBUG = process.env.DEBUG
 const currencies = require('./currencies')
 const rates = require('./rates')
 
-const { scales, isUnit, lexemSeparator, confusingUnits
-      } = require('./common')
+const {
+  scales, isUnit, lexemSeparator, confusingUnits, formatAnswerExpression
+} = require('./common')
 
 // Create units for every currency code (without subunits)
 math.createUnit('USD')
@@ -87,7 +89,7 @@ function prepareTxt(text, verbose=false) {
   // 35) Convert currencies to ISO format (math.js not support symbols like "$" or "฿")
 
   // 35.0) convert pre&post-sign: "$18.5 USD" -> "18.5 USD" for every currency SINGLE-chars
-  const currSymbols = Object.keys(currencies.symbolToCode).map(escape).join('|')
+  const currSymbols = Object.keys(currencies.symbolToCode).map(escapeStringRegexp).join('|')
   txt = txt.replace(
     new RegExp(`(\\W+|^)(${currSymbols})\\s*(\\d+(?:\\.\\d+)?)\\s*(${currSymbols})`, 'gi'),
     (match, pre, curr1, amount, curr2) =>
@@ -142,24 +144,25 @@ function call(text, verbose=DEBUG) {
 
 // TODO: refactor with call
 function prepareAndParse(text, verbose=false) {
-  let txt = prepareTxt(text, verbose)
+  const txt = prepareTxt(text, verbose)
 
   try {
-    let ans = new nearley.Parser(grammar.ParserRules, grammar.ParserStart).feed(txt);
+    const parser = new nearley.Parser(
+      grammar.ParserRules, grammar.ParserStart, { keepHistory: true }).feed(txt);
 
-    if (ans.results.length > 1) {
-      console.warn(`Multiple result for "${txt}": ${ans.results}`)
+    if (parser.results.length > 1) {
+      console.warn(`Multiple result for "${txt}": ${parser.results}`)
     }
 
-    if (ans.results.length === 0) {
+    if (parser.results.length === 0) {
       throw new Error(`Empty result for "${txt}"`)
     }
 
     if (verbose) {
-      console.log(`"${txt}" -c-> "${ans.results}"`)
+      console.log(`"${txt}" -c-> "${parser.results}"`)
     }
 
-    return ans
+    return parser
 
   } catch(e) {
     if (verbose) {
@@ -171,23 +174,14 @@ function prepareAndParse(text, verbose=false) {
 
 
 
-function formatAnswerExpression(answer) {
-  let r = answer.lexer.buffer
-  r = r.replace(new RegExp(lexemSeparator, 'g'), '')  // clear all ";" separators
-  r = r.replace(new RegExp('PERCENT', 'g'), '%')  // PERCENT -> %
-  return r
-}
+
+
 
 // mini-sandbox
-
-
-
-
-
 //?assertEqual(call('(100 + 10%)4%/2'), '10 PERCENT')  //implicit conversion
-
-
+//console.log(formatAnswerExpression('100 USD; asapercentof 200 USD;'))
 //return
+
 
 
 
@@ -641,4 +635,4 @@ if (readline.createInterface !== undefined) {
   });
 }
 
-module.exports = { runmath, prepareAndParse, formatAnswerExpression }
+module.exports = { runmath, prepareAndParse }
