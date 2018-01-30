@@ -65,12 +65,28 @@ function isNumber(x) {
 
 // used to humanize back parsed expression
 const answerExpressionHumanizers = {
-  'ofwhatis': 'of what is',
-  'onwhatis': 'on what is',
-  'offwhatis': 'off what is',
-  'asapercentof': 'as a % of',
-  'asapercenton': 'as a % on',
-  'asapercentoff': 'as a % off',
+  ofwhatis: 'of what is',
+  onwhatis: 'on what is',
+  offwhatis: 'off what is',
+  asapercentof: 'as a % of',
+  asapercenton: 'as a % on',
+  asapercentoff: 'as a % off',
+
+  plus: '+',
+  and: '+',
+  with: '+',
+
+  minus: '-',
+  subtract: '-',
+  without: '-',
+
+  times: '*',
+  'multiplied by': '*',
+  mul: '*',
+
+  divide: '/',
+  'divide by': '/',
+
   lexemSeparator: '',
 }
 

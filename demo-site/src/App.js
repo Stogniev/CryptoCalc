@@ -3,13 +3,15 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 import math from 'mathjs'
-import { prepareAndParse, formatAnswerExpression } from './demo/calculator2'
+import { prepareAndParse } from './demo/calculator2'
+import { formatAnswerExpression } from './demo/common'
+
 import Helmet from 'react-helmet'
 //import nearley from 'nearley'
 //import grammar from './demo/grammar2'
 
 // const moo = require('moo')
-import { tokenize } from './demo/test_moo'
+import { highlightLexer } from './demo/test_moo'
 /*eslint no-use-before-define: ["error", { "variables": false }]*/
 
 
@@ -51,19 +53,19 @@ function saveCaretPosition(context) {
   }
 }
 
-
-function reactReplace(s, oldStr, fun) {
-  let l = s.split(oldStr);
-  if (l.length > 1) {
-    l = l.reduce( (o, v, i) => {
-      o.push(v);
-      if (i < l.length - 1) o.push(fun(v));
-      return o
-    }, [])
-  }
-  return l
-}
-
+/* 
+ * function reactReplace(s, oldStr, fun) {
+ *   let l = s.split(oldStr);
+ *   if (l.length > 1) {
+ *     l = l.reduce( (o, v, i) => {
+ *       o.push(v);
+ *       if (i < l.length - 1) o.push(fun(v));
+ *       return o
+ *     }, [])
+ *   }
+ *   return l
+ * }
+ * */
 
 class App extends React.Component {
   static _defaultState = {
@@ -71,7 +73,10 @@ class App extends React.Component {
     expression: null, // succesful expression
     result: null,     // succesful result
     error: null,
+
     inputs: [], // input lines
+    parsedInputs: [], // parsed input lines
+    results: [],   // calculated results of inputs
 
     e1: 'e1',
     e1HTML: '33 + 22',
@@ -100,6 +105,8 @@ class App extends React.Component {
   }
 
   expressionChanged = (event) => {
+    if (B) return
+
     const lastExpression = event.target.value
 
     if (lastExpression === '') {
@@ -227,12 +234,28 @@ class App extends React.Component {
   onInput = () => {
     const inputs = [...document.getElementById('inputList').getElementsByTagName('li')]
       .map(x => x.textContent)
-    console.log(inputs)
-    this.setState( {inputs} )
+
+    const results = []
+    inputs.forEach(
+      input => {
+        try {
+          const parser = prepareAndParse(input, 'verbose')
+          results.push(parser && parser.results[0])
+        } catch(e) {
+          //let error = `${e}`
+          //newState = {...newState, error}
+          results.push(null)  //`error: ${e}`
+        }
+      }
+    )
+
+    console.log('Inputs, results: ', inputs, results)
+    this.setState( {inputs, results} )
   }
 
   componentDidUpdate(prevProps, prevState) {
-//    this.state.inputs
+    //console.log('updated. Inputs:', this.state.inputs)
+    
   }
 
   componentDidMount() {
@@ -240,25 +263,98 @@ class App extends React.Component {
     if (B) document.getElementById('inputList').setAttribute('contenteditable', true)
   }
 
-  // html-format expression
-  formatExpression(exp) {
-    let r;
-    //return exp.split('+'), <mark>+</mark>)
-    //return exp
-    r = reactReplace(exp, '+', v => (<span className="hl-plus">+</span>))
-    //exp = reactReplace(exp, '$', v => (<span className="blue-color">$</span>))
 
+  renderHighlighted(exp) {
+    /* return [
+     *   <span className="orange-color">aaa</span>,
+     *   'bbb',
+     *   'ccc'
+     * ]*/
+
+    console.log('renderHighlighted', `"${exp}"`)
+
+    highlightLexer.reset(exp)
+    let r = []
+    let item;
+
+    try {
+      while (true) {
+        item = highlightLexer.next()
+        if (!item) break;
+
+        //if (!item) console.log('NOOOOOOOOOOOOO')
+        console.log('-', item.value)
+        //r.push(item.value)
+
+        switch (item.type) {
+          case 'WS':
+          case 'semicolon':
+            break;
+          case 'comment':
+            r.push(<span className="grey-color">{formatAnswerExpression(item.value)}</span>)
+            break;
+          case 'plus':
+          case 'minus':
+          case 'mul':
+          case 'divide':
+          case 'exp':
+          case 'convert':
+          case 'mod':
+          case 'leftShift':
+          case 'rightShift':
+            r.push(<span className="orange-color">{formatAnswerExpression(item.value)}</span>)
+            break;
+          case 'currency':
+            r.push(<span className="blue-color">{formatAnswerExpression(item.value)}</span>)
+            break;
+          case 'variable':
+            r.push(<span className="violet-color">{formatAnswerExpression(item.value)}</span>)
+            break;
+          default:
+            r.push(<span>{item.value}</span>)
+        }
+      }
+
+      //return r
+    } catch(e) {
+      // in case of parsing error just return parsed text (TODO: process parsing error ONLY)
+      console.log('Parsing error', e)
+      //return r //exp
+      r = exp  // don't highlight unparsed expression
+    }
+
+    console.log('returning:', r)
     return r
+
+    /* let r;
+     * //return exp.split('+'), <mark>+</mark>)
+     * //return exp
+     * r = reactReplace(exp, '+', v => (<span className="hl-plus">+</span>))
+     * //exp = reactReplace(exp, '$', v => (<span className="blue-color">$</span>))
+
+
+
+     * return r*/
   }
 
   render() {
-    const { inputs } = this.state
+    const { inputs, results } = this.state
     return (
       <div>
+        <Helmet>
+          <meta charSet="UTF-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=1.0, user-scalable=0" />
+          <title>Cripto Calc</title>
+          <link rel="stylesheet" href="css/light.css" />
+          {/*<link rel="stylesheet" href="dark.css">*/}
+          <link rel="stylesheet" href="css/fonts.css" />
+        </Helmet>
+
+
         <div className="autodraw">
           <div className="highlights">
             <ul>
-              { inputs.map(inp => <li>{this.formatExpression(inp)}</li>) }
+              { inputs.map(inp => <li>{this.renderHighlighted(inp)}</li>) }
               {/* <li>1 <mark>+</mark> 1</li>
               <li>3 <mark>+</mark> 2</li>
               <li>5 <mark>+</mark> 10</li> */}
@@ -266,9 +362,10 @@ class App extends React.Component {
           </div>
           <div className="results">
             <ul>
-              <li>=<mark>2</mark></li>
-              <li>=<mark>5</mark></li>
-              <li>=<mark>10</mark></li>
+              { results.map( r => <li>{r ? `=${r}` : ''}</li>) }
+              {/* <li>=<mark>2</mark></li>
+                  <li>=<mark>5</mark></li>
+                  <li>=<mark>10</mark></li> */}
             </ul>
           </div>
         </div>
@@ -303,132 +400,6 @@ class App extends React.Component {
             <div contentEditable="false">10+5=15</div>
           * /}
             </div> */}
-        <button onClick={this.test}>test</button>
-        <Helmet>
-          <meta charSet="UTF-8" />
-          <meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=1.0, user-scalable=0" />
-          <title>Cripto Calc</title>
-          <link rel="stylesheet" href="css/light.css" />
-          {/*<link rel="stylesheet" href="dark.css">*/}
-          <link rel="stylesheet" href="css/fonts.css" />
-        </Helmet>
-
-        <header>
-          <div className="container">
-            <a className="logo light" href="#">
-              <img src="img/logo-light.svg" alt="logo" />cryptocalc
-            </a>
-            <a className="logo dark" href="#">
-              <img src="img/logo-dark.svg" alt="logo" />cryptocalc
-            </a>
-            <ul className="menu">
-              <li><a href="#">Calculator</a></li>
-              <li><a href="#">Docs</a></li>
-            </ul>
-          </div>
-        </header>
-        <main className="main">
-          <section className="change">
-            <div className="container">
-              <div className="switch">
-                <img src="img/light-icon.svg" alt="light" className="light" />
-                <img src="img/sun.svg" alt="light" className="dark" />
-                <div>
-                  <input type="checkbox" className="checkbox" id="checkbox" />
-                  <label htmlFor="checkbox" />
-                </div>
-                <img src="img/dark-icon.svg" alt="dark" className="change-img-light" />
-                <img src="img/dark-icon-change.svg" alt="dark" className="change-img-dark" />
-              </div>
-              <div className="total"><span>Tolal:</span><span>€ 1,000,000,00</span></div>
-              <div className="holder">
-                <span className="plus-black"><img src="img/plus.svg" alt="plus" /></span>
-                <span className="plus-white"><img src="img/plus-white.svg" alt="plus" /></span>
-                <span className="open-search black"><img src="img/burger.svg" alt="burger" /></span>
-                <span className="open-search white"><img src="img/burger-white.svg" alt="burger" /></span>
-                <form className="search-form">
-                  <input type="text" defaultValue="text" />
-                  <ul>
-                    <li>Summary</li>
-                    <li>1 add 1 <span /></li>
-                    <li>Sample</li>
-                  </ul>
-                </form>
-              </div>
-            </div>
-          </section>
-          <div className="container">
-            <div className="calc-example">
-              <div>
-                <span className="grey-color"># Example</span>
-                <p><span className="blue-color">$</span>30 <span className="blue-color">CAD</span> + 5 <span className="blue-color">USD</span> - 7<span className="blue-color">EUR</span></p>
-                <p>1000 <span className="orange-color">times</span> 1</p>
-                <p><span className="blue-color">$</span>50 <span className="orange-color"> as a % of </span> <span className="blue-color">$</span>100</p>
-              </div>
-              <div>
-                <span className="green-bg sum">100,000,000</span>
-                <div className="copy">
-                  <span>Click to copy</span>
-                </div>
-                <span className="green-color">50%</span>
-              </div>
-            </div>
-            <div className="calc-example_results">
-              <div>
-                <p className="grey-color"># User write long verbal math expression</p>
-                <p>6 <span className="orange-color">divided by </span>2 plus 7 multiply by 2</p>
-                <div className="result sum">
-                  <p className="grey-bg"><span className="grey-color">6</span> <span className="red-color">/</span> <span className="grey-color">2</span> <span className="red-color">+</span> <span className="grey-color">7</span> <span className="red-color">*</span> <span className="grey-color">2</span></p>
-                  <p><span className="grey-color">=</span>17</p>
-                </div>
-                <p className="grey-color"># User calculate results that consist several different
-                  inner calculations.
-                </p>
-                <div className="result">
-                  <p><span className="violet-color">v</span> <span className="orange-color">=</span> <span className="blue-color">$</span>20
-                  </p>
-                  <p><span className="grey-color">=</span>$20</p>
-                </div>
-                <div className="result">
-                  <p><span className="violet-color">v2</span> <span className="orange-color">=</span> 5%</p>
-                  <p><span className="grey-color">=</span>5%</p>
-                </div>
-                <div className="result">
-                  <p><span className="violet-color">v</span> <span className="orange-color">times</span> 7 <span className="orange-color">-</span> v2</p>
-                </div>
-                <div className="result sum">
-                  <p className="grey-bg">
-                    <span className="blue-color">$</span><span className="grey-color">20</span> <span className="red-color">*</span> <span className="grey-color">7</span> <span className="red-color">-</span> <span className="grey-color">5%</span>
-                  </p>
-                  <p><span className="grey-color">=</span>$133</p>
-                </div>
-                <div className="result">
-                  <p><span className="violet-color">v</span><span className="orange-color"> += </span><span className="blue-color">$</span>10
-                  </p>
-                  <p><span className="grey-color">=</span>$30</p>
-                </div>
-                <p className="grey-color"># User calculate several different calculation.</p>
-                <div className="result">
-                  <p><span className="violet-color">Line 1</span> <span className="blue-color">$10</span></p>
-                  <p><span className="grey-color">=</span>$10</p>
-                </div>
-                <div className="result">
-                  <p><span className="violet-color">Line 2</span> <span className="blue-color">$15</span></p>
-                  <p><span className="grey-color">=</span>$15</p>
-                </div>
-                <div className="result">
-                  <p><span className="violet-color">Result:</span> <span className="orange-color">sum</span></p>
-                </div>
-                <div className="result sum">
-                  <p className="grey-bg">
-                    <span className="blue-color">$</span><span className="grey-color">10</span> <span className="red-color">+</span> <span className="blue-color">$</span><span className="grey-color">15</span>
-                  </p>
-                  <p><span className="grey-color">=</span>$25</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </main>
       </div>
     )
   }

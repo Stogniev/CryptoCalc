@@ -17,8 +17,10 @@ const UN = UnitNames.map(escape).join('|')
 // $, ₴, ...
 const currSymbols = Object.keys(currencies.symbolToCode).map(escapeStringRegexp).join('|')
 
-// grammar entered by user OR from prepareTxt (BOTH)
-const grammar = {
+console.log('currSymbols', currSymbols)
+
+// highlightGrammar entered by user OR from prepareTxt (BOTH)
+const highlightGrammar = {
   float: new RegExp('\\d+(?:\\.\\d+)?'),
 
   plus: ['+', 'plus', 'and', 'with'],
@@ -62,28 +64,32 @@ const grammar = {
 
   WS: /[ \t]+/,
 
+  unknown: new RegExp('\\S+')
 }
 
-const lexer = moo.compile(grammar)
+const highlightLexer = moo.compile(highlightGrammar)
 
 
 function tokenize(text) {
   const r = []
-  lexer.reset(text)
+  highlightLexer.reset(text)
 
   let item;
-  while (item = lexer.next()) {
-    if (['WS', 'semicolon'].includes(item.type)) continue;
-    //console.log(item)
+  while (true) {
+    item = highlightLexer.next()
+    if (!item) break;
 
-    switch (item.type) {
-      case 'plus':
-        r.push('<', item.value, '>');
-        break;
-      default:
-        r.push(item.value)
-    }
-    //r.push()
+    //if (['WS', 'semicolon'].includes(item.type)) continue;
+    console.log('-', item.value)
+
+    /* switch (item.type) {
+     *     case 'plus':
+     *        r.push('<', item.value, '>');
+     *        break;
+    *   default:
+    *     r.push(item.value)
+    * }*/
+    r.push()
   }
   return r
 }
@@ -91,7 +97,8 @@ function tokenize(text) {
 
 function fmt(text) {
   const tokens = tokenize(text)
-  console.log(text, '\n ', text, '\n ', formatAnswerExpression(tokens.join(' ')))
+  console.log('tokens:', tokens)
+  console.log(text, '\n ', text, '\n ', tokens, '\n ', formatAnswerExpression(tokens.join(' ')))
 }
 
 // that user in put
@@ -102,5 +109,9 @@ fmt('50$ as a % of 100$')
 
 fmt('50 USD; asapercentof 100 USD;')
 
+fmt('4 + 5 ')
 
-module.exports = { tokenize }
+//fmt('d')
+
+
+module.exports = { highlightLexer }

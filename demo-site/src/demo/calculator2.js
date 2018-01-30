@@ -12,7 +12,7 @@ const currencies = require('./currencies')
 const rates = require('./rates')
 
 const {
-  scales, isUnit, lexemSeparator, confusingUnits, formatAnswerExpression
+  scales, isUnit, lexemSeparator, confusingUnits, //formatAnswerExpression
 } = require('./common')
 
 // Create units for every currency code (without subunits)
