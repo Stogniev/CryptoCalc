@@ -360,9 +360,9 @@ class App extends React.Component {
               <li>5 <mark>+</mark> 10</li> */}
             </ul>
           </div>
-          <div className="results">
+          <div className="results" >
             <ul>
-              { results.map( r => <li>{r ? `=${r}` : ''}</li>) }
+              { results.map( r => <li>{r ? `= ${r}` : ''}</li>) }
               {/* <li>=<mark>2</mark></li>
                   <li>=<mark>5</mark></li>
                   <li>=<mark>10</mark></li> */}
