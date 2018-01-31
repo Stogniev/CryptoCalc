@@ -180,6 +180,7 @@ function prepareAndParse(text, verbose=false) {
 // mini-sandbox
 //?assertEqual(call('(100 + 10%)4%/2'), '10 PERCENT')  //implicit conversion
 //console.log(formatAnswerExpression('100 USD; asapercentof 200 USD;'))
+//assertEqual(call('12 as a % of 120'), '10 PERCENT')
 //return
 
 
@@ -541,6 +542,11 @@ assertEqual(call('-100% * 3'), '-300 PERCENT')
 
 assertEqual(call('200kg * 10%'), '20 kg')
 assertEqual(call('200kg / 5%').to('kg'), '4000 kg')
+
+// as a % of/on/off for numbers
+assertEqual(call('24 as a % of 120'), '20 PERCENT')
+assertEqual(call('70 as a % on 20'), '250 PERCENT')
+assertEqual(call('20 as a % off 70').value, 28.57, ALMOST) // 20/0.7
 
 
 // Tests from Specification

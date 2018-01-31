@@ -232,16 +232,21 @@ class App extends React.Component {
   }
 
   onInput = () => {
-    const inputs = [...document.getElementById('inputList').getElementsByTagName('li')]
-      .map(x => x.textContent)
+    const textholder = document.getElementById('textholder')
+    const inputs = textholder.innerText.split('\n')
+
+    // const inputs = [...document.getElementById('inputList').getElementsByTagName('li')]
+    //   .map(x => x.textContent)
 
     const results = []
     inputs.forEach(
       input => {
         try {
+          console.log('p&p', input)
           const parser = prepareAndParse(input, 'verbose')
           results.push(parser && parser.results[0])
         } catch(e) {
+          console.log('Error:', e)
           //let error = `${e}`
           //newState = {...newState, error}
           results.push(null)  //`error: ${e}`
@@ -249,7 +254,8 @@ class App extends React.Component {
       }
     )
 
-    console.log('Inputs, results: ', inputs, results)
+    console.log('Inputs: ', inputs)
+    console.log('Results: ', results)
     this.setState( {inputs, results} )
   }
 
@@ -260,7 +266,7 @@ class App extends React.Component {
 
   componentDidMount() {
     // make here to surpress react warning (1)
-    if (B) document.getElementById('inputList').setAttribute('contenteditable', true)
+    //if (B) document.getElementById('inputList').setAttribute('contenteditable', true)
   }
 
 
@@ -351,35 +357,33 @@ class App extends React.Component {
           <link rel="stylesheet" href="css/fonts.css" />
         </Helmet>
 
-        
+
 
         <div className="autodraw">
           <div className="highlights">
-            <ul>
-              { inputs.map(inp => <li>{this.renderHighlighted(inp)}</li>) }
-              {/* <li>1 <mark>+</mark> 1</li>
-              <li>3 <mark>+</mark> 2</li>
-              <li>5 <mark>+</mark> 10</li> */}
-            </ul>
+            { inputs.map(inp => <div>{this.renderHighlighted(inp)}</div>) }
+            {/* <ul>
+                { inputs.map(inp => <li>{this.renderHighlighted(inp)}</li>) }
+                {/ * <li>1 <mark>+</mark> 1</li>
+                <li>3 <mark>+</mark> 2</li>
+                <li>5 <mark>+</mark> 10</li> * /}
+                </ul> */}
           </div>
           <div className="results" >
-            <ul>
-              { results.map( r => <li>{r ? `= ${r}` : ''}</li>) }
-              {/* <li>=<mark>2</mark></li>
-                  <li>=<mark>5</mark></li>
-                  <li>=<mark>10</mark></li> */}
-            </ul>
+            { results.map( r => <div>{r ? `= ${r}` : ''}</div>) }
+            {/* <ul>
+                { results.map( r => <li>{r ? `= ${r}` : ''}</li>) }
+                {/ * <li>=<mark>2</mark></li>
+                <li>=<mark>5</mark></li>
+                <li>=<mark>10</mark></li> * /}
+                </ul> */}
           </div>
         </div>
-        <div id="textholder" >
-          <ul id="inputList" onInput={this.onInput} /* contentEditable (1) */ >
-            {/* { inputs.map( inp => <li>{inp}</li> ) } */}
-            <li></li>
-            {/* <li>I + I</li>
-                <li>З + Z</li>
-                <li>S + IО</li> */}
-          </ul>
+        <div id="textholder-keeper">
+          <div id="textholder" contentEditable onInput={this.onInput}>
+          </div>
         </div>
+
         {/* <div contentEditable>
             <ul>
             <li>1</li>

@@ -46,12 +46,6 @@
 
 
 
-#textholder {
-  z-index: -2;
-  color: rgba(0,0,0, 0.05);
-  caret-color: black;
-}
-
 .autodraw, #textholder {
   width: 460px;
   height: 100%; /* 180px; */
@@ -59,20 +53,47 @@
   /* letter-spacing: 1px; */
 }
 
-#textholder ul {
-  margin: 0px;
-  padding: 0;
-  list-style-type: none;
+#textholder-keeper {
+
+  /* 134 */
+  /* display: flex; */
+  /* align-items: top; */
+
+  /* display: table; */
 }
 
-#textholder ul li {
-  margin-bottom: 1.2em;
-  height: 1.2em;
+#textholder {
+  z-index: -2;
+  line-height: 2.0em;
+  color: rgba(0,0,0, 0.4);
+  caret-color: black;
+  /* background-color: lightgray; */
+
+
+  /* display: table-cell; vertical-align: top; */
+
+  /* display: inline-block; */
+  /* vertical-align: top; */
+
+  /* display: flex; */
+  /* flex-direction: column;*/
+  /* align-items: top; */
 }
 
-#textholder ul li:last-child {
-  margin-bottom: unset;
-}
+/* #textholder ul { */
+/*   margin: 0px; */
+/*   padding: 0; */
+/*   list-style-type: none; */
+/* } */
+/*  */
+/* #textholder ul li { */
+/*   margin-bottom: 1.2em; */
+/*   height: 1.2em; */
+/* } */
+/*  */
+/* #textholder ul li:last-child { */
+/*   margin-bottom: unset; */
+/* } */
 
 .autodraw {
   position: absolute;
@@ -87,39 +108,42 @@
 
 .highlights {
   position:absolute;
+  line-height: 2.0em;
 }
 
-.highlights ul {
-  margin: 0px;
-  padding: 0;
-  list-style-type: none;
-}
-
-.highlights ul li {
-  margin-bottom: 1.2em;
-  height: 1.2em;
-}
+/* .highlights ul { */
+/*   margin: 0px; */
+/*   padding: 0; */
+/*   list-style-type: none; */
+/* } */
+/*  */
+/* .highlights ul li { */
+/*   margin-bottom: 1.2em; */
+/*   height: 1.2em; */
+/* } */
 
 .results {
   /* ?? white-space: pre-wrap; */
+  padding-top: 1em;
+  line-height: 2.0em;
   word-wrap: break-word;
   ZZcolor: red;
 }
 
-.results ul {
-  padding: 0;
-  list-style-type: none;
-}
+/* .results ul { */
+/*   padding: 0; */
+/*   list-style-type: none; */
+/* } */
 
-.results ul li {
-  margin-top: 1.2em;
-  margin-bottom: 1.2em;
-  height: 1.2em;
-}
-
-.results ul li:last-child {
-  margin-bottom: unset;
-}
+/* .results ul li { */
+/*   margin-top: 1.2em; */
+/*   margin-bottom: 1.2em; */
+/*   height: 1.2em; */
+/* } */
+/*  */
+/* .results ul li:last-child { */
+/*   margin-bottom: unset; */
+/* } */
 
 
 
