@@ -77,7 +77,8 @@
 .autodraw {
   position: absolute;
   z-index: -1;
-  border: 2px solid #685972;
+  paddding: 2px;
+  /* border: 2px solid #685972; */
   background-color: #fff;
   overflow: auto;
   pointer-events: none;

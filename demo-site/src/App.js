@@ -287,11 +287,11 @@ class App extends React.Component {
         //r.push(item.value)
 
         switch (item.type) {
-          case 'WS':
-          case 'semicolon':
-            break;
+            /* case 'WS':        NOTE: for HIGHLIGHT need just render space
+             * case 'semicolon':
+             *   break;*/
           case 'comment':
-            r.push(<span className="grey-color">{formatAnswerExpression(item.value)}</span>)
+            r.push(<span className="grey-color">{item.value}</span>)
             break;
           case 'plus':
           case 'minus':
@@ -302,16 +302,17 @@ class App extends React.Component {
           case 'mod':
           case 'leftShift':
           case 'rightShift':
-            r.push(<span className="orange-color">{formatAnswerExpression(item.value)}</span>)
+            r.push(<span className="orange-color">{item.value}</span>)
             break;
           case 'currency':
-            r.push(<span className="blue-color">{formatAnswerExpression(item.value)}</span>)
+            r.push(<span className="blue-color">{item.value}</span>)
             break;
           case 'variable':
-            r.push(<span className="violet-color">{formatAnswerExpression(item.value)}</span>)
+            r.push(<span className="violet-color">{item.value}</span>)
             break;
           default:
             r.push(<span>{item.value}</span>)
+            //r.push(' ') // add breakable space between highlighted parts
         }
       }
 
@@ -350,6 +351,7 @@ class App extends React.Component {
           <link rel="stylesheet" href="css/fonts.css" />
         </Helmet>
 
+        
 
         <div className="autodraw">
           <div className="highlights">
