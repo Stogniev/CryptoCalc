@@ -27,15 +27,17 @@
 
 
 main ->
-   identifier _ "=" EXPRESSION "<EOL>"  {%
+   identifier _ "=" EXPRESSION EOL  {%
         ([name,,,expression,],l,rej) => {
           let v = setUserVariable(name, expression)
           log('var:', name, '=', expression)
           return v
         }
      %}
-#|  EXPRESSION       {% id %}
+ | EXPRESSION EOL      {% id %}
 
+
+EOL -> "<EOL>"
 
 EXPRESSION ->
    _ OPS _ {% function([,r,]) { log('>',r, typeof r); return r} %}
@@ -277,22 +279,22 @@ CONST -> "pi"          {% function(d) {return Math.PI; } %}
 N -> float          {% id %}
    | FUNC           {% id %}
    | CONST          {% id %}
-   | ident         {%
-      function(d, l, reject) {
-        if (['sin', 'cos', 'tan', 'pi', 'e', 'asin', 'acos', 'atan', 'ln', 'sqrt'
-            ].includes(d[0])) {  //NOTE: put all identifiers
-            //log('reject ident1');
-            return reject;
-        } else {
-          if (false) {  // TODO: check/put variable here if exists
-              //return variables(d[0])
-          } else {
-            //log('reject ident2')
-            return reject;
-          }
-        }
-      }
-    %}
+   # | ident         {%
+   #    function(d, l, reject) {
+   #      if (['sin', 'cos', 'tan', 'pi', 'e', 'asin', 'acos', 'atan', 'ln', 'sqrt'
+   #          ].includes(d[0])) {  //NOTE: put all identifiers
+   #          //log('reject ident1');
+   #          return reject;
+   #      } else {
+   #        if (false) {  // TODO: check/put variable here if exists
+   #            //return variables(d[0])
+   #        } else {
+   #          //log('reject ident2')
+   #          return reject;
+   #        }
+   #      }
+   #    }
+   #  %}
 
 # I use `float` to basically mean a number with a decimal point in it
 float -> int "." int   {% function(d) {return parseFloat(d[0] + d[1] + d[2])} %}
@@ -300,9 +302,9 @@ float -> int "." int   {% function(d) {return parseFloat(d[0] + d[1] + d[2])} %}
 
 int -> [0-9]:+      {% function(d) {/*log('int:', d[0].join(""));*/ return d[0].join(""); } %}
 
-ident -> [a-zA-Z]:+    {% function(d) {return d[0].join(""); } %}
+#ident -> [a-zA-Z]:+    {% function(d) {return d[0].join(""); } %}
 
-identifier -> [a-zA-Z_] [a-zA-Z0-9_]:+    {% ([r1,r2]) => [...r1, ...r2].join("")  %}
+identifier -> [a-zA-Z_] [a-zA-Z0-9_]:*    {% ([r1,r2]) => [...r1, ...r2].join("")  %}
 
 
 unit ->

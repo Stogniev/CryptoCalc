@@ -128,10 +128,6 @@ function prepareTxt(text, verbose=false) {
   return txt
 }
 
-function call(text, verbose=DEBUG) {
-  return prepareAndParse(text, verbose).results[0]
-}
-
 // TODO: refactor with call
 function prepareAndParse(text, verbose=false) {
   const txt = prepareTxt(text, verbose)
@@ -163,45 +159,18 @@ function prepareAndParse(text, verbose=false) {
 }
 
 
+function call(text, verbose=DEBUG) {
+  return prepareAndParse(text, verbose).results[0]
+}
+
+
 // mini-sandbox
 //?assertEqual(call('(100 + 10%)4%/2'), '10 PERCENT')  //implicit conversion
 //console.log(formatAnswerExpression('100 USD; asapercentof 200 USD;'))
 //assertEqual(call('12 as a % of 120'), '10 PERCENT')
 
-assertEqual(call('var1 = 2').value, 2)
-assertEqual(call('var2 = 2 + 3').value, 5)
-assertEqual(call('var2 = 2 * 10 kg').value, '20 kg')
-assertEqual(call('var4 = 2 + $4.4').value, '6.4 USD')
 
-try {
-  assertEqual(call('0wrongvar = 1 + 3').value, 999)
-} catch(e) {
-  assert(e.message.includes('Unexpected'))
-}
-
-try {
-  assertEqual(call('sum = 1 + 3').value, 999)
-} catch(e) {
-  assert(e instanceof VariableNameError)
-}
-
-try {
-  assertEqual(call('USD = 2 + 5').value, 999)
-} catch(e) {
-  assert(e.message.includes('Unexpected'))
-}
-
-
-try {
-  assertEqual(call('kg = 4 + 9').value, 999)
-} catch(e) {
-  assert(e instanceof VariableNameError)
-}
-
-assertEqual(call('var4 = 2 + $4.4').value, '6.4 USD')
-
-
-return
+//return
 
 
 
@@ -345,15 +314,15 @@ try {
 }
 
 try {
-  call('2 fakeUnit')
+  assertEqual(call('2 fakeUnit'), 999)
 } catch(e) {
-  assertEqual(e.message, 'Empty result for "2 fakeUnit"')
+  assert(e.message.indexOf('invalid') !== -1)
 }
 
 try {
   assertEqual(call('2 tonne * 4 gram '), '6 kg^2')
 } catch(e) {
-  assert(e.message.includes('Empty result'))
+  assert(e.message.includes('invalid'))
 }
 
 assertEqual(call('4 kg  2'), '8 kg')
@@ -384,7 +353,7 @@ try {
 try {
   call('12 / 2kg ')
 } catch(e) {
-  assert(e.message.includes('Empty result '))
+  assert(e.message.includes('invalid'))
 }
 
 assertEqual(call('(3+5) 2 kg * 2').value, 32)
@@ -466,9 +435,9 @@ try {
 }
 
 try {
-  call('12 / 2UAH ')
+  assertEqual(call('12 / 2UAH '), 999)
 } catch(e) {
-  assert(e.message.includes('Empty result'))
+  assert(e.message.includes('invalid'))
 }
 
 assertEqual(call('(3+5) 2 Euro * 2'), '32 EUR')
@@ -533,17 +502,17 @@ assertEqual(call('2% - 5'), '-3 PERCENT')
 assertEqual(call('300% - 6'), '294 PERCENT')
 
 try {
-  call('6% + 3cm')
+  assertEqual(call('6% + 3cm'), 999)
 } catch(e) {
-  assert(e.message.includes('Empty result'))
+  assert(e.message.includes('invalid'))
 }
 
 assertEqual(call('400 km + 5%'), '420 km')
 
 try {
-  call('7% + 3kg')
+  assertEqual(call('7% + 3kg'), 999)
 } catch(e) {
-  assert(e.message.includes('Empty result'))
+  assert(e.message.includes('invalid'))
 }
 
 assertEqual(call('500 kg - 120%'), '-100 kg')
@@ -605,12 +574,53 @@ assertEqual(call('2k mm + 2m').toString(), '4 m')
 
 assertEqual(call('$2.2k in ZEUR').toNumber('ZEUR'), 2000, ALMOST)
 
+// variables
+assertEqual(call('var1 = 2').value, 2)
+assertEqual(call('var2 = 2 + 3').value, 5)
+assertEqual(call('var2 = 2 * 10 kg').value, '20 kg')
+assertEqual(call('var4 = 2 + $4.4').value, '6.4 USD')
+
+try {
+  assertEqual(call('0wrongvar = 1 + 3').value, 999)
+} catch(e) {
+  assert(e.message.includes('Unexpected'))
+}
+
+try {
+  assertEqual(call('sum = 1 + 3').value, 999)
+} catch(e) {
+  assert(e instanceof VariableNameError)
+}
+
+try {
+  assertEqual(call('USD = 2 + 5').value, 999)
+} catch(e) {
+  assert(e.message.includes('Unexpected'))
+}
+
+
+try {
+  assertEqual(call('kg = 4 + 9').value, 999)
+} catch(e) {
+  assert(e instanceof VariableNameError)
+}
+
+try {
+  assertEqual(call('K = 5 + 10').value, 999)
+} catch(e) {
+  assert(e instanceof VariableNameError)
+}
+
+assertEqual(call('var4 = 2 + $4.4').value, '6.4 USD')
+
+
+
 console.log('tests passed')
 
 function runmath(s) {
-   var ans;
-  try {// We want to catch parse errors and die appropriately
+  let ans;
 
+  try {
     // Make a parser and feed the input
     //console.log('Initial', grammar.ParserRules, grammar.ParserStart, s )
     //ans = new nearley.Parser(grammar.ParserRules, grammar.ParserStart).feed(s);

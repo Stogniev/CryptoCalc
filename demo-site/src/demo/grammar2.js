@@ -25,14 +25,16 @@ function id(x) {return x[0]; }
 var grammar = {
     Lexer: undefined,
     ParserRules: [
-    {"name": "main$string$1", "symbols": [{"literal":"<"}, {"literal":"E"}, {"literal":"O"}, {"literal":"L"}, {"literal":">"}], "postprocess": function joiner(d) {return d.join('');}},
-    {"name": "main", "symbols": ["identifier", "_", {"literal":"="}, "EXPRESSION", "main$string$1"], "postprocess": 
+    {"name": "main", "symbols": ["identifier", "_", {"literal":"="}, "EXPRESSION", "EOL"], "postprocess": 
         ([name,,,expression,],l,rej) => {
           let v = setUserVariable(name, expression)
           log('var:', name, '=', expression)
           return v
         }
              },
+    {"name": "main", "symbols": ["EXPRESSION", "EOL"], "postprocess": id},
+    {"name": "EOL$string$1", "symbols": [{"literal":"<"}, {"literal":"E"}, {"literal":"O"}, {"literal":"L"}, {"literal":">"}], "postprocess": function joiner(d) {return d.join('');}},
+    {"name": "EOL", "symbols": ["EOL$string$1"]},
     {"name": "EXPRESSION", "symbols": ["_", "OPS", "_"], "postprocess": function([,r,]) { log('>',r, typeof r); return r}},
     {"name": "OPS", "symbols": ["OPS_NUM"], "postprocess": id},
     {"name": "OPS", "symbols": ["OPS_UNIT"], "postprocess": id},
@@ -189,31 +191,12 @@ var grammar = {
     {"name": "N", "symbols": ["float"], "postprocess": id},
     {"name": "N", "symbols": ["FUNC"], "postprocess": id},
     {"name": "N", "symbols": ["CONST"], "postprocess": id},
-    {"name": "N", "symbols": ["ident"], "postprocess": 
-        function(d, l, reject) {
-          if (['sin', 'cos', 'tan', 'pi', 'e', 'asin', 'acos', 'atan', 'ln', 'sqrt'
-              ].includes(d[0])) {  //NOTE: put all identifiers
-              //log('reject ident1');
-              return reject;
-          } else {
-            if (false) {  // TODO: check/put variable here if exists
-                //return variables(d[0])
-            } else {
-              //log('reject ident2')
-              return reject;
-            }
-          }
-        }
-            },
     {"name": "float", "symbols": ["int", {"literal":"."}, "int"], "postprocess": function(d) {return parseFloat(d[0] + d[1] + d[2])}},
     {"name": "float", "symbols": ["int"], "postprocess": function(d) {log('int', d); return parseInt(d[0], 10)}},
     {"name": "int$ebnf$1", "symbols": [/[0-9]/]},
     {"name": "int$ebnf$1", "symbols": ["int$ebnf$1", /[0-9]/], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
     {"name": "int", "symbols": ["int$ebnf$1"], "postprocess": function(d) {/*log('int:', d[0].join(""));*/ return d[0].join(""); }},
-    {"name": "ident$ebnf$1", "symbols": [/[a-zA-Z]/]},
-    {"name": "ident$ebnf$1", "symbols": ["ident$ebnf$1", /[a-zA-Z]/], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
-    {"name": "ident", "symbols": ["ident$ebnf$1"], "postprocess": function(d) {return d[0].join(""); }},
-    {"name": "identifier$ebnf$1", "symbols": [/[a-zA-Z0-9_]/]},
+    {"name": "identifier$ebnf$1", "symbols": []},
     {"name": "identifier$ebnf$1", "symbols": ["identifier$ebnf$1", /[a-zA-Z0-9_]/], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
     {"name": "identifier", "symbols": [/[a-zA-Z_]/, "identifier$ebnf$1"], "postprocess": ([r1,r2]) => [...r1, ...r2].join("")},
     {"name": "unit$ebnf$1", "symbols": [/[a-zA-Z0-9]/]},
