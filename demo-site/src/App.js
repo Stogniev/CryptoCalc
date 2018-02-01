@@ -296,7 +296,7 @@ class App extends React.Component {
       while (true) {
         item = highlightLexer.next()
         if (!item) break;
-        console.log('-', item)
+        //console.log('-', item)
         //r.push(item.value)
 
         switch (item.type) {
@@ -417,7 +417,9 @@ class App extends React.Component {
             </div>
             <div className="results" >
               { results.map( (r,i) => (r && [
-                  <span className="parsedExpression" key={`e${i}`}>{ expressions[i] }</span>,
+                  <span className="parsedExpression" key={`e${i}`}>
+                    { this.renderHighlighted(expressions[i]) }
+                  </span>,
                   <div className="res" key={`r${i}`}>= {this.formatResult(r)}</div>,
                   <br /> ])) }
             </div>

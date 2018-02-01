@@ -77,8 +77,9 @@
 #textholder {
   z-index: -2;
   line-height: 4em;
-  color: rgba(0,0,0, 0.4);
+  color: rgba(0,0,0, 0);
   caret-color: black;
+
   /* background-color: lightgray; */
 
 
