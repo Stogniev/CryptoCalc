@@ -308,7 +308,7 @@ assertEqual(call('8m / 2'), '4 m')
 assertEqual(call('(5+3)km'), '8 km')
 
 try {
-  call('2 kg + 4 cm')
+  assertEqual(call('2 kg + 4 cm'), 999)
 } catch(e) {
   assertEqual(e.message, 'Units do not match')
 }
@@ -333,7 +333,7 @@ assertEqual(call('69 cm * 3 / 2 + 2km'), '2.001035 km')
 
 
 try {
-  call('2 kg ^ 2')   // cannot exponent units
+  assertEqual(call('2 kg ^ 2'), 999)   // cannot exponent units
 } catch(e) {
   assert(e.message.includes('Unexpected'))
 }
@@ -345,13 +345,13 @@ assertEqual(call('-2 m - (-3m)').value, 1, ALMOST)
 
 
 try {
-  call('2 kg << 2 ')
+  assertEqual(call('2 kg << 2 '), 999)
 } catch(e) {
   assert(e.message.includes('Unexpected'))
 }
 
 try {
-  call('12 / 2kg ')
+  assertEqual(call('12 / 2kg '), 999)
 } catch(e) {
   assert(e.message.includes('invalid'))
 }
@@ -410,7 +410,7 @@ assertEqual(call('(5+3)$'), '8 USD')
 assertEqual(call('-2.5 USD + $3.1 +(1/2)usd'), '1.1 USD')
 
 try {
-  call('2 kg + 4 USD')
+  assertEqual(call('2 kg + 4 USD'), 999)
 } catch(e) {
   assertEqual(e.message, 'Units do not match')
 }
@@ -419,7 +419,7 @@ assertEqual(call('4 UAH  2'), '8 UAH')
 
 
 try {
-  call('2 GBP ^ 2')   // cannot exponent units
+  assertEqual(call('2 GBP ^ 2'), 999)   // cannot exponent units
 } catch(e) {
   assert(e.message.includes('Unexpected'))
 }
@@ -429,7 +429,7 @@ assertEqual(call('-2 UAH - (-3UAH)'), '1 UAH')
 
 
 try {
-  call('2 UAH << 2 ')
+  assertEqual(call('2 UAH << 2 '), 999)
 } catch(e) {
   assert(e.message.includes('Unexpected'))
 }
