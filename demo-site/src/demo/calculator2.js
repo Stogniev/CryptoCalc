@@ -11,24 +11,16 @@ const DEBUG = process.env.DEBUG
 const currencies = require('./currencies')
 const rates = require('./rates')
 
+const { UnitNames, UnitPrefixes } = require('./unitUtil')
+
+const { VariableNameError } = require('./userVariables')
 const {
   scales, isUnit, lexemSeparator, confusingUnits, //formatAnswerExpression
 } = require('./common')
 
-// Create units for every currency code (without subunits)
-math.createUnit('USD')
-currencies.codes.forEach( code => {
-  if (code === 'USD') return;
-  if (!rates.hasOwnProperty(code)) return;
-
-  math.createUnit(code, {definition: `${rates[code]} USD`})
-})
 
 
 const ALMOST=true
-
-//create percent unit
-math.createUnit('PERCENT')
 
 
 function assertEqual(a, b, almost=false) {
@@ -49,13 +41,8 @@ function assertEqual(a, b, almost=false) {
   }
 }
 
-
-
 // TODO: add all
 const StandartFunctions = ['sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'sqrt', 'ln']
-
-const UnitNames = Object.values(math.type.Unit.UNITS).map( u => u.name)
-const UnitPrefixes = Object.keys(math.type.Unit.PREFIXES.SHORTLONG)
 
 // magically adapting text for grammar parser
 function prepareTxt(text, verbose=false) {
@@ -129,6 +116,9 @@ function prepareTxt(text, verbose=false) {
   const CU = confusingUnits.map(escape).join('|')
   txt = txt.replace(new RegExp(` (${CU}); `, 'gi'), ' $1 ')
 
+  // 45) add '<EOL>' to the END of line
+  txt += '<EOL>'
+
   // 50) remove multispace (produced user, 4)) reason: to avoid multiresults
   txt = txt.replace(new RegExp('\\s+', 'gi'), ' ')
 
@@ -173,15 +163,45 @@ function prepareAndParse(text, verbose=false) {
 }
 
 
-
-
-
-
 // mini-sandbox
 //?assertEqual(call('(100 + 10%)4%/2'), '10 PERCENT')  //implicit conversion
 //console.log(formatAnswerExpression('100 USD; asapercentof 200 USD;'))
 //assertEqual(call('12 as a % of 120'), '10 PERCENT')
-//return
+
+assertEqual(call('var1 = 2').value, 2)
+assertEqual(call('var2 = 2 + 3').value, 5)
+assertEqual(call('var2 = 2 * 10 kg').value, '20 kg')
+assertEqual(call('var4 = 2 + $4.4').value, '6.4 USD')
+
+try {
+  assertEqual(call('0wrongvar = 1 + 3').value, 999)
+} catch(e) {
+  assert(e.message.includes('Unexpected'))
+}
+
+try {
+  assertEqual(call('sum = 1 + 3').value, 999)
+} catch(e) {
+  assert(e instanceof VariableNameError)
+}
+
+try {
+  assertEqual(call('USD = 2 + 5').value, 999)
+} catch(e) {
+  assert(e.message.includes('Unexpected'))
+}
+
+
+try {
+  assertEqual(call('kg = 4 + 9').value, 999)
+} catch(e) {
+  assert(e instanceof VariableNameError)
+}
+
+assertEqual(call('var4 = 2 + $4.4').value, '6.4 USD')
+
+
+return
 
 
 

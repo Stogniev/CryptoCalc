@@ -10,7 +10,8 @@
     "console-debug": "(cd demo-site/src/demo && DEBUG=1 ./build-and-test2.sh)",
     "start": "(cd ./demo-site && yarn run start)",
     "build": "(cd ./demo-site && npm run build && rm -rf ../docs/* && cp -rf build/* ../docs/ && cd .. && sed -i 's/\\/static/static/g' docs/index.html && git add docs/static/js/\\*.js)",
-    "build-and-run": "npm run build && (cd docs && python -m SimpleHTTPServer 9000)"
+    "build-and-run": "npm run build && npm run localServer",
+    "localServer": "(cd docs && python -m SimpleHTTPServer 9000)"
   },
   "dependencies": {
     "escape-string-regexp": "^1.0.5",

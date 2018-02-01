@@ -4,7 +4,7 @@
 function id(x) {return x[0]; }
 
     /*const moo = require("moo");
-   
+  
   const lexer = moo.compile({
     ws:     /[ \t]+/,
     number: /[0-9]+/,
@@ -21,11 +21,19 @@ function id(x) {return x[0]; }
   }
 
   const { isPercent, isMeasure, toUnit, confusingUnits } = require('./common')
-
+  const { setUserVariable } = require('./userVariables')
 var grammar = {
     Lexer: undefined,
     ParserRules: [
-    {"name": "main", "symbols": ["_", "OPS", "_"], "postprocess": function(d) { /*log('>',d, typeof d[1]);*/ return d[1]; }},
+    {"name": "main$string$1", "symbols": [{"literal":"<"}, {"literal":"E"}, {"literal":"O"}, {"literal":"L"}, {"literal":">"}], "postprocess": function joiner(d) {return d.join('');}},
+    {"name": "main", "symbols": ["identifier", "_", {"literal":"="}, "EXPRESSION", "main$string$1"], "postprocess": 
+        ([name,,,expression,],l,rej) => {
+          let v = setUserVariable(name, expression)
+          log('var:', name, '=', expression)
+          return v
+        }
+             },
+    {"name": "EXPRESSION", "symbols": ["_", "OPS", "_"], "postprocess": function([,r,]) { log('>',r, typeof r); return r}},
     {"name": "OPS", "symbols": ["OPS_NUM"], "postprocess": id},
     {"name": "OPS", "symbols": ["OPS_UNIT"], "postprocess": id},
     {"name": "OPS_NUM", "symbols": ["SHIFT"], "postprocess": id},
@@ -205,6 +213,9 @@ var grammar = {
     {"name": "ident$ebnf$1", "symbols": [/[a-zA-Z]/]},
     {"name": "ident$ebnf$1", "symbols": ["ident$ebnf$1", /[a-zA-Z]/], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
     {"name": "ident", "symbols": ["ident$ebnf$1"], "postprocess": function(d) {return d[0].join(""); }},
+    {"name": "identifier$ebnf$1", "symbols": [/[a-zA-Z0-9_]/]},
+    {"name": "identifier$ebnf$1", "symbols": ["identifier$ebnf$1", /[a-zA-Z0-9_]/], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
+    {"name": "identifier", "symbols": [/[a-zA-Z_]/, "identifier$ebnf$1"], "postprocess": ([r1,r2]) => [...r1, ...r2].join("")},
     {"name": "unit$ebnf$1", "symbols": [/[a-zA-Z0-9]/]},
     {"name": "unit$ebnf$1", "symbols": ["unit$ebnf$1", /[a-zA-Z0-9]/], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
     {"name": "unit", "symbols": ["unit$ebnf$1", "separator"], "postprocess": 

@@ -106,6 +106,5 @@ function formatAnswerExpression(text) {
 
 
 
-
 module.exports = { getUnitName, isUnit, isPercent, isMeasure, isNumber, toUnit, confusingUnits, lexemSeparator, scales, formatAnswerExpression }
 

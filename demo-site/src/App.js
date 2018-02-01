@@ -17,9 +17,6 @@ import Helmet from 'react-helmet'
 import { highlightLexer } from './demo/test_moo'
 /*eslint no-use-before-define: ["error", { "variables": false }]*/
 
-
-
-
 const B = true
 
 function getTextNodeAtPosition(root, index) {

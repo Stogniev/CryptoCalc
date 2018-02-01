@@ -3,7 +3,7 @@
 
 @{%
     /*const moo = require("moo");
-   
+  
   const lexer = moo.compile({
     ws:     /[ \t]+/,
     number: /[0-9]+/,
@@ -20,14 +20,25 @@
   }
 
   const { isPercent, isMeasure, toUnit, confusingUnits } = require('./common')
-
+  const { setUserVariable } = require('./userVariables')
 %}
 
 #  @lexer lexer
 
 
+main ->
+   identifier _ "=" EXPRESSION "<EOL>"  {%
+        ([name,,,expression,],l,rej) => {
+          let v = setUserVariable(name, expression)
+          log('var:', name, '=', expression)
+          return v
+        }
+     %}
+#|  EXPRESSION       {% id %}
 
-main -> _ OPS _ {% function(d) { /*log('>',d, typeof d[1]);*/ return d[1]; } %}
+
+EXPRESSION ->
+   _ OPS _ {% function([,r,]) { log('>',r, typeof r); return r} %}
 
 # Operations (all)
 OPS -> OPS_NUM        {% id %}
@@ -290,6 +301,8 @@ float -> int "." int   {% function(d) {return parseFloat(d[0] + d[1] + d[2])} %}
 int -> [0-9]:+      {% function(d) {/*log('int:', d[0].join(""));*/ return d[0].join(""); } %}
 
 ident -> [a-zA-Z]:+    {% function(d) {return d[0].join(""); } %}
+
+identifier -> [a-zA-Z_] [a-zA-Z0-9_]:+    {% ([r1,r2]) => [...r1, ...r2].join("")  %}
 
 
 unit ->
