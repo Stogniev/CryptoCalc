@@ -14,7 +14,7 @@
 }
 
 .App-title {
-  font-size: 1.5em;
+  font-size: 1.5em ;
 }
 
 .App-intro {
@@ -65,7 +65,7 @@
 
 #textholder {
   z-index: -2;
-  line-height: 2.5em;
+  line-height: 4em;
   color: rgba(0,0,0, 0.4);
   caret-color: black;
   /* background-color: lightgray; */
@@ -99,20 +99,36 @@
 
 .highlights {
   position:absolute;
-  line-height: 2.5em;
+  line-height: 4em;
 }
 
 .results {
   /* ?? white-space: pre-wrap; */
-  padding-top: 1.25em;
-  line-height: 2.5em;
+  /* padding-top: 2em; */
+  /* line-height: 2em; */
+  /* padding-bottom: 2em; */
+
   word-wrap: break-word;
   ZZcolor: red;
   letter-spacing: 1.2px;
+
 }
 
 
+.res {
+  background-color: #fff;
+  border: 1px solid #d6d6e1;
+  border-radius: 5px;
 
+  /* IE-  width: fit-content;  */  /* https://stackoverflow.com/a/16765030/1948511 */
+  display: inline-block;
+
+  margin-left: 1em;
+  margin-top: 2.5em;
+  height: 1.5em;
+
+  /* margin-top: 1em; */
+}
 
 
 /* user input highlights */

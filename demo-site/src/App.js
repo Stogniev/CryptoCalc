@@ -95,8 +95,17 @@ class App extends React.Component {
 
   //state = App._defaultState
 
-  formatResult = () => {
+  formatResult0 = () => {
     let { result } = this.state
+    if (result instanceof math.type.Unit) {
+      //console.log('redult.toNumber:', result.clone().toNumber())
+      //console.log('result:', result.clone())
+      result = result.clone().toString()
+    }
+    return result
+  }
+
+  formatResult = (result) => {
     if (result instanceof math.type.Unit) {
       //console.log('redult.toNumber:', result.clone().toNumber())
       //console.log('result:', result.clone())
@@ -165,7 +174,7 @@ class App extends React.Component {
           { result
             && [
               <span className="successful-expression">{ expression }</span>,
-              <span> = { this.formatResult() }</span>
+              <span> = { this.formatResult0() }</span>
             ]
           }
         </p>
@@ -347,6 +356,8 @@ class App extends React.Component {
 
   render() {
     const { inputs, results } = this.state
+
+    console.log('r:', results)
     return (
       <div>
         <Helmet>
@@ -409,7 +420,7 @@ class App extends React.Component {
               { inputs.map(inp => <div>{this.renderHighlighted(inp)}</div>) }
             </div>
             <div className="results" >
-              { results.map( r => <div className="result sum"> {r ? `= ${r}` : ''}</div>) }
+              { results.map( r => (r && [<div className="res">= {this.formatResult(r)}</div>, <br />]) ) }
             </div>
           </div>
           <div id="textholder-keeper">
