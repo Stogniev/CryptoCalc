@@ -87,7 +87,9 @@ const answerExpressionHumanizers = {
   divide: '/',
   'divide by': '/',
 
-  lexemSeparator: '',
+  [lexemSeparator]: '',
+
+  'PERCENT': '%',
 }
 
 function formatAnswerExpression(text) {

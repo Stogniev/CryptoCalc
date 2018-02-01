@@ -76,7 +76,8 @@ class App extends React.Component {
     error: null,
 
     inputs: [], // input lines
-    parsedInputs: [], // parsed input lines
+    //parsedInputs: [], // parsed input lines
+    expressions: [],
     results: [],   // calculated results of inputs
 
     e1: 'e1',
@@ -109,7 +110,7 @@ class App extends React.Component {
     if (result instanceof math.type.Unit) {
       //console.log('redult.toNumber:', result.clone().toNumber())
       //console.log('result:', result.clone())
-      result = result.clone().toString()
+      result = result.clone().format({notation: 'fixed', precision: 10}) //.toString()
     }
     return result
   }
@@ -249,16 +250,19 @@ class App extends React.Component {
     //   .map(x => x.textContent)
 
     const results = []
+    const expressions = []
     inputs.forEach(
       input => {
         try {
           console.log('p&p', input)
           const parser = prepareAndParse(input, 'verbose')
+          expressions.push(formatAnswerExpression(parser.lexer.buffer))
           results.push(parser && parser.results[0])
         } catch(e) {
           console.log('Error:', e)
           //let error = `${e}`
           //newState = {...newState, error}
+          expressions.push(null)
           results.push(null)  //`error: ${e}`
         }
       }
@@ -266,7 +270,7 @@ class App extends React.Component {
 
     console.log('Inputs: ', inputs)
     console.log('Results: ', results)
-    this.setState( {inputs, results, placeholderInput: false} )
+    this.setState( {inputs, expressions, results, placeholderInput: false} )
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -355,9 +359,8 @@ class App extends React.Component {
   }
 
   render() {
-    const { inputs, results } = this.state
-
-    console.log('r:', results)
+    const { inputs, expressions, results } = this.state
+    console.log('r:', inputs, expressions, results)
     return (
       <div>
         <Helmet>
@@ -420,17 +423,23 @@ class App extends React.Component {
               { inputs.map(inp => <div>{this.renderHighlighted(inp)}</div>) }
             </div>
             <div className="results" >
-              { results.map( r => (r && [<div className="res">= {this.formatResult(r)}</div>, <br />]) ) }
+              { results.map( (r,i) => (r && [
+                  <span className="parsedExpression">{ expressions[i] }</span>,
+                  <div className="res">= {this.formatResult(r)}</div>,
+                  <br /> ])) }
             </div>
           </div>
           <div id="textholder-keeper">
+            { this.state.placeholderInput && <div className="textholder-placeholder">2+2</div> }
             <div id="textholder" contentEditable onInput={this.onInput}
                  onFocus={() => this.setState({placeholderInput: null})} >
-              { this.state.placeholderInput ? '2+2': null }
             </div>
           </div>
         </div>
 
+        <br />
+        <hr />
+        <pre>{info}</pre>
       </div>
     )
   }
@@ -447,12 +456,15 @@ Implemented:
   - %-based expressions
   - math scales
   - money and units scales
+  - multiline input
 
 Not implemented yet:
-  - multiline input
-  - summarizes, average,
-  - variables, prev,
-  - format
+  - refreshing currency rates
+  - pixel-perfect markup
+  - top menu
+  - summarizes, average
+  - variables, prev
+  - expression and answer visual formatting
 
 
 
@@ -712,6 +724,8 @@ $20 as a % off $70
 5% of what is 6 EUR
 5% on what is 6 EUR
 5% off what is 6 EUR
+
+5% of 500
 
 4k
 -1000 + 4.5k + 1000
