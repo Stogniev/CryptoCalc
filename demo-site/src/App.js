@@ -70,6 +70,7 @@ function saveCaretPosition(context) {
 class App extends React.Component {
   static _defaultState = {
     lastExpression: '',
+    placeholderInput: true,
     expression: null, // succesful expression
     result: null,     // succesful result
     error: null,
@@ -256,7 +257,7 @@ class App extends React.Component {
 
     console.log('Inputs: ', inputs)
     console.log('Results: ', results)
-    this.setState( {inputs, results} )
+    this.setState( {inputs, results, placeholderInput: false} )
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -412,7 +413,9 @@ class App extends React.Component {
             </div>
           </div>
           <div id="textholder-keeper">
-            <div id="textholder" contentEditable onInput={this.onInput}>
+            <div id="textholder" contentEditable onInput={this.onInput}
+                 onFocus={() => this.setState({placeholderInput: null})} >
+              { this.state.placeholderInput ? '2+2': null }
             </div>
           </div>
         </div>
