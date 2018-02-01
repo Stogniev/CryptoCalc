@@ -354,58 +354,69 @@ class App extends React.Component {
           <title>Cripto Calc</title>
           <link rel="stylesheet" href="css/light.css" />
           {/*<link rel="stylesheet" href="dark.css">*/}
-          <link rel="stylesheet" href="css/fonts.css" />
+            <link rel="stylesheet" href="css/fonts.css" />
         </Helmet>
 
-
-
-        <div className="autodraw">
-          <div className="highlights">
-            { inputs.map(inp => <div>{this.renderHighlighted(inp)}</div>) }
-            {/* <ul>
-                { inputs.map(inp => <li>{this.renderHighlighted(inp)}</li>) }
-                {/ * <li>1 <mark>+</mark> 1</li>
-                <li>3 <mark>+</mark> 2</li>
-                <li>5 <mark>+</mark> 10</li> * /}
-                </ul> */}
-          </div>
-          <div className="results" >
-            { results.map( r => <div>{r ? `= ${r}` : ''}</div>) }
-            {/* <ul>
-                { results.map( r => <li>{r ? `= ${r}` : ''}</li>) }
-                {/ * <li>=<mark>2</mark></li>
-                <li>=<mark>5</mark></li>
-                <li>=<mark>10</mark></li> * /}
-                </ul> */}
-          </div>
-        </div>
-        <div id="textholder-keeper">
-          <div id="textholder" contentEditable onInput={this.onInput}>
-          </div>
-        </div>
-
-        {/* <div contentEditable>
-            <ul>
-            <li>1</li>
-            <li>2</li>
-            <li>3</li>
-            <li>4</li>
+        <header>
+          <div className="container">
+            <a className="logo light" href="#">
+              <img src="img/logo-light.svg" alt="logo" />cryptocalc
+            </a>
+            <a className="logo dark" href="#">
+              <img src="img/logo-dark.svg" alt="logo" />cryptocalc
+            </a>
+            <ul className="menu">
+              <li><a href="#">Calculator</a></li>
+              <li><a href="#">Docs</a></li>
             </ul>
-            </div> */}
-        {/* <div id="textHolder" contentEditable onInput={this.onInput2}>
-            <span id="expressionHolder" >{ this.state.e1HTML }</span>
-            <div contentEditable={false}>=<span>{this.state.r1HTML}</span></div>
-            <span id="expressionHolder2" >e2</span>
-            <div contentEditable={false}>=<span>=er2</span></div>
-            {/ * { this.renderE(this.state.e2) }
-            { this.renderR(this.state.r2) } * /}
+          </div>
+        </header>
 
-            {/ * <div>2<span className="hl-plus">with</span>3</div>
-            <div contentEditable="false">5</div>
-            <div>10<span className="hl-plus">with</span>5</div>
-            <div contentEditable="false">10+5=15</div>
-          * /}
-            </div> */}
+        <section className="change">
+          <div className="container">
+            <div className="switch">
+              <img src="img/light-icon.svg" alt="light" className="light" />
+              <img src="img/sun.svg" alt="light" className="dark" />
+              <div>
+                <input type="checkbox" className="checkbox" id="checkbox" />
+                <label for="checkbox"></label>
+              </div>
+              <img src="img/dark-icon.svg" alt="dark" className="change-img-light" />
+              <img src="img/dark-icon-change.svg" alt="dark" className="change-img-dark" />
+            </div>
+            <div className="total"><span>Tolal:</span><span>€ 1,000,000,00</span></div>
+            <div className="holder">
+              <span className="plus-black"><img src="img/plus.svg" alt="plus" /></span>
+              <span className="plus-white"><img src="img/plus-white.svg" alt="plus" /></span>
+              <span className="open-search black"><img src="img/burger.svg" alt="burger" /></span>
+              <span className="open-search white"><img src="img/burger-white.svg" alt="burger" /></span>
+              <form className="search-form">
+                <input type="text" value="text" />
+                <ul>
+                  <li>Summary</li>
+                  <li>1 add 1 <span></span></li>
+                  <li>Sample</li>
+                </ul>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <div className="container">
+          <div className="autodraw">
+            <div className="highlights">
+              { inputs.map(inp => <div>{this.renderHighlighted(inp)}</div>) }
+            </div>
+            <div className="results" >
+              { results.map( r => <div className="result sum"> {r ? `= ${r}` : ''}</div>) }
+            </div>
+          </div>
+          <div id="textholder-keeper">
+            <div id="textholder" contentEditable onInput={this.onInput}>
+            </div>
+          </div>
+        </div>
+
       </div>
     )
   }

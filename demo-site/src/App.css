@@ -47,14 +47,15 @@
 
 
 .autodraw, #textholder {
-  width: 460px;
-  height: 100%; /* 180px; */
-  font: 20px/28px 'Open Sans', sans-serif;
-  /* letter-spacing: 1px; */
+  width: 55%;
+  height: 100%;
+  /* font: 20px/28px 'Open Sans', sans-serif; */
+  font-family: 'RobotoMono-Regular';
+  letter-spacing: 1.2px;
 }
 
 #textholder-keeper {
-
+  /* position: absolute; */
   /* 134 */
   /* display: flex; */
   /* align-items: top; */
@@ -64,7 +65,7 @@
 
 #textholder {
   z-index: -2;
-  line-height: 2.0em;
+  line-height: 2.5em;
   color: rgba(0,0,0, 0.4);
   caret-color: black;
   /* background-color: lightgray; */
@@ -80,27 +81,17 @@
   /* align-items: top; */
 }
 
-/* #textholder ul { */
-/*   margin: 0px; */
-/*   padding: 0; */
-/*   list-style-type: none; */
-/* } */
-/*  */
-/* #textholder ul li { */
-/*   margin-bottom: 1.2em; */
-/*   height: 1.2em; */
-/* } */
-/*  */
-/* #textholder ul li:last-child { */
-/*   margin-bottom: unset; */
-/* } */
+
+#textholder:focus {
+    outline: none;  /* remove blue focus border */
+}
 
 .autodraw {
   position: absolute;
   z-index: -1;
   paddding: 2px;
   /* border: 2px solid #685972; */
-  background-color: #fff;
+  /* background-color: #fff; */
   overflow: auto;
   pointer-events: none;
   transition: transform 1s;
@@ -108,42 +99,18 @@
 
 .highlights {
   position:absolute;
-  line-height: 2.0em;
+  line-height: 2.5em;
 }
-
-/* .highlights ul { */
-/*   margin: 0px; */
-/*   padding: 0; */
-/*   list-style-type: none; */
-/* } */
-/*  */
-/* .highlights ul li { */
-/*   margin-bottom: 1.2em; */
-/*   height: 1.2em; */
-/* } */
 
 .results {
   /* ?? white-space: pre-wrap; */
-  padding-top: 1em;
-  line-height: 2.0em;
+  padding-top: 1.25em;
+  line-height: 2.5em;
   word-wrap: break-word;
   ZZcolor: red;
+  letter-spacing: 1.2px;
 }
 
-/* .results ul { */
-/*   padding: 0; */
-/*   list-style-type: none; */
-/* } */
-
-/* .results ul li { */
-/*   margin-top: 1.2em; */
-/*   margin-bottom: 1.2em; */
-/*   height: 1.2em; */
-/* } */
-/*  */
-/* .results ul li:last-child { */
-/*   margin-bottom: unset; */
-/* } */
 
 
 
