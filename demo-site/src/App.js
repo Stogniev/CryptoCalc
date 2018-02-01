@@ -1,3 +1,6 @@
+//https://github.com/facebook/create-react-app/issues/1947#issuecomment-312702952
+/* eslint-disable jsx-a11y/href-no-hash */  //
+
 import React from 'react';
 //import PropTypes from 'prop-types';
 import logo from './logo.svg';
@@ -445,7 +448,7 @@ const info = `
 Implemented:
   - math calculations
   - unit calculations (including same-type mixed dimensions, scales)
-  - implicit number-> unit conversion (Example: "1 + 2 USD" -> "3 USD")
+  - implicit number->unit implicit conversion (like "1 + 2 USD" -> "3 USD")
   - currensy calculations (including mixed) (rates are just fixed for demo purpoces)
   - unit and money conversions (see examples below)
   - %-based expressions
