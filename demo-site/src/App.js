@@ -110,7 +110,8 @@ class App extends React.Component {
     if (result instanceof math.type.Unit) {
       //console.log('redult.toNumber:', result.clone().toNumber())
       //console.log('result:', result.clone())
-      result = result.clone().format({notation: 'fixed', precision: 10}) //.toString()
+      const r = result.clone()
+      return parseFloat(r.toNumber().toFixed(2)) + ' ' + r.formatUnits()
     }
     return result
   }
@@ -285,12 +286,6 @@ class App extends React.Component {
 
 
   renderHighlighted(exp) {
-    /* return [
-     *   <span className="orange-color">aaa</span>,
-     *   'bbb',
-     *   'ccc'
-     * ]*/
-
     console.log('renderHighlighted', `"${exp}"`)
 
     highlightLexer.reset(exp)
@@ -301,9 +296,7 @@ class App extends React.Component {
       while (true) {
         item = highlightLexer.next()
         if (!item) break;
-
-        //if (!item) console.log('NOOOOOOOOOOOOO')
-        console.log('-', item.value)
+        console.log('-', item)
         //r.push(item.value)
 
         switch (item.type) {
@@ -311,7 +304,7 @@ class App extends React.Component {
              * case 'semicolon':
              *   break;*/
           case 'comment':
-            r.push(<span className="grey-color">{item.value}</span>)
+            r.push(<span className="grey-color" key={item.offset}>{item.value}</span>)
             break;
           case 'plus':
           case 'minus':
@@ -322,16 +315,16 @@ class App extends React.Component {
           case 'mod':
           case 'leftShift':
           case 'rightShift':
-            r.push(<span className="orange-color">{item.value}</span>)
+            r.push(<span className="orange-color" key={item.offset}>{item.value}</span>)
             break;
           case 'currency':
-            r.push(<span className="blue-color">{item.value}</span>)
+            r.push(<span className="blue-color" key={item.offset}>{item.value}</span>)
             break;
           case 'variable':
-            r.push(<span className="violet-color">{item.value}</span>)
+            r.push(<span className="violet-color" key={item.offset}>{item.value}</span>)
             break;
           default:
-            r.push(<span>{item.value}</span>)
+            r.push(<span key={item.offset}>{item.value}</span>)
             //r.push(' ') // add breakable space between highlighted parts
         }
       }
@@ -394,7 +387,7 @@ class App extends React.Component {
               <img src="img/sun.svg" alt="light" className="dark" />
               <div>
                 <input type="checkbox" className="checkbox" id="checkbox" />
-                <label for="checkbox"></label>
+                <label htmlFor="checkbox"></label>
               </div>
               <img src="img/dark-icon.svg" alt="dark" className="change-img-light" />
               <img src="img/dark-icon-change.svg" alt="dark" className="change-img-dark" />
@@ -406,7 +399,7 @@ class App extends React.Component {
               <span className="open-search black"><img src="img/burger.svg" alt="burger" /></span>
               <span className="open-search white"><img src="img/burger-white.svg" alt="burger" /></span>
               <form className="search-form">
-                <input type="text" value="text" />
+                <input type="text" defaultValue="text" />
                 <ul>
                   <li>Summary</li>
                   <li>1 add 1 <span></span></li>
@@ -420,12 +413,12 @@ class App extends React.Component {
         <div className="container">
           <div className="autodraw">
             <div className="highlights">
-              { inputs.map(inp => <div>{this.renderHighlighted(inp)}</div>) }
+              { inputs.map( (inp,i) => <div key={`h${i}`}>{this.renderHighlighted(inp)}</div>) }
             </div>
             <div className="results" >
               { results.map( (r,i) => (r && [
-                  <span className="parsedExpression">{ expressions[i] }</span>,
-                  <div className="res">= {this.formatResult(r)}</div>,
+                  <span className="parsedExpression" key={`e${i}`}>{ expressions[i] }</span>,
+                  <div className="res" key={`r${i}`}>= {this.formatResult(r)}</div>,
                   <br /> ])) }
             </div>
           </div>

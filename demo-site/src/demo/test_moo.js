@@ -15,7 +15,10 @@ const UP = UnitPrefixes.map(escape).join('|')
 const UN = UnitNames.map(escape).join('|')
 
 // $, ₴, ...
-const currSymbols = Object.keys(currencies.symbolToCode).map(escapeStringRegexp).join('|')
+let currSymbolsList = Object.keys(currencies.symbolToCode).map(escapeStringRegexp)
+// append lower-cased curr symbols (cos moo not support ignore-case regexps)
+currSymbolsList = currSymbolsList.concat( currSymbolsList.map(x => x.toLocaleLowerCase()) )
+const currSymbols = currSymbolsList.join('|')
 
 console.log('currSymbols', currSymbols)
 
@@ -46,10 +49,10 @@ const highlightGrammar = {
 
   percent: ['%', 'PERCENT'],
 
-  unit: new RegExp(`(?:${UP})(?:${UN})`),
-
   currency: new RegExp(`(?:${currSymbols})`),
   //currency: new RegExp(`(?:USD|UAH|\\$|\\€)`),
+
+  unit: new RegExp(`(?:${UP})(?:${UN})`),
 
   func: ['sin', 'cos', 'tan', 'asin', 'acos', 'atag', 'sqrt', 'ln'],
   constant: ['pi', 'e'],
