@@ -19,7 +19,8 @@
     }
   }
 
-  const { isPercent, isMeasure, isNumber, toUnit, confusingUnits } = require('./common')
+  const { isUnit, isPercent, isMeasure, isNumber, toUnit, confusingUnits
+    } = require('./common')
 
   const { setUserVariable, userVariables } = require('./userVariables')
 %}
@@ -58,26 +59,6 @@ CONVERSION ->
 SHIFT -> SHIFT leftShift AS_NUM   {% (d,l, rej) => d[0] << d[2] %}
        | SHIFT rightShift AS_NUM  {% (d,l, rej) => d[0] >> d[2] %}
        | AS_NUM  {% id %}
-
-
-
-# prev 18.01
-# AS_UNIT -> AS_UNIT_MAGIC_ONLY_UNITS       {% id %}
-# 
-# #  filter magic operations (to avoid multiresults) - only units allow (no numbers)
-# AS_UNIT_MAGIC_ONLY_UNITS ->
-#    AS_UNIT_MAGIC {% (d,l, rej) => { log('AS_UNIT_MAGIC_ONLY_UNITS:', d);
-#                                     return isUnit(d[0]) ? d[0] : rej}  %}
-# 
-# # magic sum: "Unit ± Number/Unit" treated as "Unit ± Unit"
-# AS_UNIT_MAGIC ->
-#       AS_UNIT_MAGIC plus MD {% (d,l, rej) => magicSum(d[0], d[2], math.add, rej) %}
-#     | AS_UNIT_MAGIC minus MD {% (d,l, rej) => magicSum(d[0], d[2], math.subtract, rej) %}
-#     | MD       {% id %}
-# 
-# MD -> MD_NUM    {% id %}
-#     | MD_UNIT   {% id %}
-
 
 # MD_ - multiple/division
 # AS_ - add/subtract
@@ -138,15 +119,10 @@ MD_MEASURE ->
 
    | MD_MEASURE mul VALUE_PERCENT  {% ([m,,p],l, rej) =>{log('m*p', m,p); return math.multiply(m, p.value/100) } %}
    | VALUE_PERCENT __ "of" __ MD_MEASURE  {% ([p,,,,m],l, rej) =>{log('p of m', p, m); return math.multiply(m, p.value/100) } %}
-
    | VALUE_PERCENT __ "ofwhatis" __ MD_MEASURE  {% ([p,,,,m],l, rej) =>{log('% of what is m', p, m); return math.multiply(m, p.value/100) } %}
-
    | VALUE_PERCENT __ "on" __ MD_MEASURE  {% ([p,,,,m],l, rej) =>{log('p on m', p, m); return math.add(m, math.multiply(math.divide(m, 100), p.value)) } %}
-
    | VALUE_PERCENT __ "onwhatis" __ MD_MEASURE  {% ([p,,,,m],l, rej) =>{log('p onwhatis m', p, m); return math.add(m, math.multiply(math.divide(m, 100), p.value)) } %}
-
    | VALUE_PERCENT __ "off" __ MD_MEASURE  {% ([p,,,,m],l, rej) =>{log('p off m', p, m); return math.subtract(m, math.multiply(math.divide(m, 100), p.value)) } %}
-
    | VALUE_PERCENT __ "offwhatis" __ MD_MEASURE  {% ([p,,,,m],l, rej) =>{log('p offwhatis m', p, m); return math.subtract(m, math.multiply(math.divide(m, 100), p.value)) } %}
 
    | MD_MEASURE divide VALUE_PERCENT  {% ([m,,p],l, rej) => {log('m/p', m,p,p.value); return math.divide(m, p.value/100) } %}
@@ -162,13 +138,13 @@ MD_PERCENT ->
     MD_PERCENT mul VALUE_NUM  {% ([p,,n],l, rej) => {log(`%*n`,p,n); return math.multiply(p, n)} %}
   | MD_PERCENT __ VALUE_NUM   {% ([p,,n],l, rej) =>  math.multiply(p, n) %}
   | MD_PERCENT divide VALUE_NUM  {% ([p,,n],l, rej) => {log(`%/n`,p,n); return math.divide(p, n)} %}
-   | MD_NUM __ "asapercentof" __ MD_NUM  {% ([n1,,,,n2],l, rej) => {log('n1 as a % of n2', n1, n2); return math.unit(math.divide(n1, math.divide(n2, 100)), 'PERCENT') } %}
-   | MD_NUM __ "asapercenton" __ MD_NUM  {% ([n1,,,,n2],l, rej) => {log('n1 as a % on n2', n1, n2); return math.unit(math.divide(math.subtract(n1, n2), math.divide(n2, 100)), 'PERCENT')} %}
-   | MD_NUM __ "asapercentoff" __ MD_NUM  {% ([n1,,,,n2],l, rej) => {log('n1 as a % off n2', n1, n2); return math.unit(math.divide(n1, math.divide(n2, 100)), 'PERCENT')} %}
+  | MD_NUM __ "asapercentof" __ MD_NUM  {% ([n1,,,,n2],l, rej) => {log('n1 as a % of n2', n1, n2); return math.unit(math.divide(n1, math.divide(n2, 100)), 'PERCENT') } %}
+  | MD_NUM __ "asapercenton" __ MD_NUM  {% ([n1,,,,n2],l, rej) => {log('n1 as a % on n2', n1, n2); return math.unit(math.divide(math.subtract(n1, n2), math.divide(n2, 100)), 'PERCENT')} %}
+  | MD_NUM __ "asapercentoff" __ MD_NUM  {% ([n1,,,,n2],l, rej) => {log('n1 as a % off n2', n1, n2); return math.unit(math.divide(n1, math.divide(n2, 100)), 'PERCENT')} %}
 
-   | MD_MEASURE __ "asapercentof" __ MD_MEASURE  {% ([m1,,,,m2],l, rej) => {log('m1 as a % of m2', m1, m2); return math.unit(math.divide(m1, math.divide(m2, 100)), 'PERCENT') } %}
-   | MD_MEASURE __ "asapercenton" __ MD_MEASURE  {% ([m1,,,,m2],l, rej) => {log('m1 as a % on m2', m1, m2); return math.unit(math.divide(math.subtract(m1, m2), math.divide(m2, 100)), 'PERCENT')} %}
-   | MD_MEASURE __ "asapercentoff" __ MD_MEASURE  {% ([m1,,,,m2],l, rej) => {log('m1 as a % off m2', m1, m2); return math.unit(math.divide(m1, math.divide(m2, 100)), 'PERCENT')} %}
+  | MD_MEASURE __ "asapercentof" __ MD_MEASURE  {% ([m1,,,,m2],l, rej) => {log('m1 as a % of m2', m1, m2); return math.unit(math.divide(m1, math.divide(m2, 100)), 'PERCENT') } %}
+  | MD_MEASURE __ "asapercenton" __ MD_MEASURE  {% ([m1,,,,m2],l, rej) => {log('m1 as a % on m2', m1, m2); return math.unit(math.divide(math.subtract(m1, m2), math.divide(m2, 100)), 'PERCENT')} %}
+  | MD_MEASURE __ "asapercentoff" __ MD_MEASURE  {% ([m1,,,,m2],l, rej) => {log('m1 as a % off m2', m1, m2); return math.unit(math.divide(m1, math.divide(m2, 100)), 'PERCENT')} %}
   | SIGNED_PERCENT       {% id %}
 
 MD_NUM ->
@@ -185,13 +161,11 @@ MD_NUM ->
    | E_NUM     {% id %}
 
 
-SIGNED_PERCENT -> SIGNED_UNIT {% (d,l, rej) => isPercent(d[0]) ? d[0] : rej %}
-SIGNED_MEASURE -> SIGNED_UNIT {% (d,l, rej) => isMeasure(d[0]) ? d[0] : rej %}
+SIGNED_PERCENT -> SIGNED_UNIT   {% (d,l, rej) => isPercent(d[0]) ? d[0] : rej %}
+SIGNED_MEASURE -> SIGNED_UNIT   {% (d,l, rej) => isMeasure(d[0]) ? d[0] : rej %}
 
-VALUE_MEASURE ->
-   VALUE_UNIT      {% (d,l, rej) => isMeasure(d[0]) ? d[0] : rej %}
-
-VALUE_PERCENT -> VALUE_UNIT {% (d,l, rej) => isPercent(d[0]) ? d[0] : rej %}
+VALUE_MEASURE -> VALUE_UNIT     {% (d,l, rej) => isMeasure(d[0]) ? d[0] : rej %}
+VALUE_PERCENT -> VALUE_UNIT     {% (d,l, rej) => isPercent(d[0]) ? d[0] : rej %}
 
 
 
@@ -205,7 +179,6 @@ SIGNED_NUM ->
     __ "+" _ VALUE_NUM  {% function(d) { /*log('value_num+');*/ return d[3]; } %}
   | __ "-" _ VALUE_NUM  {% function(d) { /*log('value_num-');*/ return math.multiply(-1, d[3]) } %}
   | VALUE_NUM        {% function(d) {/*log('value_num:', d[0]);*/ return d[0]; } %}
-  | VARIABLE_NUM     {% id %}
 
 
 SIGNED_UNIT ->
@@ -217,6 +190,7 @@ SIGNED_UNIT ->
 VALUE_NUM ->
     P_NUM         {% id %}
   | N             {% id %}
+  | VARIABLE_NUM  {% id %}
 
 
 VARIABLE ->
@@ -226,11 +200,14 @@ VARIABLE ->
                       return r
                     }  %}
 
-VARIABLE_PERCENT ->
-   VARIABLE    {% ([variable],l,rej) => isPercent(variable.value) ? variable.value : rej  %}
+# VARIABLE_PERCENT ->
+#    VARIABLE    {% ([variable],l,rej) => isPercent(variable.value) ? variable.value : rej  %}
+# 
+# VARIABLE_MEASURE ->
+#    VARIABLE    {% ([variable],l,rej) => isMeasure(variable.value) ? variable.value : rej  %}
 
-VARIABLE_MEASURE ->
-   VARIABLE    {% ([variable],l,rej) => isMeasure(variable.value) ? variable.value : rej  %}
+VARIABLE_UNIT ->
+   VARIABLE    {% ([variable],l,rej) => isUnit(variable.value) ? variable.value : rej  %}
 
 VARIABLE_NUM ->
    VARIABLE    {% ([variable],l,rej) => {
@@ -279,6 +256,8 @@ VALUE_UNIT ->
            // return reject;
         }
        %}
+  | VARIABLE_UNIT      {% id %}
+
 
 # paretheses with something
 P_NUM -> "(" _ OPS_NUM _ ")" {% function(d) {return d[2]; } %}

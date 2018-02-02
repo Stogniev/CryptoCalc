@@ -110,7 +110,7 @@ function prepareTxt(text, verbose=false) {
   //    reason: to parse '10 cm' and same time avoid word cropping "1 and 2 m"ul 3
   const UP = UnitPrefixes.map(escape).join('|')
   const UN = UnitNames.map(escape).join('|')
-  txt = txt.replace(new RegExp(`([^a-zA-Z])(${UP})(${UN})((?:[^a-zA-Z]|$))`, 'g'), `$1 $2$3${lexemSeparator} $4`)
+  txt = txt.replace(new RegExp(`([^a-zA-Z_])(${UP})(${UN})((?:[^a-zA-Z_]|$))`, 'g'), `$1 $2$3${lexemSeparator} $4`)
 
   //40-2) back: remove ";" from confusing units (   ??!! better way (just not add first)
   const CU = confusingUnits.map(escape).join('|')
@@ -613,15 +613,22 @@ try {
 
 assertEqual(call('var4 = 2 + $4.4').value, '6.4 USD')
 
-
 // reuse number variables
-assertEqual(call('five = 2 + 3').value, 5)
-assertEqual(call('five + 4 '), 9)
-assertEqual(call('ten = five * 2 ').value, 10)
+assertEqual(call('varfive = 2 + 3').value, 5)
+assertEqual(call('varfive + 4 '), 9)
+assertEqual(call('varten = varfive * 2 ').value, 10)
+assertEqual(call('varfifty = varfive * varten ').value, 50)
 
-
+// reuse measure variables
+assertEqual(call('five_cm = 2.5 * 2 cm').value, '5 cm')
+assertEqual(call('five_cm').toNumber('cm'), 5)
+assertEqual(call('five_cm + 4').toNumber('cm'), 9)
+assertEqual(call('ten_cm = five_cm * 4 - 10').value, '10 cm')
+assertEqual(call('six = 6').value, 6)
+assertEqual(call('five_cm * six').toNumber('cm'), 30, ALMOST)
 
 console.log('tests passed')
+
 
 function runmath(s) {
   let ans;
@@ -640,7 +647,7 @@ function runmath(s) {
     ans = call(s, DEBUG)
 
     if (isUnit(ans)) {
-      console.log([ans.clone().toNumber(), ans.clone().format({notation: 'fixed', precision:2}), ans.clone().toString()].join('/'))
+      console.log([ans.clone().toNumber(), ans.clone().format({notation: 'fixed', precision:2}), ans.clone().toString()].join(' | '))
     }
 
     return ans

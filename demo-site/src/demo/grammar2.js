@@ -20,7 +20,8 @@ function id(x) {return x[0]; }
     }
   }
 
-  const { isPercent, isMeasure, isNumber, toUnit, confusingUnits } = require('./common')
+  const { isUnit, isPercent, isMeasure, isNumber, toUnit, confusingUnits
+    } = require('./common')
 
   const { setUserVariable, userVariables } = require('./userVariables')
 var grammar = {
@@ -125,19 +126,18 @@ var grammar = {
     {"name": "SIGNED_NUM", "symbols": ["__", {"literal":"+"}, "_", "VALUE_NUM"], "postprocess": function(d) { /*log('value_num+');*/ return d[3]; }},
     {"name": "SIGNED_NUM", "symbols": ["__", {"literal":"-"}, "_", "VALUE_NUM"], "postprocess": function(d) { /*log('value_num-');*/ return math.multiply(-1, d[3]) }},
     {"name": "SIGNED_NUM", "symbols": ["VALUE_NUM"], "postprocess": function(d) {/*log('value_num:', d[0]);*/ return d[0]; }},
-    {"name": "SIGNED_NUM", "symbols": ["VARIABLE_NUM"], "postprocess": id},
     {"name": "SIGNED_UNIT", "symbols": ["__", {"literal":"+"}, "_", "VALUE_UNIT"], "postprocess": function(d) { log('u+'); return d[3]; }},
     {"name": "SIGNED_UNIT", "symbols": ["__", {"literal":"-"}, "_", "VALUE_UNIT"], "postprocess": function(d) { log('u-'); return math.multiply(-1, d[3]) }},
     {"name": "SIGNED_UNIT", "symbols": ["VALUE_UNIT"], "postprocess": function(d) {log('value+unit:', d[0]); return d[0]; }},
     {"name": "VALUE_NUM", "symbols": ["P_NUM"], "postprocess": id},
     {"name": "VALUE_NUM", "symbols": ["N"], "postprocess": id},
+    {"name": "VALUE_NUM", "symbols": ["VARIABLE_NUM"], "postprocess": id},
     {"name": "VARIABLE", "symbols": ["identifier"], "postprocess":  ([name],l,rej) => {
           const r = userVariables.find( x => (x.name === name) ) || rej
           //log('VARIABLE', name, userVariables, r)
           return r
         }  },
-    {"name": "VARIABLE_PERCENT", "symbols": ["VARIABLE"], "postprocess": ([variable],l,rej) => isPercent(variable.value) ? variable.value : rej},
-    {"name": "VARIABLE_MEASURE", "symbols": ["VARIABLE"], "postprocess": ([variable],l,rej) => isMeasure(variable.value) ? variable.value : rej},
+    {"name": "VARIABLE_UNIT", "symbols": ["VARIABLE"], "postprocess": ([variable],l,rej) => isUnit(variable.value) ? variable.value : rej},
     {"name": "VARIABLE_NUM", "symbols": ["VARIABLE"], "postprocess":  ([variable],l,rej) => {
            const r = isNumber(variable.value) ? variable.value : rej;
            log('VARIABLE_NUM', r)
@@ -179,6 +179,7 @@ var grammar = {
            // return reject;
         }
                },
+    {"name": "VALUE_UNIT", "symbols": ["VARIABLE_UNIT"], "postprocess": id},
     {"name": "P_NUM", "symbols": [{"literal":"("}, "_", "OPS_NUM", "_", {"literal":")"}], "postprocess": function(d) {return d[2]; }},
     {"name": "P_UNIT", "symbols": [{"literal":"("}, "_", "OPS_UNIT", "_", {"literal":")"}], "postprocess": function(d) {return d[2]; }},
     {"name": "FUNC$string$1", "symbols": [{"literal":"s"}, {"literal":"i"}, {"literal":"n"}], "postprocess": function joiner(d) {return d.join('');}},
