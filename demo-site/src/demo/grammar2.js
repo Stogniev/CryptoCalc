@@ -31,7 +31,7 @@ var grammar = {
         ([name,,,expression,],l,rej) => {
           let v = setUserVariable(name, expression)
           log('var:', name, '=', expression)
-          return v
+          return v.value // what is better to return? value or variable itself
         }
              },
     {"name": "main", "symbols": ["EXPRESSION", "EOL"], "postprocess": id},

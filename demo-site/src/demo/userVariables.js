@@ -72,12 +72,16 @@ function setUserVariable(name, value) {
 
 const isUserVariable = (obj) => userVariableProto.isPrototypeOf(obj)
 
-/* function getUserVariable(name) {
- *   
- * }*/
+/* function getUserVariable(name) { } */
 
 
-module.exports = { setUserVariable, userVariables, VariableNameError, userVariableProto, isUserVariable }
+function clearAllUserVariables() {
+  userVariables.length = 0  // manipulate length because of const
+}
+
+module.exports = {
+  setUserVariable, userVariables, VariableNameError, userVariableProto, isUserVariable, clearAllUserVariables
+}
 
 
 

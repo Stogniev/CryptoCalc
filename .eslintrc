@@ -57,6 +57,7 @@
       quotes: ["error", "single", {avoidEscape: true, allowTemplateLiterals: true}],
       max-len: off,
       object-shorthand: off,
+      prefer-template: off, // sometimes plus-concatenation is useful tho
     },
     "plugins": [
         "react",

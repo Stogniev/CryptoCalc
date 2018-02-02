@@ -33,7 +33,7 @@ main ->
         ([name,,,expression,],l,rej) => {
           let v = setUserVariable(name, expression)
           log('var:', name, '=', expression)
-          return v
+          return v.value // what is better to return? value or variable itself
         }
      %}
  | EXPRESSION EOL      {% id %}

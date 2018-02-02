@@ -579,78 +579,78 @@ assertEqual(call('2k mm + 2m').toString(), '4 m')
 assertEqual(call('$2.2k in ZEUR').toNumber('ZEUR'), 2000, ALMOST)
 
 // assign variables
-assertEqual(call('var1 = 2').value, 2)
-assertEqual(call('var2 = 2 + 3').value, 5)
-assertEqual(call('var2 = 2 * 10 kg').value, '20 kg')
-assertEqual(call('var4 = 2 + $4.4').value, '6.4 USD')
+assertEqual(call('var1 = 2'), 2)
+assertEqual(call('var2 = 2 + 3'), 5)
+assertEqual(call('var2 = 2 * 10 kg'), '20 kg')
+assertEqual(call('var4 = 2 + $4.4'), '6.4 USD')
 
 try {
-  assertEqual(call('0wrongvar = 1 + 3').value, 999)
+  assertEqual(call('0wrongvar = 1 + 3'), 999)
 } catch(e) {
   assert(e.message.includes('Unexpected'))
 }
 
 try {
-  assertEqual(call('sum = 1 + 3').value, 999)
+  assertEqual(call('sum = 1 + 3'), 999)
 } catch(e) {
   assert(e.message.includes('is reserved'))
 }
 
 try {
-  assertEqual(call('USD = 2 + 5').value, 999)
+  assertEqual(call('USD = 2 + 5'), 999)
 } catch(e) {
   assert(e.message.includes('Unexpected'))
 }
 
 
 try {
-  assertEqual(call('kg = 4 + 9').value, 999)
+  assertEqual(call('kg = 4 + 9'), 999)
 } catch(e) {
   assert(e.message.includes('is unit'))
 }
 
 try {
-  assertEqual(call('K = 5 + 10').value, 999)
+  assertEqual(call('K = 5 + 10'), 999)
 } catch(e) {
   assert(e.message.includes('is unit'))
 }
 
-assertEqual(call('var4 = 2 + $4.4').value, '6.4 USD')
+assertEqual(call('var4 = 2 + $4.4'), '6.4 USD')
 
 // reuse number variables
-assertEqual(call('varfive = 2 + 3').value, 5)
+assertEqual(call('varfive = 2 + 3'), 5)
 assertEqual(call('varfive + 4 '), 9)
-assertEqual(call('varten = varfive * 2 ').value, 10)
-assertEqual(call('varfifty = varfive * varten ').value, 50)
+assertEqual(call('varten = varfive * 2 '), 10)
+assertEqual(call('varfifty = varfive * varten '), 50)
 
 // reuse measure variables
-assertEqual(call('five_cm = 2.5 * 2 cm').value, '5 cm')
+assertEqual(call('five_cm = 2.5 * 2 cm'), '5 cm')
 assertEqual(call('five_cm').toNumber('cm'), 5)
 assertEqual(call('five_cm + 4').toNumber('cm'), 9)
-assertEqual(call('ten_cm = five_cm * 4 - 10').value, '10 cm')
-assertEqual(call('six = 6').value, 6)
+assertEqual(call('ten_cm = five_cm * 4 - 10'), '10 cm')
+assertEqual(call('six = 6'), 6)
 assertEqual(call('five_cm * six').toNumber('cm'), 30, ALMOST)
 
 // 20 % of 300 kg with values
-assertEqual(call('perc = 20 %').value, '20 PERCENT')
-assertEqual(call('weight = 300 kg').value, '300 kg')
-assertEqual(call('val = perc of weight').value.toNumber('kg'), 60, ALMOST)
+assertEqual(call('perc = 20 %'), '20 PERCENT')
+assertEqual(call('weight = 300 kg'), '300 kg')
+assertEqual(call('val = perc of weight').toNumber('kg'), 60, ALMOST)
 
 // increase veriable
-assertEqual(call('z = 20 km').value, '20 km')
-assertEqual(call('z = z + 1 km').value, '21 km')
+assertEqual(call('z = 20 km'), '20 km')
+assertEqual(call('z = z + 1 km'), '21 km')
 
 // combined assignments operations (+=)
-assertEqual(call('var = 30$').value, '30 USD')
-assertEqual(call('var += 5').value, '35 USD')
-assertEqual(call('var *= 3').value, '105 USD')
-assertEqual(call('var /= 3 + 2').value, '21 USD') // v = v / (3 + 2)
+assertEqual(call('var = 30$'), '30 USD')
+assertEqual(call('var += 5'), '35 USD')
+assertEqual(call('var *= 3'), '105 USD')
+assertEqual(call('var /= 3 + 2'), '21 USD') // v = v / (3 + 2)
 
 // variable tests from specification
-assertEqual(call('v = $20').value, '20 USD')
-assertEqual(call('v2 = 5%').value, '5 PERCENT')
+assertEqual(call('v = $20'), '20 USD')
+assertEqual(call('v2 = 5%'), '5 PERCENT')
 assertEqual(call('v times 7 - v2'), '133 USD')
-assertEqual(call('v += 10').value, '30 USD')
+assertEqual(call('v += 10'), '30 USD')
 assertEqual(call('v'), '30 USD')
 
 

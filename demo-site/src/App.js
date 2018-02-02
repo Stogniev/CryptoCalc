@@ -9,7 +9,7 @@ import math from 'mathjs'
 import { prepareAndParse } from './demo/calculator2'
 import { formatAnswerExpression, isUnit } from './demo/common'
 
-import { isUserVariable } from './demo/userVariables'
+import { clearAllUserVariables } from './demo/userVariables'
 
 
 import Helmet from 'react-helmet'
@@ -116,11 +116,6 @@ class App extends React.Component {
       const r = result.clone()
       return parseFloat(r.toNumber().toFixed(2)) + ' ' + r.formatUnits()
     }
-
-    // try always return rather value than variable
-    //     if (isUserVariable(result)) {
-    //       return result.value
-    //     }
 
     return result
   }
@@ -252,12 +247,32 @@ class App extends React.Component {
     return <div contentEditable={false}>=<span>{this.state.e1HTML}</span></div>
   }
 
+  onPaste = (e) => {
+    // prevent pasting formatted text (that broke highilghting overlay)
+    // https://stackoverflow.com/a/12028136/1948511
+
+    //alert(e.clipboardData.getData("text/plain"))
+    e.preventDefault()
+    const text = e.clipboardData.getData('text/plain')
+
+    document.execCommand('insertText', false, text)
+    // NOTE: insertText maybe nw in IE11. possible solution: (https://stackoverflow.com/questions/12027137/javascript-trick-for-paste-as-plain-text-in-execcommand#comment57489893_12028136)
+  }
+
   onInput = () => {
     const textholder = document.getElementById('textholder')
-    const inputs = textholder.innerText.split('\n')
 
-    // const inputs = [...document.getElementById('inputList').getElementsByTagName('li')]
-    //   .map(x => x.textContent)
+    //
+    //     // trick to clear all formatting (after paste formatted html from clipboard)
+    //     // (NOTE: alternativelly would be using textarea instead of contenteditable)
+    //     if (textholder.innerText != textholder.innerHTML) {
+    //       textholder.innerText = textholder.innerText
+    //     }
+    //
+
+    clearAllUserVariables()
+
+    const inputs = textholder.innerText.split('\n')
 
     const results = []
     const expressions = []
@@ -435,7 +450,7 @@ class App extends React.Component {
           </div>
           <div id="textholder-keeper">
             { this.state.placeholderInput && <div className="textholder-placeholder">2+2</div> }
-            <div id="textholder" contentEditable onInput={this.onInput}
+            <div id="textholder" contentEditable onInput={this.onInput} onPaste={this.onPaste}
                  onFocus={() => this.setState({placeholderInput: null})} >
             </div>
           </div>
@@ -461,14 +476,19 @@ Implemented:
   - math scales
   - money and units scales
   - multiline input
+  - paste from clipboard
+  - user variables (NEW)
 
 Not implemented yet:
+  - prev variable
   - refreshing currency rates
   - pixel-perfect markup
   - top menu
   - summarizes, average
-  - variables, prev
   - expression and answer visual formatting
+  - process part of line until error
+  - result formatting
+  - other clipboard operations
 
 
 
