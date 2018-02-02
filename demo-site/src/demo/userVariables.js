@@ -6,25 +6,27 @@ const { UnitNames, UnitPrefixes } = require('./unitUtil')
 const userVariables = []
 
 class VariableNameError extends Error {}
-class VariableNameIsIncorrect extends VariableNameError {}
-//class VariableNameIsBusy extends VariableNameError {}
-class VariableNameIsReserved extends VariableNameError {}
+// class VariableNameIsIncorrect extends VariableNameError {}  problem: e instance of VariableNameIsReserved return false in browser
+// //class VariableNameIsBusy extends VariableNameError {}
+// class VariableNameIsReserved extends VariableNameError {}
 
 function validateVariableName(name) {
-  if (!/^[A-Za-z_]\w*$/.test(name)) throw new VariableNameIsIncorrect(`incorrect variable name: ${name} `)
+  if (!/^[A-Za-z_]\w*$/.test(name)) {
+    throw new VariableNameError(`incorrect variable name: ${name} `)
+  }
 
   if ( ['prev', 'sum', 'total', 'average', 'avg'].includes(name) ) {
-    throw new VariableNameIsReserved('is reserved')
+    throw new VariableNameError('is reserved')
   }
 
   if (currencyCodes.includes(name)) {
-    throw new VariableNameIsReserved('is currency')
+    throw new VariableNameError('is currency')
   }
 
   const UP = UnitPrefixes.map(escape).join('|')
   const UN = UnitNames.map(escape).join('|')
   if (new RegExp(`^(${UP})(${UN})$`).test(name)) {
-    throw new VariableNameIsReserved('is unit')
+    throw new VariableNameError('is unit')
   }
 
   //if ( userVariables.some(v => (v.name === name)) ) {
@@ -67,11 +69,15 @@ function setUserVariable(name, value) {
   return v
 }
 
+
+const isUserVariable = (obj) => userVariableProto.isPrototypeOf(obj)
+
 /* function getUserVariable(name) {
  *   
  * }*/
 
 
-module.exports = { setUserVariable, userVariables, VariableNameError }
+module.exports = { setUserVariable, userVariables, VariableNameError, userVariableProto, isUserVariable }
+
 
 

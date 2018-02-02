@@ -15,7 +15,16 @@ currencies.codes.forEach( code => {
 math.createUnit('PERCENT')
 
 
+const confusingUnits = [
+  'as', 'in',   // used for money conversion
+  //!!?  'a' // used as word in "as a % of"
+  'b',  // very rarely used ad "byte", rather as variable
+]
+
+
 const UnitNames = Object.values(math.type.Unit.UNITS).map( u => u.name)
+                        .filter( name => !confusingUnits.includes(name) )
+
 const UnitPrefixes = Object.keys(math.type.Unit.PREFIXES.SHORTLONG)
 
-module.exports = { UnitNames, UnitPrefixes }
+module.exports = { UnitNames, UnitPrefixes, confusingUnits }

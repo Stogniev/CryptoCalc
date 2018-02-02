@@ -19,8 +19,8 @@
     }
   }
 
-  const { isUnit, isPercent, isMeasure, isNumber, toUnit, confusingUnits
-    } = require('./common')
+  const { isUnit, isPercent, isMeasure, isNumber, toUnit } = require('./common')
+  //const { confusingUnits } = require('./unitUtil')
 
   const { setUserVariable, userVariables } = require('./userVariables')
 %}
@@ -323,10 +323,11 @@ unit ->
          //?? if (val === 'PERCENT') reject
 
 
-         if (confusingUnits.includes(val)) {
-           log(`Denying confusing "${val}" unit`)
-           return reject
-         }
+         // ??
+         //if (confusingUnits.includes(val)) {
+         //   log(`Denying confusing "${val}" unit`)
+         //   return reject
+         // }
 
          return val
 

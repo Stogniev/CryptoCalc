@@ -7,7 +7,10 @@ import logo from './logo.svg';
 import './App.css';
 import math from 'mathjs'
 import { prepareAndParse } from './demo/calculator2'
-import { formatAnswerExpression } from './demo/common'
+import { formatAnswerExpression, isUnit } from './demo/common'
+
+import { isUserVariable } from './demo/userVariables'
+
 
 import Helmet from 'react-helmet'
 //import nearley from 'nearley'
@@ -107,12 +110,18 @@ class App extends React.Component {
   }
 
   formatResult = (result) => {
-    if (result instanceof math.type.Unit) {
+    if (isUnit(result)) {
       //console.log('redult.toNumber:', result.clone().toNumber())
       //console.log('result:', result.clone())
       const r = result.clone()
       return parseFloat(r.toNumber().toFixed(2)) + ' ' + r.formatUnits()
     }
+
+    // try always return rather value than variable
+    //     if (isUserVariable(result)) {
+    //       return result.value
+    //     }
+
     return result
   }
 
@@ -734,6 +743,50 @@ $2k
 2M eur
 2k mm + 2m
 $2.2k in ZEUR
+
+var1 = 2
+var2 = 2 + 3
+var2 = 2 * 10 kg
+var4 = 2 + $4.4
+
+var4 = 2 + $4.4
+
+// reuse number variables
+varfive = 2 + 3
+varfive + 4
+varten = varfive * 2
+varfifty = varfive * varten
+
+// reuse measure variables
+five_cm = 2.5 * 2 cm
+five_cm
+five_cm + 4
+ten_cm = five_cm * 4 - 10
+six = 6
+five_cm * six
+
+// 20 % of 300 kg with values
+perc = 20 %
+weight = 300 kg
+val = perc of weight
+
+// increase veriable
+z = 20 km
+z = z + 1 km
+
+// combined assignments operations (+=)
+var = 30$
+var += 5
+var *= 3
+var /= 3 + 2       // v = v / (3 + 2)
+
+// variable tests from specification
+v = $20
+v2 = 5%
+v times 7 - v2
+v += 10
+v
+
 `
 
 export default App;

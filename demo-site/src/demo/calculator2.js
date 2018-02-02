@@ -13,10 +13,8 @@ const rates = require('./rates')
 
 const { UnitNames, UnitPrefixes } = require('./unitUtil')
 
-const { VariableNameError } = require('./userVariables')
-const {
-  scales, isUnit, lexemSeparator, confusingUnits, //formatAnswerExpression
-} = require('./common')
+//const { VariableNameError } = require('./userVariables')
+const { scales, isUnit, lexemSeparator } = require('./common')
 
 
 
@@ -49,7 +47,7 @@ function prepareTxt(text, verbose=false) {
   let txt = text
 
   // 3) simplify modifying assignments (like "a += 10" -> "a = a + 10") (reason implement it in grammar without copypaste is harder)
-  txt = txt.replace(/(.*)([\+\-\*\/])=(.*)/, '$1 = $1 $2 ( $3 )')
+  txt = txt.replace(/(.*)([-+*/])=(.*)/, '$1 = $1 $2 ( $3 )')
 
   // 5) remove multispaces
   txt = txt.replace(new RegExp('\\s+', 'gi'), ' ')
@@ -115,9 +113,12 @@ function prepareTxt(text, verbose=false) {
   const UN = UnitNames.map(escape).join('|')
   txt = txt.replace(new RegExp(`([^a-zA-Z_])(${UP})(${UN})((?:[^a-zA-Z_]|$))`, 'g'), `$1 $2$3${lexemSeparator} $4`)
 
-  //40-2) back: remove ";" from confusing units (   ??!! better way (just not add first)
-  const CU = confusingUnits.map(escape).join('|')
-  txt = txt.replace(new RegExp(` (${CU}); `, 'gi'), ' $1 ')
+
+  // (just not include confisuign units to UnitNames)
+  //
+  // //40-2) back: remove ";" from confusing units (   ??!! better way (just not add first)
+  // const CU = confusingUnits.map(escape).join('|')
+  // txt = txt.replace(new RegExp(` (${CU}); `, 'gi'), ' $1 ')
 
   // 45) add '<EOL>' to the END of line
   txt += '<EOL>'
@@ -592,7 +593,7 @@ try {
 try {
   assertEqual(call('sum = 1 + 3').value, 999)
 } catch(e) {
-  assert(e instanceof VariableNameError)
+  assert(e.message.includes('is reserved'))
 }
 
 try {
@@ -605,13 +606,13 @@ try {
 try {
   assertEqual(call('kg = 4 + 9').value, 999)
 } catch(e) {
-  assert(e instanceof VariableNameError)
+  assert(e.message.includes('is unit'))
 }
 
 try {
   assertEqual(call('K = 5 + 10').value, 999)
 } catch(e) {
-  assert(e instanceof VariableNameError)
+  assert(e.message.includes('is unit'))
 }
 
 assertEqual(call('var4 = 2 + $4.4').value, '6.4 USD')

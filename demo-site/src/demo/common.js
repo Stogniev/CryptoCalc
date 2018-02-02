@@ -17,10 +17,6 @@ const scales = {
   'billions': 1E9
 }
 
-const confusingUnits = [
-  'as', 'in',   // used for money conversion
-//!!?  'a' // used as word in "as a % of"
-]
 
 const lexemSeparator = ';'
 
@@ -90,7 +86,8 @@ const answerExpressionHumanizers = {
 
   [lexemSeparator]: '',
 
-  'PERCENT': '%',
+  PERCENT: '%',
+  '<EOL>': '',
 }
 
 function formatAnswerExpression(text) {
@@ -107,5 +104,5 @@ function formatAnswerExpression(text) {
 
 
 
-module.exports = { getUnitName, isUnit, isPercent, isMeasure, isNumber, toUnit, confusingUnits, lexemSeparator, scales, formatAnswerExpression }
+module.exports = { getUnitName, isUnit, isPercent, isMeasure, isNumber, toUnit, lexemSeparator, scales, formatAnswerExpression }
 
