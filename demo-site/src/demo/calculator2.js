@@ -627,6 +627,17 @@ assertEqual(call('ten_cm = five_cm * 4 - 10').value, '10 cm')
 assertEqual(call('six = 6').value, 6)
 assertEqual(call('five_cm * six').toNumber('cm'), 30, ALMOST)
 
+// 20 % of 300 kg with values
+assertEqual(call('perc = 20 %').value, '20 PERCENT')
+assertEqual(call('weight = 300 kg').value, '300 kg')
+assertEqual(call('val = perc of weight').value.toNumber('kg'), 60, ALMOST)
+
+// variable tests from specification
+assertEqual(call('v = $20').value, '20 USD')
+assertEqual(call('v2 = 5%').value, '5 PERCENT')
+assertEqual(call('v times 7 - v2'), '133 USD')
+
+
 console.log('tests passed')
 
 
