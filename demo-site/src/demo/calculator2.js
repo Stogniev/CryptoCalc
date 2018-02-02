@@ -48,6 +48,9 @@ const StandartFunctions = ['sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'sqrt', 
 function prepareTxt(text, verbose=false) {
   let txt = text
 
+  // 3) simplify modifying assignments (like "a += 10" -> "a = a + 10") (reason implement it in grammar without copypaste is harder)
+  txt = txt.replace(/(.*)([\+\-\*\/])=(.*)/, '$1 = $1 $2 ( $3 )')
+
   // 5) remove multispaces
   txt = txt.replace(new RegExp('\\s+', 'gi'), ' ')
 
@@ -70,7 +73,7 @@ function prepareTxt(text, verbose=false) {
   const S = Object.keys(scales).join('|')
   txt = txt.replace(
     new RegExp(`([0-9]+(?:\\.\\d+)?)(?:\\s*)(${S})((?:[^a-zA-Z]|$))`, 'g'),
-    (m, number,    scale,post) => `${Number(number)*scales[scale]}${post}`
+    (m, number, scale,post) => `${Number(number)*scales[scale]}${post}`
   )
 
   // 35) Convert currencies to ISO format (math.js not support symbols like "$" or "฿")
@@ -632,10 +635,24 @@ assertEqual(call('perc = 20 %').value, '20 PERCENT')
 assertEqual(call('weight = 300 kg').value, '300 kg')
 assertEqual(call('val = perc of weight').value.toNumber('kg'), 60, ALMOST)
 
+// increase veriable
+assertEqual(call('z = 20 km').value, '20 km')
+assertEqual(call('z = z + 1 km').value, '21 km')
+
+// combined assignments operations (+=)
+assertEqual(call('var = 30$').value, '30 USD')
+assertEqual(call('var += 5').value, '35 USD')
+assertEqual(call('var *= 3').value, '105 USD')
+assertEqual(call('var /= 3 + 2').value, '21 USD') // v = v / (3 + 2)
+
 // variable tests from specification
 assertEqual(call('v = $20').value, '20 USD')
 assertEqual(call('v2 = 5%').value, '5 PERCENT')
 assertEqual(call('v times 7 - v2'), '133 USD')
+assertEqual(call('v += 10').value, '30 USD')
+assertEqual(call('v'), '30 USD')
+
+
 
 
 console.log('tests passed')
@@ -663,25 +680,23 @@ function runmath(s) {
 
     return ans
   } catch(e) {
-    console.log('error:', e)
+    console.log('Error:', e)
     if (e.offset) {
       // Panic in style, by graphically pointing out the error location.
-      var out = new Array(PROMPT.length + e.offset + 1).join("-") + "^  Error.";
-      //                                  --------
-      //                                         ^ This comes from nearley!
+      const out = new Array(PROMPT.length + e.offset + 1).join('-') + '^  Error.';
+      //                                    --------
+      //                                          ^ This comes from nearley!
       return out;
-    } else {
-      console.log(e)
     }
+
+    console.log(e)
   }
 }
 
-// node readline gunk. Nothing too exciting.
-let readline = require('readline')
+const readline = require('readline')
 
-// quick solution
 if (readline.createInterface !== undefined) {
-  let rl = readline.createInterface(process.stdin, process.stdout);
+  const rl = readline.createInterface(process.stdin, process.stdout);
 
   rl.setPrompt(PROMPT);
   rl.prompt();
