@@ -56,6 +56,7 @@
       no-cond-assign: off, //["error", { except-parens: true}],
       quotes: ["error", "single", {avoidEscape: true, allowTemplateLiterals: true}],
       max-len: off,
+      object-shorthand: off,
     },
     "plugins": [
         "react",

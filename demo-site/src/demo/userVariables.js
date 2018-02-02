@@ -34,20 +34,42 @@ function validateVariableName(name) {
 
 const findUserVariable = (name) => userVariables.find(v => (v.name === name))
 
+const userVariableProto = {
+  name: null,
+  value: null,
+}
+
 // factory
 function createUserVariable(name, value) {
   validateVariableName(name)
-  const v = { name, value }
-  //userVariables.push(v)
+  const v = Object.create(
+    userVariableProto,
+    {
+      name: { value: name, writable: true, enumerable: true },
+      value: { value: value, writable: true, enumerable: true },
+    }
+  )
+
   return v
 }
 
+// find/create user variable and set value
 function setUserVariable(name, value) {
-  const v = findUserVariable(name) || createUserVariable(name, value)
-  v.value = value
+  let v = findUserVariable(name)
+
+  if (v) {
+    v.value = value
+  } else {
+    v = createUserVariable(name, value)
+    userVariables.push(v)
+  }
+
   return v
 }
 
+/* function getUserVariable(name) {
+ *   
+ * }*/
 
 
 module.exports = { setUserVariable, userVariables, VariableNameError }

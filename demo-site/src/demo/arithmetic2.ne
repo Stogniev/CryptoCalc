@@ -19,15 +19,16 @@
     }
   }
 
-  const { isPercent, isMeasure, toUnit, confusingUnits } = require('./common')
-  const { setUserVariable } = require('./userVariables')
+  const { isPercent, isMeasure, isNumber, toUnit, confusingUnits } = require('./common')
+
+  const { setUserVariable, userVariables } = require('./userVariables')
 %}
 
 #  @lexer lexer
 
 
 main ->
-   identifier _ "=" EXPRESSION EOL  {%
+   identifier _ "=" EXPRESSION EOL  {%           // assign user variable
         ([name,,,expression,],l,rej) => {
           let v = setUserVariable(name, expression)
           log('var:', name, '=', expression)
@@ -36,8 +37,6 @@ main ->
      %}
  | EXPRESSION EOL      {% id %}
 
-
-EOL -> "<EOL>"
 
 EXPRESSION ->
    _ OPS _ {% function([,r,]) { log('>',r, typeof r); return r} %}
@@ -188,7 +187,10 @@ MD_NUM ->
 
 SIGNED_PERCENT -> SIGNED_UNIT {% (d,l, rej) => isPercent(d[0]) ? d[0] : rej %}
 SIGNED_MEASURE -> SIGNED_UNIT {% (d,l, rej) => isMeasure(d[0]) ? d[0] : rej %}
-VALUE_MEASURE -> VALUE_UNIT {% (d,l, rej) => isMeasure(d[0]) ? d[0] : rej %}
+
+VALUE_MEASURE ->
+   VALUE_UNIT      {% (d,l, rej) => isMeasure(d[0]) ? d[0] : rej %}
+
 VALUE_PERCENT -> VALUE_UNIT {% (d,l, rej) => isPercent(d[0]) ? d[0] : rej %}
 
 
@@ -198,11 +200,12 @@ E_NUM ->
      SIGNED_NUM exp E_NUM    {% (d,l,rej) => Math.pow(d[0], d[2])  %}
    | SIGNED_NUM              {% id %}
 
-# Parentheses or unary signed N
+# Parentheses or unary signed number
 SIGNED_NUM ->
     __ "+" _ VALUE_NUM  {% function(d) { /*log('value_num+');*/ return d[3]; } %}
   | __ "-" _ VALUE_NUM  {% function(d) { /*log('value_num-');*/ return math.multiply(-1, d[3]) } %}
   | VALUE_NUM        {% function(d) {/*log('value_num:', d[0]);*/ return d[0]; } %}
+  | VARIABLE_NUM     {% id %}
 
 
 SIGNED_UNIT ->
@@ -214,6 +217,29 @@ SIGNED_UNIT ->
 VALUE_NUM ->
     P_NUM         {% id %}
   | N             {% id %}
+
+
+VARIABLE ->
+   identifier   {% ([name],l,rej) => {
+                      const r = userVariables.find( x => (x.name === name) ) || rej
+                      //log('VARIABLE', name, userVariables, r)
+                      return r
+                    }  %}
+
+VARIABLE_PERCENT ->
+   VARIABLE    {% ([variable],l,rej) => isPercent(variable.value) ? variable.value : rej  %}
+
+VARIABLE_MEASURE ->
+   VARIABLE    {% ([variable],l,rej) => isMeasure(variable.value) ? variable.value : rej  %}
+
+VARIABLE_NUM ->
+   VARIABLE    {% ([variable],l,rej) => {
+                      const r = isNumber(variable.value) ? variable.value : rej;
+                      log('VARIABLE_NUM', r)
+                      return r
+                   }  %}
+
+
 
 
 VALUE_UNIT ->
@@ -260,7 +286,7 @@ P_NUM -> "(" _ OPS_NUM _ ")" {% function(d) {return d[2]; } %}
 P_UNIT -> "(" _ OPS_UNIT _ ")" {% function(d) {return d[2]; } %}
 
 
-FUNC -> "sin" P_NUM     {% function(d) {return Math.sin(d[1]); } %}
+FUNC -> "sin" P_NUM  {% function(d) {return Math.sin(d[1]); } %}
    | "cos" P_NUM     {% function(d) {return Math.cos(d[1]); } %}
    | "tan" P_NUM     {% function(d) {return Math.tan(d[1]); } %}
     
@@ -272,7 +298,6 @@ FUNC -> "sin" P_NUM     {% function(d) {return Math.sin(d[1]); } %}
 
 CONST -> "pi"          {% function(d) {return Math.PI; } %}
    | "e"           {% function(d) {return Math.E; } %}
-
 
 
 # A number value or a function of a number NOTE: no space between
@@ -306,9 +331,8 @@ int -> [0-9]:+      {% function(d) {/*log('int:', d[0].join(""));*/ return d[0].
 
 identifier -> [a-zA-Z_] [a-zA-Z0-9_]:*    {% ([r1,r2]) => [...r1, ...r2].join("")  %}
 
-
 unit ->
-  # ([a-zA-Z]:+ [a-zA-Z0-9]:*)         # problem: multiple results
+  # ([a-zA-Z]:+ [a-zA-Z0-9]:*)         # problem: multiple results (8: maybe remove +)
   [a-zA-Z0-9]:+ separator                       # problem: number-started units
     {%
        function(d, l, reject) {
@@ -340,6 +364,8 @@ unit ->
      %}
 
 separator -> ";"    #  lexemSeparator
+
+EOL -> "<EOL>"
 
 plus -> _ "+" _
      | _ "plus" _

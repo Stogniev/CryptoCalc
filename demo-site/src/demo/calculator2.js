@@ -145,7 +145,7 @@ function prepareAndParse(text, verbose=false) {
     }
 
     if (verbose) {
-      console.log(`"${txt}" -c-> "${parser.results}"`)
+      console.log(txt, '-c->', parser.results)
     }
 
     return parser
@@ -574,7 +574,7 @@ assertEqual(call('2k mm + 2m').toString(), '4 m')
 
 assertEqual(call('$2.2k in ZEUR').toNumber('ZEUR'), 2000, ALMOST)
 
-// variables
+// assign variables
 assertEqual(call('var1 = 2').value, 2)
 assertEqual(call('var2 = 2 + 3').value, 5)
 assertEqual(call('var2 = 2 * 10 kg').value, '20 kg')
@@ -612,6 +612,12 @@ try {
 }
 
 assertEqual(call('var4 = 2 + $4.4').value, '6.4 USD')
+
+
+// reuse number variables
+assertEqual(call('five = 2 + 3').value, 5)
+assertEqual(call('five + 4 '), 9)
+assertEqual(call('ten = five * 2 ').value, 10)
 
 
 

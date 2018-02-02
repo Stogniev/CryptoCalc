@@ -20,12 +20,13 @@ function id(x) {return x[0]; }
     }
   }
 
-  const { isPercent, isMeasure, toUnit, confusingUnits } = require('./common')
-  const { setUserVariable } = require('./userVariables')
+  const { isPercent, isMeasure, isNumber, toUnit, confusingUnits } = require('./common')
+
+  const { setUserVariable, userVariables } = require('./userVariables')
 var grammar = {
     Lexer: undefined,
     ParserRules: [
-    {"name": "main", "symbols": ["identifier", "_", {"literal":"="}, "EXPRESSION", "EOL"], "postprocess": 
+    {"name": "main", "symbols": ["identifier", "_", {"literal":"="}, "EXPRESSION", "EOL"], "postprocess":    // assign user variable
         ([name,,,expression,],l,rej) => {
           let v = setUserVariable(name, expression)
           log('var:', name, '=', expression)
@@ -33,8 +34,6 @@ var grammar = {
         }
              },
     {"name": "main", "symbols": ["EXPRESSION", "EOL"], "postprocess": id},
-    {"name": "EOL$string$1", "symbols": [{"literal":"<"}, {"literal":"E"}, {"literal":"O"}, {"literal":"L"}, {"literal":">"}], "postprocess": function joiner(d) {return d.join('');}},
-    {"name": "EOL", "symbols": ["EOL$string$1"]},
     {"name": "EXPRESSION", "symbols": ["_", "OPS", "_"], "postprocess": function([,r,]) { log('>',r, typeof r); return r}},
     {"name": "OPS", "symbols": ["OPS_NUM"], "postprocess": id},
     {"name": "OPS", "symbols": ["OPS_UNIT"], "postprocess": id},
@@ -126,11 +125,24 @@ var grammar = {
     {"name": "SIGNED_NUM", "symbols": ["__", {"literal":"+"}, "_", "VALUE_NUM"], "postprocess": function(d) { /*log('value_num+');*/ return d[3]; }},
     {"name": "SIGNED_NUM", "symbols": ["__", {"literal":"-"}, "_", "VALUE_NUM"], "postprocess": function(d) { /*log('value_num-');*/ return math.multiply(-1, d[3]) }},
     {"name": "SIGNED_NUM", "symbols": ["VALUE_NUM"], "postprocess": function(d) {/*log('value_num:', d[0]);*/ return d[0]; }},
+    {"name": "SIGNED_NUM", "symbols": ["VARIABLE_NUM"], "postprocess": id},
     {"name": "SIGNED_UNIT", "symbols": ["__", {"literal":"+"}, "_", "VALUE_UNIT"], "postprocess": function(d) { log('u+'); return d[3]; }},
     {"name": "SIGNED_UNIT", "symbols": ["__", {"literal":"-"}, "_", "VALUE_UNIT"], "postprocess": function(d) { log('u-'); return math.multiply(-1, d[3]) }},
     {"name": "SIGNED_UNIT", "symbols": ["VALUE_UNIT"], "postprocess": function(d) {log('value+unit:', d[0]); return d[0]; }},
     {"name": "VALUE_NUM", "symbols": ["P_NUM"], "postprocess": id},
     {"name": "VALUE_NUM", "symbols": ["N"], "postprocess": id},
+    {"name": "VARIABLE", "symbols": ["identifier"], "postprocess":  ([name],l,rej) => {
+          const r = userVariables.find( x => (x.name === name) ) || rej
+          //log('VARIABLE', name, userVariables, r)
+          return r
+        }  },
+    {"name": "VARIABLE_PERCENT", "symbols": ["VARIABLE"], "postprocess": ([variable],l,rej) => isPercent(variable.value) ? variable.value : rej},
+    {"name": "VARIABLE_MEASURE", "symbols": ["VARIABLE"], "postprocess": ([variable],l,rej) => isMeasure(variable.value) ? variable.value : rej},
+    {"name": "VARIABLE_NUM", "symbols": ["VARIABLE"], "postprocess":  ([variable],l,rej) => {
+           const r = isNumber(variable.value) ? variable.value : rej;
+           log('VARIABLE_NUM', r)
+           return r
+        }  },
     {"name": "VALUE_UNIT", "symbols": ["P_UNIT"], "postprocess": id},
     {"name": "VALUE_UNIT", "symbols": ["VALUE_UNIT", "__", "VALUE_NUM", "_", "unit"], "postprocess":  // example: "1m 20 cm 30 mm"
          function(d,l, reject) {
@@ -230,6 +242,8 @@ var grammar = {
         }
              },
     {"name": "separator", "symbols": [{"literal":";"}]},
+    {"name": "EOL$string$1", "symbols": [{"literal":"<"}, {"literal":"E"}, {"literal":"O"}, {"literal":"L"}, {"literal":">"}], "postprocess": function joiner(d) {return d.join('');}},
+    {"name": "EOL", "symbols": ["EOL$string$1"]},
     {"name": "plus", "symbols": ["_", {"literal":"+"}, "_"]},
     {"name": "plus$string$1", "symbols": [{"literal":"p"}, {"literal":"l"}, {"literal":"u"}, {"literal":"s"}], "postprocess": function joiner(d) {return d.join('');}},
     {"name": "plus", "symbols": ["_", "plus$string$1", "_"]},
