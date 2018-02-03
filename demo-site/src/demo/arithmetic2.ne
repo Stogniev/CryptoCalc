@@ -32,6 +32,8 @@
 main ->
    identifier _ "=" EXPRESSION EOL {%
         ([name,,,expression,],l,rej) => {
+          if (name === 'prev') return rej
+
           let v = setUserVariable(name, expression)
           log('var:', name, '=', expression)
           return v.value
@@ -40,7 +42,11 @@ main ->
  | EXPRESSION EOL      {% id %}
 
 
-EXPRESSION -> _ OPS _      {% function([,r,]) { log('>',r, typeof r); return r} %}
+EXPRESSION -> _ OPS _     {% function([,ops,]) {
+                               log('>', ops);
+                               setUserVariable('prev', ops)
+                               return ops
+                             }   %}
 
 # Operations (all)
 OPS -> OPS_NUM        {% id %}
@@ -190,7 +196,7 @@ VARIABLE ->
                       const r = userVariables.find( x => (x.name === name) ) || rej
                       //log('VARIABLE', name, userVariables, r)
                       return r
-                    }  %}
+                    }    %}
 
 VARIABLE_UNIT ->
    VARIABLE    {% ([variable],l,rej) => isUnit(variable.value) ? variable.value : rej  %}
@@ -257,12 +263,16 @@ P_UNIT -> "(" _ OPS_UNIT _ ")" {% function(d) {return d[2]; } %}
 FUNC -> "sin" P_NUM  {% function(d) {return Math.sin(d[1]); } %}
    | "cos" P_NUM     {% function(d) {return Math.cos(d[1]); } %}
    | "tan" P_NUM     {% function(d) {return Math.tan(d[1]); } %}
-    
+   | "tg" P_NUM      {% function(d) {return Math.tan(d[1]); } %}
+   | "cot" P_NUM     {% function(d) {return Math.cot(d[1]); } %}
+   | "ctg" P_NUM     {% function(d) {return Math.cot(d[1]); } %}
    | "asin" P_NUM    {% function(d) {return Math.asin(d[1]); } %}
    | "acos" P_NUM    {% function(d) {return Math.acos(d[1]); } %}
    | "atan" P_NUM    {% function(d) {return Math.atan(d[1]); } %}
+   | "atg" P_NUM     {% function(d) {return Math.atan(d[1]); } %}
    | "sqrt" P_NUM    {% function(d) {return Math.sqrt(d[1]); } %}
-   | "ln" P_NUM       {% function(d) {return Math.log(d[1]); } %}
+   | "ln" P_NUM      {% function(d) {return Math.log(d[1]); } %}
+   | "lg" P_NUM      {% function(d) {return Math.log10(d[1]); } %}
 
 CONST -> "pi"          {% function(d) {return Math.PI; } %}
    | "e"           {% function(d) {return Math.E; } %}

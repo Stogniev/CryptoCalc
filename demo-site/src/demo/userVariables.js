@@ -15,7 +15,7 @@ function validateVariableName(name) {
     throw new VariableNameError(`incorrect variable name: ${name} `)
   }
 
-  if ( ['prev', 'sum', 'total', 'average', 'avg'].includes(name) ) {
+  if ( ['sum', 'total', 'average', 'avg'].includes(name) ) {
     throw new VariableNameError('is reserved')
   }
 

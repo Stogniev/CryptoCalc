@@ -676,7 +676,7 @@ function runmath(s) {
     ans = call(s, DEBUG)
 
     if (isUnit(ans)) {
-      console.log([ans.clone().toNumber(), ans.clone().format({notation: 'fixed', precision:2}), ans.clone().toString()].join(' | '))
+      console.log([ans.clone().toNumber(), ans.clone().format({notation: 'fixed', precision: 2}), ans.clone().toString()].join(' | '))
     }
 
     return ans
