@@ -30,13 +30,19 @@ var grammar = {
     ParserRules: [
     {"name": "main", "symbols": ["identifier", "_", {"literal":"="}, "EXPRESSION", "EOL"], "postprocess": 
         ([name,,,expression,],l,rej) => {
+          if (name === 'prev') return rej
+        
           let v = setUserVariable(name, expression)
           log('var:', name, '=', expression)
           return v.value
         }
              },
     {"name": "main", "symbols": ["EXPRESSION", "EOL"], "postprocess": id},
-    {"name": "EXPRESSION", "symbols": ["_", "OPS", "_"], "postprocess": function([,r,]) { log('>',r, typeof r); return r}},
+    {"name": "EXPRESSION", "symbols": ["_", "OPS", "_"], "postprocess":  function([,ops,]) {
+          log('>', ops);
+          setUserVariable('prev', ops)
+          return ops
+        }   },
     {"name": "OPS", "symbols": ["OPS_NUM"], "postprocess": id},
     {"name": "OPS", "symbols": ["OPS_UNIT"], "postprocess": id},
     {"name": "OPS_NUM", "symbols": ["SHIFT"], "postprocess": id},
@@ -134,7 +140,7 @@ var grammar = {
           const r = userVariables.find( x => (x.name === name) ) || rej
           //log('VARIABLE', name, userVariables, r)
           return r
-        }  },
+        }    },
     {"name": "VARIABLE_UNIT", "symbols": ["VARIABLE"], "postprocess": ([variable],l,rej) => isUnit(variable.value) ? variable.value : rej},
     {"name": "VARIABLE_NUM", "symbols": ["VARIABLE"], "postprocess":  ([variable],l,rej) => {
            const r = isNumber(variable.value) ? variable.value : rej;
@@ -189,16 +195,26 @@ var grammar = {
     {"name": "FUNC", "symbols": ["FUNC$string$2", "P_NUM"], "postprocess": function(d) {return Math.cos(d[1]); }},
     {"name": "FUNC$string$3", "symbols": [{"literal":"t"}, {"literal":"a"}, {"literal":"n"}], "postprocess": function joiner(d) {return d.join('');}},
     {"name": "FUNC", "symbols": ["FUNC$string$3", "P_NUM"], "postprocess": function(d) {return Math.tan(d[1]); }},
-    {"name": "FUNC$string$4", "symbols": [{"literal":"a"}, {"literal":"s"}, {"literal":"i"}, {"literal":"n"}], "postprocess": function joiner(d) {return d.join('');}},
-    {"name": "FUNC", "symbols": ["FUNC$string$4", "P_NUM"], "postprocess": function(d) {return Math.asin(d[1]); }},
-    {"name": "FUNC$string$5", "symbols": [{"literal":"a"}, {"literal":"c"}, {"literal":"o"}, {"literal":"s"}], "postprocess": function joiner(d) {return d.join('');}},
-    {"name": "FUNC", "symbols": ["FUNC$string$5", "P_NUM"], "postprocess": function(d) {return Math.acos(d[1]); }},
-    {"name": "FUNC$string$6", "symbols": [{"literal":"a"}, {"literal":"t"}, {"literal":"a"}, {"literal":"n"}], "postprocess": function joiner(d) {return d.join('');}},
-    {"name": "FUNC", "symbols": ["FUNC$string$6", "P_NUM"], "postprocess": function(d) {return Math.atan(d[1]); }},
-    {"name": "FUNC$string$7", "symbols": [{"literal":"s"}, {"literal":"q"}, {"literal":"r"}, {"literal":"t"}], "postprocess": function joiner(d) {return d.join('');}},
-    {"name": "FUNC", "symbols": ["FUNC$string$7", "P_NUM"], "postprocess": function(d) {return Math.sqrt(d[1]); }},
-    {"name": "FUNC$string$8", "symbols": [{"literal":"l"}, {"literal":"n"}], "postprocess": function joiner(d) {return d.join('');}},
-    {"name": "FUNC", "symbols": ["FUNC$string$8", "P_NUM"], "postprocess": function(d) {return Math.log(d[1]); }},
+    {"name": "FUNC$string$4", "symbols": [{"literal":"t"}, {"literal":"g"}], "postprocess": function joiner(d) {return d.join('');}},
+    {"name": "FUNC", "symbols": ["FUNC$string$4", "P_NUM"], "postprocess": function(d) {return Math.tan(d[1]); }},
+    {"name": "FUNC$string$5", "symbols": [{"literal":"c"}, {"literal":"o"}, {"literal":"t"}], "postprocess": function joiner(d) {return d.join('');}},
+    {"name": "FUNC", "symbols": ["FUNC$string$5", "P_NUM"], "postprocess": function(d) {return Math.cot(d[1]); }},
+    {"name": "FUNC$string$6", "symbols": [{"literal":"c"}, {"literal":"t"}, {"literal":"g"}], "postprocess": function joiner(d) {return d.join('');}},
+    {"name": "FUNC", "symbols": ["FUNC$string$6", "P_NUM"], "postprocess": function(d) {return Math.cot(d[1]); }},
+    {"name": "FUNC$string$7", "symbols": [{"literal":"a"}, {"literal":"s"}, {"literal":"i"}, {"literal":"n"}], "postprocess": function joiner(d) {return d.join('');}},
+    {"name": "FUNC", "symbols": ["FUNC$string$7", "P_NUM"], "postprocess": function(d) {return Math.asin(d[1]); }},
+    {"name": "FUNC$string$8", "symbols": [{"literal":"a"}, {"literal":"c"}, {"literal":"o"}, {"literal":"s"}], "postprocess": function joiner(d) {return d.join('');}},
+    {"name": "FUNC", "symbols": ["FUNC$string$8", "P_NUM"], "postprocess": function(d) {return Math.acos(d[1]); }},
+    {"name": "FUNC$string$9", "symbols": [{"literal":"a"}, {"literal":"t"}, {"literal":"a"}, {"literal":"n"}], "postprocess": function joiner(d) {return d.join('');}},
+    {"name": "FUNC", "symbols": ["FUNC$string$9", "P_NUM"], "postprocess": function(d) {return Math.atan(d[1]); }},
+    {"name": "FUNC$string$10", "symbols": [{"literal":"a"}, {"literal":"t"}, {"literal":"g"}], "postprocess": function joiner(d) {return d.join('');}},
+    {"name": "FUNC", "symbols": ["FUNC$string$10", "P_NUM"], "postprocess": function(d) {return Math.atan(d[1]); }},
+    {"name": "FUNC$string$11", "symbols": [{"literal":"s"}, {"literal":"q"}, {"literal":"r"}, {"literal":"t"}], "postprocess": function joiner(d) {return d.join('');}},
+    {"name": "FUNC", "symbols": ["FUNC$string$11", "P_NUM"], "postprocess": function(d) {return Math.sqrt(d[1]); }},
+    {"name": "FUNC$string$12", "symbols": [{"literal":"l"}, {"literal":"n"}], "postprocess": function joiner(d) {return d.join('');}},
+    {"name": "FUNC", "symbols": ["FUNC$string$12", "P_NUM"], "postprocess": function(d) {return Math.log(d[1]); }},
+    {"name": "FUNC$string$13", "symbols": [{"literal":"l"}, {"literal":"g"}], "postprocess": function joiner(d) {return d.join('');}},
+    {"name": "FUNC", "symbols": ["FUNC$string$13", "P_NUM"], "postprocess": function(d) {return Math.log10(d[1]); }},
     {"name": "CONST$string$1", "symbols": [{"literal":"p"}, {"literal":"i"}], "postprocess": function joiner(d) {return d.join('');}},
     {"name": "CONST", "symbols": ["CONST$string$1"], "postprocess": function(d) {return Math.PI; }},
     {"name": "CONST", "symbols": [{"literal":"e"}], "postprocess": function(d) {return Math.E; }},

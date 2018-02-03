@@ -612,13 +612,6 @@ try {
   assert(e.message.includes('is unit'))
 }
 
-try {
-  assertEqual(call('prev = 1 + 2'), 999)
-} catch(e) {
-  assert(e.message.includes('reserved'))
-}
-
-
 assertEqual(call('var4 = 2 + $4.4'), '6.4 USD')
 
 // reuse number variables
@@ -657,6 +650,20 @@ assertEqual(call('v times 7 - v2'), '133 USD')
 assertEqual(call('v += 10'), '30 USD')
 assertEqual(call('v'), '30 USD')
 
+
+// 'prev' variable
+try {
+  assertEqual(call('prev = 1 + 2'), 999)
+} catch(e) {
+  assert(e.message.includes('Empty'))
+}
+
+assertEqual(call('30 ₴'), '30 UAH')
+assertEqual(call('prev'), '30 UAH')
+
+assertEqual(call('v = 10 ₴ * 2'), '20 UAH')
+assertEqual(call('v = prev + 1'), '21 UAH')
+assertEqual(call('prev + prev'), '42 UAH')
 
 
 
