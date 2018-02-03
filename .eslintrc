@@ -22,7 +22,6 @@
         }
     },
     "rules": {
-      //"semi": "off",
       //comma-dangle: 1,
       no-undef: 1,
       comma-dangle: 0,
@@ -31,7 +30,7 @@
       "no-unused-vars": ["warn", { "args": "none"}],
 
       // disable some airbnb rules
-      "semi": "off",
+      "semi": "off",   // use no-unexpected-multiline instead
       object-curly-spacing: "off",
       space-in-paren: "off",
       arrow-parens: "off",

@@ -20,6 +20,7 @@ function id(x) {return x[0]; }
     }
   }
 
+
   const { isUnit, isPercent, isMeasure, isNumber, toUnit } = require('./common')
   //const { confusingUnits } = require('./unitUtil')
 
@@ -27,11 +28,11 @@ function id(x) {return x[0]; }
 var grammar = {
     Lexer: undefined,
     ParserRules: [
-    {"name": "main", "symbols": ["identifier", "_", {"literal":"="}, "EXPRESSION", "EOL"], "postprocess":    // assign user variable
+    {"name": "main", "symbols": ["identifier", "_", {"literal":"="}, "EXPRESSION", "EOL"], "postprocess": 
         ([name,,,expression,],l,rej) => {
           let v = setUserVariable(name, expression)
           log('var:', name, '=', expression)
-          return v.value // what is better to return? value or variable itself
+          return v.value
         }
              },
     {"name": "main", "symbols": ["EXPRESSION", "EOL"], "postprocess": id},
@@ -129,9 +130,6 @@ var grammar = {
     {"name": "SIGNED_UNIT", "symbols": ["__", {"literal":"+"}, "_", "VALUE_UNIT"], "postprocess": function(d) { log('u+'); return d[3]; }},
     {"name": "SIGNED_UNIT", "symbols": ["__", {"literal":"-"}, "_", "VALUE_UNIT"], "postprocess": function(d) { log('u-'); return math.multiply(-1, d[3]) }},
     {"name": "SIGNED_UNIT", "symbols": ["VALUE_UNIT"], "postprocess": function(d) {log('value+unit:', d[0]); return d[0]; }},
-    {"name": "VALUE_NUM", "symbols": ["P_NUM"], "postprocess": id},
-    {"name": "VALUE_NUM", "symbols": ["N"], "postprocess": id},
-    {"name": "VALUE_NUM", "symbols": ["VARIABLE_NUM"], "postprocess": id},
     {"name": "VARIABLE", "symbols": ["identifier"], "postprocess":  ([name],l,rej) => {
           const r = userVariables.find( x => (x.name === name) ) || rej
           //log('VARIABLE', name, userVariables, r)
@@ -143,6 +141,9 @@ var grammar = {
            log('VARIABLE_NUM', r)
            return r
         }  },
+    {"name": "VALUE_NUM", "symbols": ["P_NUM"], "postprocess": id},
+    {"name": "VALUE_NUM", "symbols": ["N"], "postprocess": id},
+    {"name": "VALUE_NUM", "symbols": ["VARIABLE_NUM"], "postprocess": id},
     {"name": "VALUE_UNIT", "symbols": ["P_UNIT"], "postprocess": id},
     {"name": "VALUE_UNIT", "symbols": ["VALUE_UNIT", "__", "VALUE_NUM", "_", "unit"], "postprocess":  // example: "1m 20 cm 30 mm"
          function(d,l, reject) {
@@ -223,7 +224,6 @@ var grammar = {
           //  dont check unit correctness (assume math.js will)
           //?? if (val === 'PERCENT') reject
         
-        
           // ??
           //if (confusingUnits.includes(val)) {
           //   log(`Denying confusing "${val}" unit`)
@@ -231,7 +231,6 @@ var grammar = {
           // }
         
           return val
-        
         
           /*if (Units.includes(val)) {  //TODO: include all units (currensies etc)
                                          //log('unit ok:', val)

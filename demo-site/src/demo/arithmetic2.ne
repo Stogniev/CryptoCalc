@@ -19,6 +19,7 @@
     }
   }
 
+
   const { isUnit, isPercent, isMeasure, isNumber, toUnit } = require('./common')
   //const { confusingUnits } = require('./unitUtil')
 
@@ -29,31 +30,28 @@
 
 
 main ->
-   identifier _ "=" EXPRESSION EOL  {%           // assign user variable
+   identifier _ "=" EXPRESSION EOL {%
         ([name,,,expression,],l,rej) => {
           let v = setUserVariable(name, expression)
           log('var:', name, '=', expression)
-          return v.value // what is better to return? value or variable itself
+          return v.value
         }
      %}
  | EXPRESSION EOL      {% id %}
 
 
-EXPRESSION ->
-   _ OPS _ {% function([,r,]) { log('>',r, typeof r); return r} %}
+EXPRESSION -> _ OPS _      {% function([,r,]) { log('>',r, typeof r); return r} %}
 
 # Operations (all)
 OPS -> OPS_NUM        {% id %}
      | OPS_UNIT       {% id %}
 
-OPS_NUM -> SHIFT        {% id %}
-
+OPS_NUM -> SHIFT         {% id %}
 OPS_UNIT -> CONVERSION   {% id %}
 
 CONVERSION ->
      AS_UNIT convert _ unit    {% (d,l,rej) => {log('convert:', d[0], d[3]); return d[0].to(d[3])} %}
    | AS_UNIT    {% id %}
-
 
 # bitwise shift
 SHIFT -> SHIFT leftShift AS_NUM   {% (d,l, rej) => d[0] << d[2] %}
@@ -187,24 +185,12 @@ SIGNED_UNIT ->
   | VALUE_UNIT        {% function(d) {log('value+unit:', d[0]); return d[0]; } %}
 
 
-VALUE_NUM ->
-    P_NUM         {% id %}
-  | N             {% id %}
-  | VARIABLE_NUM  {% id %}
-
-
 VARIABLE ->
    identifier   {% ([name],l,rej) => {
                       const r = userVariables.find( x => (x.name === name) ) || rej
                       //log('VARIABLE', name, userVariables, r)
                       return r
                     }  %}
-
-# VARIABLE_PERCENT ->
-#    VARIABLE    {% ([variable],l,rej) => isPercent(variable.value) ? variable.value : rej  %}
-# 
-# VARIABLE_MEASURE ->
-#    VARIABLE    {% ([variable],l,rej) => isMeasure(variable.value) ? variable.value : rej  %}
 
 VARIABLE_UNIT ->
    VARIABLE    {% ([variable],l,rej) => isUnit(variable.value) ? variable.value : rej  %}
@@ -216,7 +202,10 @@ VARIABLE_NUM ->
                       return r
                    }  %}
 
-
+VALUE_NUM ->
+    P_NUM         {% id %}
+  | N             {% id %}
+  | VARIABLE_NUM  {% id %}
 
 
 VALUE_UNIT ->
@@ -283,30 +272,12 @@ CONST -> "pi"          {% function(d) {return Math.PI; } %}
 N -> float          {% id %}
    | FUNC           {% id %}
    | CONST          {% id %}
-   # | ident         {%
-   #    function(d, l, reject) {
-   #      if (['sin', 'cos', 'tan', 'pi', 'e', 'asin', 'acos', 'atan', 'ln', 'sqrt'
-   #          ].includes(d[0])) {  //NOTE: put all identifiers
-   #          //log('reject ident1');
-   #          return reject;
-   #      } else {
-   #        if (false) {  // TODO: check/put variable here if exists
-   #            //return variables(d[0])
-   #        } else {
-   #          //log('reject ident2')
-   #          return reject;
-   #        }
-   #      }
-   #    }
-   #  %}
 
 # I use `float` to basically mean a number with a decimal point in it
 float -> int "." int   {% function(d) {return parseFloat(d[0] + d[1] + d[2])} %}
-| int           {% function(d) {log('int', d); return parseInt(d[0], 10)} %}
+ | int           {% function(d) {log('int', d); return parseInt(d[0], 10)} %}
 
 int -> [0-9]:+      {% function(d) {/*log('int:', d[0].join(""));*/ return d[0].join(""); } %}
-
-#ident -> [a-zA-Z]:+    {% function(d) {return d[0].join(""); } %}
 
 identifier -> [a-zA-Z_] [a-zA-Z0-9_]:*    {% ([r1,r2]) => [...r1, ...r2].join("")  %}
 
@@ -322,7 +293,6 @@ unit ->
          //  dont check unit correctness (assume math.js will)
          //?? if (val === 'PERCENT') reject
 
-
          // ??
          //if (confusingUnits.includes(val)) {
          //   log(`Denying confusing "${val}" unit`)
@@ -330,7 +300,6 @@ unit ->
          // }
 
          return val
-
 
          /*if (Units.includes(val)) {  //TODO: include all units (currensies etc)
                                         //log('unit ok:', val)

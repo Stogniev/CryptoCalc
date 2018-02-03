@@ -16,10 +16,7 @@ const { UnitNames, UnitPrefixes } = require('./unitUtil')
 //const { VariableNameError } = require('./userVariables')
 const { scales, isUnit, lexemSeparator } = require('./common')
 
-
-
 const ALMOST=true
-
 
 function assertEqual(a, b, almost=false) {
   function getValue(v) {
@@ -615,6 +612,13 @@ try {
   assert(e.message.includes('is unit'))
 }
 
+try {
+  assertEqual(call('prev = 1 + 2'), 999)
+} catch(e) {
+  assert(e.message.includes('reserved'))
+}
+
+
 assertEqual(call('var4 = 2 + $4.4'), '6.4 USD')
 
 // reuse number variables
@@ -660,13 +664,9 @@ console.log('tests passed')
 
 
 function runmath(s) {
-  let ans;
+  let ans
 
   try {
-    // Make a parser and feed the input
-    //console.log('Initial', grammar.ParserRules, grammar.ParserStart, s )
-    //ans = new nearley.Parser(grammar.ParserRules, grammar.ParserStart).feed(s);
-
     // let verbose = false      // hack for debugging
     // if (s[0] === '!') {
     //   s = s.slice(1)
@@ -685,12 +685,11 @@ function runmath(s) {
     if (e.offset) {
       // Panic in style, by graphically pointing out the error location.
       const out = new Array(PROMPT.length + e.offset + 1).join('-') + '^  Error.';
-      //                                    --------
-      //                                          ^ This comes from nearley!
+      //                                    ^--- This comes from nearley!
       return out;
     }
 
-    console.log(e)
+    return e
   }
 }
 
