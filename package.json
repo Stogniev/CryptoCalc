@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "escape-string-regexp": "^1.0.5",
+    "is": "^3.2.1",
     "moo": "^0.4.3",
     "prop-types": "^15.6.0",
     "react-helmet": "^5.2.0"

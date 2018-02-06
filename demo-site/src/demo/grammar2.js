@@ -24,23 +24,36 @@ function id(x) {return x[0]; }
   const { isUnit, isPercent, isMeasure, isNumber, toUnit } = require('./common')
   //const { confusingUnits } = require('./unitUtil')
 
-  const { setUserVariable, userVariables } = require('./userVariables')
+  const { setUserVariable, userVariables, validateVariableName, isUserVariable } = require('./userVariables')
 var grammar = {
     Lexer: undefined,
     ParserRules: [
-    {"name": "main", "symbols": ["identifier", "_", {"literal":"="}, "EXPRESSION", "EOL"], "postprocess": 
-        ([name,,,expression,],l,rej) => {
-          if (name === 'prev') return rej
+    {"name": "main", "symbols": ["line"], "postprocess": ([line],l,rej) => {
+          // setting prev variable as parsing side-effect (is not very good but simple)
+          let prev = isUserVariable(line) ? line.value : line
+          log('prev:', prev)
+          setUserVariable('prev', prev)
         
-          let v = setUserVariable(name, expression)
-          log('var:', name, '=', expression)
-          return v.value
+          return line
+        }
+        },
+    {"name": "line", "symbols": ["identifier", "_", {"literal":"="}, "EXPRESSION", "EOL"], "postprocess": 
+        ([name,,,expression,],l,rej) => {
+        
+          try {
+            validateVariableName(name)
+          } catch(e) {
+            return rej
+          }
+        
+          v = setUserVariable(name, expression)
+          return v
         }
              },
-    {"name": "main", "symbols": ["EXPRESSION", "EOL"], "postprocess": id},
+    {"name": "line", "symbols": ["EXPRESSION", "EOL"], "postprocess": ([expr], l, rej) => { return expr }},
     {"name": "EXPRESSION", "symbols": ["_", "OPS", "_"], "postprocess":  function([,ops,]) {
           log('>', ops);
-          setUserVariable('prev', ops)
+          //setUserVariable('prev', ops)
           return ops
         }   },
     {"name": "OPS", "symbols": ["OPS_NUM"], "postprocess": id},

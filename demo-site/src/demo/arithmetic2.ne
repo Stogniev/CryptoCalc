@@ -23,28 +23,41 @@
   const { isUnit, isPercent, isMeasure, isNumber, toUnit } = require('./common')
   //const { confusingUnits } = require('./unitUtil')
 
-  const { setUserVariable, userVariables } = require('./userVariables')
+  const { setUserVariable, userVariables, validateVariableName, isUserVariable } = require('./userVariables')
 %}
 
 #  @lexer lexer
 
+main -> line {%  ([line],l,rej) => {
+    // setting prev variable as parsing side-effect (is not very good but simple)
+    let prev = isUserVariable(line) ? line.value : line
+    log('prev:', prev)
+    setUserVariable('prev', prev)
 
-main ->
+    return line
+  }
+%}
+
+line ->
    identifier _ "=" EXPRESSION EOL {%
         ([name,,,expression,],l,rej) => {
-          if (name === 'prev') return rej
 
-          let v = setUserVariable(name, expression)
-          log('var:', name, '=', expression)
-          return v.value
+          try {
+            validateVariableName(name)
+          } catch(e) {
+            return rej
+          }
+
+          v = setUserVariable(name, expression)
+          return v
         }
      %}
- | EXPRESSION EOL      {% id %}
+ | EXPRESSION EOL     {%  ([expr], l, rej) => { return expr } %}
 
 
 EXPRESSION -> _ OPS _     {% function([,ops,]) {
                                log('>', ops);
-                               setUserVariable('prev', ops)
+                               //setUserVariable('prev', ops)
                                return ops
                              }   %}
 

@@ -15,7 +15,7 @@ function validateVariableName(name) {
     throw new VariableNameError(`incorrect variable name: ${name} `)
   }
 
-  if ( ['sum', 'total', 'average', 'avg'].includes(name) ) {
+  if ( ['sum', 'total', 'average', 'avg', 'prev'].includes(name) ) {
     throw new VariableNameError('is reserved')
   }
 
@@ -43,7 +43,7 @@ const userVariableProto = {
 
 // factory
 function createUserVariable(name, value) {
-  validateVariableName(name)
+  //validateVariableName(name)
   const v = Object.create(
     userVariableProto,
     {
@@ -57,6 +57,7 @@ function createUserVariable(name, value) {
 
 // find/create user variable and set value
 function setUserVariable(name, value) {
+  console.log('setUserVariable', name, value)
   let v = findUserVariable(name)
 
   if (v) {
@@ -80,7 +81,7 @@ function clearAllUserVariables() {
 }
 
 module.exports = {
-  setUserVariable, userVariables, VariableNameError, userVariableProto, isUserVariable, clearAllUserVariables
+  setUserVariable, userVariables, VariableNameError, userVariableProto, isUserVariable, clearAllUserVariables, validateVariableName
 }
 
 

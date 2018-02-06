@@ -57,6 +57,9 @@
       max-len: off,
       object-shorthand: off,
       prefer-template: off, // sometimes plus-concatenation is useful tho
+      padded-blocks: off, // not so strict problem
+      no-mixed-operators: off,  // not seems to me a big problem, no extra braces
+      dot-notation: off,  // sometimes looks better: rates['USD']
     },
     "plugins": [
         "react",

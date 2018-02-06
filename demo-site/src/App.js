@@ -6,8 +6,9 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 import math from 'mathjs'
-import { prepareAndParse } from './demo/calculator2'
+import { prepareAndParse, createParser, prepareTxt } from './demo/calculator2'
 import { formatAnswerExpression, isUnit } from './demo/common'
+import { isUserVariable } from './demo/userVariables'
 
 import { clearAllUserVariables } from './demo/userVariables'
 
@@ -115,6 +116,10 @@ class App extends React.Component {
       //console.log('result:', result.clone())
       const r = result.clone()
       return parseFloat(r.toNumber().toFixed(2)) + ' ' + r.formatUnits()
+    }
+
+    if (isUserVariable(result)) {
+      return result.value
     }
 
     return result
@@ -276,22 +281,56 @@ class App extends React.Component {
 
     const results = []
     const expressions = []
+
+    const parser = createParser()
     inputs.forEach(
       input => {
+        console.log('p&p', input)
+        const info = parser.save()
+        const prepared = prepareTxt(input)
+        const formattedExpression = formatAnswerExpression(prepared)
+        let error = null
         try {
-          console.log('p&p', input)
-          const parser = prepareAndParse(input, 'verbose')
-          expressions.push(formatAnswerExpression(parser.lexer.buffer))
-          results.push(parser && parser.results[0])
+          parser.feed(prepared)
+          if (parser.results.length === 0) {
+            throw Error(`Empty result for "${formattedExpression}"`)
+          }
+          if (parser.results.length > 1) {
+            throw Error(`Multiple result for "${formattedExpression}": ${parser.results}`)
+          }
         } catch(e) {
-          console.log('Error:', e)
-          //let error = `${e}`
-          //newState = {...newState, error}
+          console.warn('Error:', e)
           expressions.push(null)
-          results.push(null)  //`error: ${e}`
+          results.push(null)
+          error = e
+        } finally {
+          if (!error) {
+            if (parser.results.length === 1) {
+              expressions.push(formattedExpression)
+              results.push(parser.results[0])
+            }
+          }
+          parser.restore(info)
         }
       }
     )
+
+    /* inputs.forEach(
+     *   input => {
+     *     try {
+     *       console.log('p&p', input)
+     *       const parser = prepareAndParse(input, 'verbose')
+     *       expressions.push(formatAnswerExpression(parser.lexer.buffer))
+     *       results.push(parser && parser.results[0])
+     *     } catch(e) {
+     *       console.log('Error:', e)
+     *       //let error = `${e}`
+     *       //newState = {...newState, error}
+     *       expressions.push(null)
+     *       results.push(null)  //`error: ${e}`
+     *     }
+     *   }
+     * )*/
 
     console.log('Inputs: ', inputs)
     console.log('Results: ', results)
@@ -310,7 +349,7 @@ class App extends React.Component {
 
 
   renderHighlighted(exp) {
-    console.log('renderHighlighted', `"${exp}"`)
+    //console.log('renderHighlighted', `"${exp}"`)
 
     highlightLexer.reset(exp)
     let r = []
@@ -361,7 +400,7 @@ class App extends React.Component {
       r = exp  // don't highlight unparsed expression
     }
 
-    console.log('returning:', r)
+    //bconsole.log('returning:', r)
     return r
 
     /* let r;
@@ -445,7 +484,7 @@ class App extends React.Component {
                     { this.renderHighlighted(expressions[i]) }
                   </span>,
                   <div className="res" key={`r${i}`}>= {this.formatResult(r)}</div>,
-                  <br /> ])) }
+                  <br key={`br${i}`} /> ])) }
             </div>
           </div>
           <div id="textholder-keeper">
