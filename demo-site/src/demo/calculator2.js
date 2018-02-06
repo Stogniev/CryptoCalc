@@ -695,6 +695,11 @@ call('v = 5')
 call('v *= 6 cm ')
 assertEqual(call('prev').toString(), '30 cm')
 
+// prev is cleared after error
+call('v = 123')
+try { call('zzzdsfads') } catch(e) {}
+assertEqual(call('prev '), 999)
+
 
 console.log('tests passed')
 

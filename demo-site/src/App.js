@@ -23,6 +23,7 @@ import { highlightLexer } from './demo/test_moo'
 
 const B = true
 
+
 function getTextNodeAtPosition(root, index) {
   //let lastNode = null;
 
@@ -289,6 +290,7 @@ class App extends React.Component {
         const info = parser.save()
         const prepared = prepareTxt(input)
         const formattedExpression = formatAnswerExpression(prepared)
+        expressions.push(formattedExpression)
         let error = null
         try {
           parser.feed(prepared)
@@ -300,13 +302,13 @@ class App extends React.Component {
           }
         } catch(e) {
           console.warn('Error:', e)
-          expressions.push(null)
+          //expressions.push(null)
           results.push(null)
           error = e
         } finally {
           if (!error) {
             if (parser.results.length === 1) {
-              expressions.push(formattedExpression)
+              //expressions.push(formattedExpression)
               results.push(parser.results[0])
             }
           }
@@ -314,23 +316,6 @@ class App extends React.Component {
         }
       }
     )
-
-    /* inputs.forEach(
-     *   input => {
-     *     try {
-     *       console.log('p&p', input)
-     *       const parser = prepareAndParse(input, 'verbose')
-     *       expressions.push(formatAnswerExpression(parser.lexer.buffer))
-     *       results.push(parser && parser.results[0])
-     *     } catch(e) {
-     *       console.log('Error:', e)
-     *       //let error = `${e}`
-     *       //newState = {...newState, error}
-     *       expressions.push(null)
-     *       results.push(null)  //`error: ${e}`
-     *     }
-     *   }
-     * )*/
 
     console.log('Inputs: ', inputs)
     console.log('Results: ', results)
@@ -349,23 +334,18 @@ class App extends React.Component {
 
 
   renderHighlighted(exp) {
-    //console.log('renderHighlighted', `"${exp}"`)
-
-    highlightLexer.reset(exp)
     let r = []
-    let item;
+    highlightLexer.reset(exp)
+    //let item;
+
 
     try {
-      while (true) {
-        item = highlightLexer.next()
-        if (!item) break;
-        //console.log('-', item)
-        //r.push(item.value)
-
+      for (let item of highlightLexer) {
+        //console.log('-', item.value, item.type)
         switch (item.type) {
-            /* case 'WS':        NOTE: for HIGHLIGHT need just render space
-             * case 'semicolon':
-             *   break;*/
+          /* case 'WS':        NOTE: for HIGHLIGHT need just render space
+            case 'semicolon':
+            break; */
           case 'comment':
             r.push(<span className="grey-color" key={item.offset}>{item.value}</span>)
             break;
@@ -384,6 +364,7 @@ class App extends React.Component {
             r.push(<span className="blue-color" key={item.offset}>{item.value}</span>)
             break;
           case 'variable':
+          case 'specVariables':
             r.push(<span className="violet-color" key={item.offset}>{item.value}</span>)
             break;
           default:
@@ -391,7 +372,43 @@ class App extends React.Component {
             //r.push(' ') // add breakable space between highlighted parts
         }
       }
-
+      // while (true) {
+      //   item = highlightLexer.next()
+      //   if (!item) break;
+      // 
+      //   console.log('-', item)
+      //   r.push(item.value)
+      // 
+      //   // switch (item.type) {
+      //   //     /* case 'WS':        NOTE: for HIGHLIGHT need just render space
+      //   //      * case 'semicolon':
+      //   //      *   break;*/
+      //   //   case 'comment':
+      //   //     r.push(<span className="grey-color" key={item.offset}>{item.value}</span>)
+      //   //     break;
+      //   //   case 'plus':
+      //   //   case 'minus':
+      //   //   case 'mul':
+      //   //   case 'divide':
+      //   //   case 'exp':
+      //   //   case 'convert':
+      //   //   case 'mod':
+      //   //   case 'leftShift':
+      //   //   case 'rightShift':
+      //   //     r.push(<span className="orange-color" key={item.offset}>{item.value}</span>)
+      //   //     break;
+      //   //   case 'currency':
+      //   //     r.push(<span className="blue-color" key={item.offset}>{item.value}</span>)
+      //   //     break;
+      //   //   case 'variable':
+      //   //     r.push(<span className="violet-color" key={item.offset}>{item.value}</span>)
+      //   //     break;
+      //   //   default:
+      //   //     r.push(<span key={item.offset}>{item.value}</span>)
+      //   //     //r.push(' ') // add breakable space between highlighted parts
+      //   // }
+      //}
+      //
       //return r
     } catch(e) {
       // in case of parsing error just return parsed text (TODO: process parsing error ONLY)
@@ -401,6 +418,8 @@ class App extends React.Component {
     }
 
     //bconsole.log('returning:', r)
+    console.log('renderHighlighted', r)
+
     return r
 
     /* let r;
@@ -476,15 +495,15 @@ class App extends React.Component {
         <div className="container">
           <div className="autodraw">
             <div className="highlights">
-              { inputs.map( (inp,i) => <div key={`h${i}`}>{this.renderHighlighted(inp)}</div>) }
+              { inputs.map( (inp, i) => <div key={`h_${inp}`}>{this.renderHighlighted(inp)}</div>) }
             </div>
             <div className="results" >
-              { results.map( (r,i) => (r && [
-                  <span className="parsedExpression" key={`e${i}`}>
-                    { this.renderHighlighted(expressions[i]) }
-                  </span>,
-                  <div className="res" key={`r${i}`}>= {this.formatResult(r)}</div>,
-                  <br key={`br${i}`} /> ])) }
+              { results.map( (r, i) => ([
+                <span className="parsedExpression" key={`e_${r}`}>
+                  { this.renderHighlighted(expressions[i]) }
+                </span>,
+                r && <div className="res" key={`r_${r}`}>= {this.formatResult(r)}</div>,
+                <br key={`br_${r}`} />] ))}
             </div>
           </div>
           <div id="textholder-keeper">

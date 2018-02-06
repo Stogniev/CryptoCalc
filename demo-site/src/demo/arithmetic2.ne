@@ -41,14 +41,13 @@ main -> line {%  ([line],l,rej) => {
 line ->
    identifier _ "=" EXPRESSION EOL {%
         ([name,,,expression,],l,rej) => {
-
           try {
             validateVariableName(name)
           } catch(e) {
             return rej
           }
 
-          v = setUserVariable(name, expression)
+          let v = setUserVariable(name, expression)
           return v
         }
      %}

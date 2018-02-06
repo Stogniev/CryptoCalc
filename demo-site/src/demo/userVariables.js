@@ -3,6 +3,8 @@ const currencyCodes = codes
 //const currencies = require('./currencies')
 const { UnitNames, UnitPrefixes } = require('./unitUtil')
 
+const { specVariables } = require('./common')
+
 const userVariables = []
 
 class VariableNameError extends Error {}
@@ -15,7 +17,7 @@ function validateVariableName(name) {
     throw new VariableNameError(`incorrect variable name: ${name} `)
   }
 
-  if ( ['sum', 'total', 'average', 'avg', 'prev'].includes(name) ) {
+  if ( specVariables.includes(name) ) {
     throw new VariableNameError('is reserved')
   }
 
@@ -57,7 +59,7 @@ function createUserVariable(name, value) {
 
 // find/create user variable and set value
 function setUserVariable(name, value) {
-  console.log('setUserVariable', name, value)
+  //console.log('setUserVariable', name, value)
   let v = findUserVariable(name)
 
   if (v) {
