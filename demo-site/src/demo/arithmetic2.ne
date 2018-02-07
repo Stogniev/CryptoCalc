@@ -1,16 +1,4 @@
-# `main` is the nonterminal that nearley tries to parse, so we define it first.
-# The _'s are defined as whitespace below. This is a mini-idiom.
-
 @{%
-    /*const moo = require("moo");
-  
-  const lexer = moo.compile({
-    ws:     /[ \t]+/,
-    number: /[0-9]+/,
-    word: /[a-z]+/,
-    times:  /\*|x/
-    }); */
-
   const math = require("mathjs");
 
   function log() {
@@ -19,36 +7,50 @@
     }
   }
 
-
   const { isUnit, isPercent, isMeasure, isNumber, toUnit } = require('./common')
   //const { confusingUnits } = require('./unitUtil')
 
-  const { setUserVariable, userVariables, validateVariableName, isUserVariable } = require('./userVariables')
+  ///console.log('TTTTT', this)
+
+  const { /*setUserVariable,*/ createUserVariable, /*userVariables,*/
+          validateVariableName, isUserVariable
+        } = require('./userVariables')
+
+  const { getContext } = require('./parserContext')
+
 %}
 
-#  @lexer lexer
+main -> line {%  function([line],l,rej) {
+    // NOTE: use arrow function to use external context (this)
+    //console.log('TTT2', /*this,*/ /*this.foo, global._c, this.zz,*/ getContext().test)
 
-main -> line {%  ([line],l,rej) => {
-    // setting prev variable as parsing side-effect (is not very good but simple)
-    let prev = isUserVariable(line) ? line.value : line
-    log('prev:', prev)
-    setUserVariable('prev', prev)
+    //w const context = getContext()
+    //w context.test = 'YYY'
 
     return line
+
+    /* let prev = isUserVariable(line) ? line.value : line
+    log('prev:', prev)
+    //setUserVariable('prev', prev)
+    return line */
   }
 %}
 
 line ->
    identifier _ "=" EXPRESSION EOL {%
         ([name,,,expression,],l,rej) => {
+
           try {
             validateVariableName(name)
           } catch(e) {
             return rej
           }
 
+          return createUserVariable(name, expression)
+
+          /*
           let v = setUserVariable(name, expression)
-          return v
+          return v  */
         }
      %}
  | EXPRESSION EOL     {%  ([expr], l, rej) => { return expr } %}
@@ -56,7 +58,6 @@ line ->
 
 EXPRESSION -> _ OPS _     {% function([,ops,]) {
                                log('>', ops);
-                               //setUserVariable('prev', ops)
                                return ops
                              }   %}
 
@@ -205,10 +206,23 @@ SIGNED_UNIT ->
 
 VARIABLE ->
    identifier   {% ([name],l,rej) => {
-                      const r = userVariables.find( x => (x.name === name) ) || rej
+                      //113
+
+                      //console.log('V?', name)
+                      let v
+                      if (name === 'prev') {
+                        v = getContext().prev
+                      } else {
+                        v = getContext().userVariables[name]
+                      }
+
+                      log('V:', v)
+                      return v || rej
+
+                      //112 const r = userVariables.find( x => (x.name === name) ) || rej
                       //log('VARIABLE', name, userVariables, r)
-                      return r
-                    }    %}
+                      //112 return r
+                    }  %}
 
 VARIABLE_UNIT ->
    VARIABLE    {% ([variable],l,rej) => isUnit(variable.value) ? variable.value : rej  %}

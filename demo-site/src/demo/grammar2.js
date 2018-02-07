@@ -3,15 +3,6 @@
 (function () {
 function id(x) {return x[0]; }
 
-    /*const moo = require("moo");
-  
-  const lexer = moo.compile({
-    ws:     /[ \t]+/,
-    number: /[0-9]+/,
-    word: /[a-z]+/,
-    times:  /\*|x/
-    }); */
-
   const math = require("mathjs");
 
   function log() {
@@ -20,39 +11,54 @@ function id(x) {return x[0]; }
     }
   }
 
-
   const { isUnit, isPercent, isMeasure, isNumber, toUnit } = require('./common')
   //const { confusingUnits } = require('./unitUtil')
 
-  const { setUserVariable, userVariables, validateVariableName, isUserVariable } = require('./userVariables')
+  ///console.log('TTTTT', this)
+
+  const { /*setUserVariable,*/ createUserVariable, /*userVariables,*/
+          validateVariableName, isUserVariable
+        } = require('./userVariables')
+
+  const { getContext } = require('./parserContext')
+
 var grammar = {
     Lexer: undefined,
     ParserRules: [
-    {"name": "main", "symbols": ["line"], "postprocess": ([line],l,rej) => {
-          // setting prev variable as parsing side-effect (is not very good but simple)
-          let prev = isUserVariable(line) ? line.value : line
-          log('prev:', prev)
-          setUserVariable('prev', prev)
+    {"name": "main", "symbols": ["line"], "postprocess": function([line],l,rej) {
+          // NOTE: use arrow function to use external context (this)
+          //console.log('TTT2', /*this,*/ /*this.foo, global._c, this.zz,*/ getContext().test)
+        
+          //w const context = getContext()
+          //w context.test = 'YYY'
         
           return line
+        
+          /* let prev = isUserVariable(line) ? line.value : line
+          log('prev:', prev)
+          //setUserVariable('prev', prev)
+          return line */
         }
         },
     {"name": "line", "symbols": ["identifier", "_", {"literal":"="}, "EXPRESSION", "EOL"], "postprocess": 
         ([name,,,expression,],l,rej) => {
+        
           try {
             validateVariableName(name)
           } catch(e) {
             return rej
           }
         
+          return createUserVariable(name, expression)
+        
+          /*
           let v = setUserVariable(name, expression)
-          return v
+          return v  */
         }
              },
     {"name": "line", "symbols": ["EXPRESSION", "EOL"], "postprocess": ([expr], l, rej) => { return expr }},
     {"name": "EXPRESSION", "symbols": ["_", "OPS", "_"], "postprocess":  function([,ops,]) {
           log('>', ops);
-          //setUserVariable('prev', ops)
           return ops
         }   },
     {"name": "OPS", "symbols": ["OPS_NUM"], "postprocess": id},
@@ -149,10 +155,23 @@ var grammar = {
     {"name": "SIGNED_UNIT", "symbols": ["__", {"literal":"-"}, "_", "VALUE_UNIT"], "postprocess": function(d) { log('u-'); return math.multiply(-1, d[3]) }},
     {"name": "SIGNED_UNIT", "symbols": ["VALUE_UNIT"], "postprocess": function(d) {log('value+unit:', d[0]); return d[0]; }},
     {"name": "VARIABLE", "symbols": ["identifier"], "postprocess":  ([name],l,rej) => {
-          const r = userVariables.find( x => (x.name === name) ) || rej
+          //113
+        
+          //console.log('V?', name)
+          let v
+          if (name === 'prev') {
+            v = getContext().prev
+          } else {
+            v = getContext().userVariables[name]
+          }
+        
+          log('V:', v)
+          return v || rej
+        
+          //112 const r = userVariables.find( x => (x.name === name) ) || rej
           //log('VARIABLE', name, userVariables, r)
-          return r
-        }    },
+          //112 return r
+        }  },
     {"name": "VARIABLE_UNIT", "symbols": ["VARIABLE"], "postprocess": ([variable],l,rej) => isUnit(variable.value) ? variable.value : rej},
     {"name": "VARIABLE_NUM", "symbols": ["VARIABLE"], "postprocess":  ([variable],l,rej) => {
            const r = isNumber(variable.value) ? variable.value : rej;

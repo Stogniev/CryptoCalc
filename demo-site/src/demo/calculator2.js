@@ -13,8 +13,9 @@ const rates = require('./rates')
 
 const { UnitNames, UnitPrefixes } = require('./unitUtil')
 
-const { clearAllUserVariables } = require('./userVariables')
+const { /*clearAllUserVariables,*/ isUserVariable, createUserVariable } = require('./userVariables')
 const { scales, isUnit, lexemSeparator } = require('./common')
+const { getContext, setContext } = require('./parserContext')
 
 const ALMOST=true
 
@@ -129,7 +130,10 @@ function prepareTxt(text, verbose=false) {
   return txt
 }
 
-const createParser = () => new nearley.Parser(grammar.ParserRules, grammar.ParserStart, { keepHistory: true })
+//grammar.ParserRules[0]._contextHack = {aa: 'bb'}
+//console.log('TT0', grammar.ParserRules)
+
+const createParser = () => new nearley.Parser(grammar.ParserRules, grammar.ParserStart, { keepHistory: true, foo: 'bar'})
 
 // TODO: refactor with call
 function prepareAndParse(text, verbose=false) {
@@ -163,9 +167,82 @@ function prepareAndParse(text, verbose=false) {
 }
 
 
-function call(text, verbose=DEBUG) {
-  return prepareAndParse(text, verbose).results[0]
+const calcEnvironmentProto = {
+  prev: null,
+  results: [],
+  userVariables: {},
+
+  test: 'XXX',
+
+  sum() {
+    // TODO
+    return 'SUM HERE'
+  },
+
+  average() {
+    // TODO
+    return 'AVERAGE HERE'
+  },
+
+  reset() {
+    this.prev = null
+    this.results = []
+    this.userVariables = {}
+  },
+
+  calc(text, verbose=DEBUG) {
+    //nw this._CONTEXT = {zz: 'Z3'}
+    //console.log('TTT1', this)
+
+
+    // thiw nw
+    // const txt = prepareTxt(text)
+    // const parser = new nearley.Parser(grammar.ParserRules, grammar.ParserStart, { keepHistory: true, foo: 'bar'})
+    // const parserResults = parser.feed(txt)
+    // const result = parserResults.results[0]
+
+    // nw
+    // const parser = prepareAndParse.call(this, text, verbose)
+    // const result = parser.results[0]
+
+    //let context = createContext('calc2')
+
+    setContext(this)  // set parser context (to t
+    let result;
+    try {
+      const parser = prepareAndParse(text, verbose)
+      result = parser.results[0]
+    } catch(e) {
+      console.warn('Error:', e)
+      this.prev = `Error: ${e}`
+      this.results.push(`Error: ${e}`)
+      throw e
+    }
+
+    console.log('R:', result)
+
+    if (isUserVariable(result)) {
+      // 113 temporarily set variable to variable INSTANCE (not value)
+      this.userVariables[result.name] = result/*.value*/ //112 setUserVariable(result)
+      this.prev = createUserVariable('prev', result.value)
+    } else {
+      this.prev = createUserVariable('prev', result)
+    }
+
+    this.results.push(result)
+    console.log('Context:', {p: this.prev, r: this.results, v: this.userVariables})
+    return result
+  }
 }
+
+function createCalcEnvironment() {
+  return Object.create(
+    calcEnvironmentProto,
+    // {prev: { /*value: 'Carl',*/ writable: true, enumerable: true }},
+    // {results: { /*value: 'Carl',*/ writable: true, enumerable: true }},
+  )
+}
+
 
 
 // mini-sandbox
@@ -177,532 +254,539 @@ function call(text, verbose=DEBUG) {
 //return
 
 
+function test() {
+  const env = createCalcEnvironment()
+
+  function call(expr) {
+    //global._c = {a: 10}
+    //this._CONTEXT = {zz: 'Z2'}
+    return env.calc(expr)
+  }
+
+  // math expressions
+  assertEqual(call('123'), 123)
+  assertEqual(call('3 + 2'), 5)
+
+  assertEqual(call('1 + 2 * 3'), 7)
+  assertEqual(call('1 + (2^3) - 2 * 3'), 3)
+
+  assertEqual(call('11 mod 4'), 3)
+  assertEqual(call('4 + 10 mod 4 * 2'), 8)
+
+  assertEqual(call('2 ^ 3'), 8)
+  assertEqual(call('(2 ^ 3)'), 8)
+
+  assertEqual(call('2(3)'), 6)
+  assertEqual(call('(2)3'), 6)
+  assertEqual(call('(2)(3)'), 6)
+  assertEqual(call('2(3)4'), 24)
+
+  assertEqual(call('(2 + 3) *4'), 20)
+
+  assertEqual(call('5(2 + 3)*4'), 100)
+  assertEqual(call('5*(2 + 3)4'), 100)
+  assertEqual(call('2*(3)*4'), 24)
+
+  assertEqual(call('2*(3)'), 6)
+  assertEqual(call('(2)*3'), 6)
+  assertEqual(call('(2)*(3)'), 6)
+
+  assertEqual(call('(2 + 3)*4'), 20)
+  assertEqual(call('5*(2 + 3)*4'), 100)
 
 
-// math expressions
-assertEqual(call('123'), 123)
-assertEqual(call('3 + 2'), 5)
+  // math constants
+  assertEqual(call('e'), 2.7, ALMOST)
+  assertEqual(call('pi'), 3.14, ALMOST)
+  assertEqual(call('pi + 1'), 4.14, ALMOST)
+  assertEqual(call('1 + pi'), 4.14, ALMOST)
 
-assertEqual(call('1 + 2 * 3'), 7)
-assertEqual(call('1 + (2^3) - 2 * 3'), 3)
+  // implicit multiplication "*"
+  assertEqual(call('(3)7'), 21)
+  assertEqual(call('(1+7)3'), 24)
+  assertEqual(call('8(3)'), 24)
+  assertEqual(call('(3)(4)'), 12)
 
-assertEqual(call('11 mod 4'), 3)
-assertEqual(call('4 + 10 mod 4 * 2'), 8)
+  assertEqual(call('3(5-2)4'), 36)
+  assertEqual(call('(3-1) (8/4 + 1)'), 6)
+  assertEqual(call('(3-1)(8/4 + 1)'), 6)
+  assertEqual(call('3+ (7-4) 2'), 9)
+  assertEqual(call('2 (3 + 4)'), 14)
+  assertEqual(call('7 2'), 14)
+  assertEqual(call('2 + 3 (2+4) / 2'), 11)
+  assertEqual(call('1 + 3(5 + 4 - 6 / 3) / 2 * 4 - 3'), 40)
 
-assertEqual(call('2 ^ 3'), 8)
-assertEqual(call('(2 ^ 3)'), 8)
+  assertEqual(call('3.139 * 1'), 3.14, ALMOST)  //to constants
+  assertEqual(call('pi (7 - 5) - pi'), 3.14, ALMOST)  //to constants
+  assertEqual(call('pi(7 - 5)pi/(pi*pi) - 2'), 0)
 
-assertEqual(call('2(3)'), 6)
-assertEqual(call('(2)3'), 6)
-assertEqual(call('(2)(3)'), 6)
-assertEqual(call('2(3)4'), 24)
-
-assertEqual(call('(2 + 3) *4'), 20)
-
-assertEqual(call('5(2 + 3)*4'), 100)
-assertEqual(call('5*(2 + 3)4'), 100)
-assertEqual(call('2*(3)*4'), 24)
-
-assertEqual(call('2*(3)'), 6)
-assertEqual(call('(2)*3'), 6)
-assertEqual(call('(2)*(3)'), 6)
-
-assertEqual(call('(2 + 3)*4'), 20)
-assertEqual(call('5*(2 + 3)*4'), 100)
-
-
-// math constants
-assertEqual(call('e'), 2.7, ALMOST)
-assertEqual(call('pi'), 3.14, ALMOST)
-assertEqual(call('pi + 1'), 4.14, ALMOST)
-assertEqual(call('1 + pi'), 4.14, ALMOST)
-
-// implicit multiplication "*"
-assertEqual(call('(3)7'), 21)
-assertEqual(call('(1+7)3'), 24)
-assertEqual(call('8(3)'), 24)
-assertEqual(call('(3)(4)'), 12)
-
-assertEqual(call('3(5-2)4'), 36)
-assertEqual(call('(3-1) (8/4 + 1)'), 6)
-assertEqual(call('(3-1)(8/4 + 1)'), 6)
-assertEqual(call('3+ (7-4) 2'), 9)
-assertEqual(call('2 (3 + 4)'), 14)
-assertEqual(call('7 2'), 14)
-assertEqual(call('2 + 3 (2+4) / 2'), 11)
-assertEqual(call('1 + 3(5 + 4 - 6 / 3) / 2 * 4 - 3'), 40)
-
-assertEqual(call('3.139 * 1'), 3.14, ALMOST)  //to constants
-assertEqual(call('pi (7 - 5) - pi'), 3.14, ALMOST)  //to constants
-assertEqual(call('pi(7 - 5)pi/(pi*pi) - 2'), 0)
-
-// exponents
-assertEqual(call('2^3'), 8)
-assertEqual(call('2^3^2'), 512)
-assertEqual(call('(2^3)^2'), 64)
-assertEqual(call('2*3^2*3'), 54)
-assertEqual(call('2 * 3 ^ 2 * 3'), 54)
-assertEqual(call('2 * pi ^ 2 * 3'), 59.15, ALMOST)
-// exponent + braces
-assertEqual(call('2^2(3)'), 12)
-assertEqual(call('(3)2^2'), 12, ALMOST)
-assertEqual(call('(2)pi^2(3)'), 59.15, ALMOST)
-assertEqual(call('4^-2'), 4 ** -2, )
+  // exponents
+  assertEqual(call('2^3'), 8)
+  assertEqual(call('2^3^2'), 512)
+  assertEqual(call('(2^3)^2'), 64)
+  assertEqual(call('2*3^2*3'), 54)
+  assertEqual(call('2 * 3 ^ 2 * 3'), 54)
+  assertEqual(call('2 * pi ^ 2 * 3'), 59.15, ALMOST)
+  // exponent + braces
+  assertEqual(call('2^2(3)'), 12)
+  assertEqual(call('(3)2^2'), 12, ALMOST)
+  assertEqual(call('(2)pi^2(3)'), 59.15, ALMOST)
+  assertEqual(call('4^-2'), 4 ** -2, )
 
 
 
-// word-described math expressions
-assertEqual(call('3 + 2'), 5)
+  // word-described math expressions
+  assertEqual(call('3 + 2'), 5)
 
-assertEqual(call('1 and 2 multiplied by 3'), 7)
-assertEqual(call('(1 and 2) multiplied by 3'), 9)
-assertEqual(call('1 with 62 without 2 times 3'), 57)
-assertEqual(call('4 mul 2 + 3 ^ 2'), 17, ALMOST)
-assertEqual(call('18 divide by 2 multiplied by 2 ^ 2'), 36)
+  assertEqual(call('1 and 2 multiplied by 3'), 7)
+  assertEqual(call('(1 and 2) multiplied by 3'), 9)
+  assertEqual(call('1 with 62 without 2 times 3'), 57)
+  assertEqual(call('4 mul 2 + 3 ^ 2'), 17, ALMOST)
+  assertEqual(call('18 divide by 2 multiplied by 2 ^ 2'), 36)
 
-// math operations space tolerancy
-assertEqual(call('18divide by2'), 9)
-assertEqual(call('18divided by2multiplied by2 ^ 2'), 36)
-assertEqual(call('18plus3minus1'), 20)
-
-
-// bitwise shift
-assertEqual(call('3 << 4'), 48)
-assertEqual(call('99 >> 4'), 6)
-assertEqual(call('3 << 4 << 2'), 192)
-assertEqual(call('3 << (4 << 2)'), 196608)
-assertEqual(call('3 << 4 + 1 << 2'), 384)
-assertEqual(call('3 << 4 + 9 >> 2'), 6144)
-
-// standard functions
-//console.log(call('sin(2 pi)'),  call('2 sin(pi) cos(pi)'))
-assertEqual(call('sqrt(81)'), 9)
-//assertEqual(call('sqrt(-4)'), NaN)
-
-assertEqual(call('sin(2 pi)'),  call('2 sin(pi) cos(pi)'), ALMOST)
-assertEqual(call('tan(3 pi)'),  call('sin(3 pi)/cos(3 pi)'), ALMOST)
-assertEqual(call('ln(e^5)'), 5)
+  // math operations space tolerancy
+  assertEqual(call('18divide by2'), 9)
+  assertEqual(call('18divided by2multiplied by2 ^ 2'), 36)
+  assertEqual(call('18plus3minus1'), 20)
 
 
-// unary "+" and "-"
-assertEqual(call('-5'), -5)
-assertEqual(call('-5+8'), 3)
-assertEqual(call('-5+8'), 3)
-assertEqual(call('-1 - -1'), 0)
-assertEqual(call('-sin(-pi/2)'), 1)
-assertEqual(call('-(-1)'), 1)
-assertEqual(call('-(-2 - -1)'), 1)
+  // bitwise shift
+  assertEqual(call('3 << 4'), 48)
+  assertEqual(call('99 >> 4'), 6)
+  assertEqual(call('3 << 4 << 2'), 192)
+  assertEqual(call('3 << (4 << 2)'), 196608)
+  assertEqual(call('3 << 4 + 1 << 2'), 384)
+  assertEqual(call('3 << 4 + 9 >> 2'), 6144)
 
-//consts
-assertEqual(call('pi + e'), Math.PI + Math.E)
+  // standard functions
+  //console.log(call('sin(2 pi)'),  call('2 sin(pi) cos(pi)'))
+  assertEqual(call('sqrt(81)'), 9)
+  //assertEqual(call('sqrt(-4)'), NaN)
 
-// floats
-assertEqual(call('12.95 + 3.10'), 16.05, ALMOST)
+  assertEqual(call('sin(2 pi)'),  call('2 sin(pi) cos(pi)'), ALMOST)
+  assertEqual(call('tan(3 pi)'),  call('sin(3 pi)/cos(3 pi)'), ALMOST)
+  assertEqual(call('ln(e^5)'), 5)
 
-// units
-assertEqual(call('10 cm').toString(), '10 cm')
-assertEqual(call('-10 cm').toString(), '-10 cm')
 
-assertEqual(call('3 cm + 2 cm').toString(), '5 cm')
-assertEqual(call('3 km + 2m + 1  mm').value, 3002.001, ALMOST)
+  // unary "+" and "-"
+  assertEqual(call('-5'), -5)
+  assertEqual(call('-5+8'), 3)
+  assertEqual(call('-5+8'), 3)
+  assertEqual(call('-1 - -1'), 0)
+  assertEqual(call('-sin(-pi/2)'), 1)
+  assertEqual(call('-(-1)'), 1)
+  assertEqual(call('-(-2 - -1)'), 1)
 
-assertEqual(call('3 km - 500 m').toString(), '2.5 km')
+  //consts
+  assertEqual(call('pi + e'), Math.PI + Math.E)
 
-assertEqual(call('8m / 2').toString(), '4 m')
-assertEqual(call('(5+3)km').toString(), '8 km')
+  // floats
+  assertEqual(call('12.95 + 3.10'), 16.05, ALMOST)
 
-try {
-  assertEqual(call('2 kg + 4 cm').toString(), 999)
-} catch(e) {
-  assertEqual(e.message, 'Units do not match')
+  // units
+  assertEqual(call('10 cm').toString(), '10 cm')
+  assertEqual(call('-10 cm').toString(), '-10 cm')
+
+  assertEqual(call('3 cm + 2 cm').toString(), '5 cm')
+  assertEqual(call('3 km + 2m + 1  mm').value, 3002.001, ALMOST)
+
+  assertEqual(call('3 km - 500 m').toString(), '2.5 km')
+
+  assertEqual(call('8m / 2').toString(), '4 m')
+  assertEqual(call('(5+3)km').toString(), '8 km')
+
+  try {
+    assertEqual(call('2 kg + 4 cm').toString(), 999)
+  } catch(e) {
+    assertEqual(e.message, 'Units do not match')
+  }
+
+  try {
+    assertEqual(call('2 fakeUnit'), 999)
+  } catch(e) {
+    assert(e.message.indexOf('invalid') !== -1)
+  }
+
+  try {
+    assertEqual(call('2 tonne * 4 gram '), 999)
+  } catch(e) {
+    assert(e.message.includes('invalid'))
+  }
+
+  assertEqual(call('4 kg  2').toString(), '8 kg')
+  assertEqual(call('4 kg (1 - 0.5) + 100g').toString(), '2.1 kg')
+
+
+  assertEqual(call('69 cm * 3 / 2 + 2km').toString(), '2.001035 km')
+
+
+  try {
+    assertEqual(call('2 kg ^ 2').toString(), 999)   // cannot exponent units
+  } catch(e) {
+    assert(e.message.includes('Unexpected'))
+  }
+
+  assertEqual(call('3(4kg - 2000 gram / 2) /2').toString(), '4.5 kg')
+
+  // negative units
+  assertEqual(call('-2 m - (-3m)').value, 1, ALMOST)
+
+
+  try {
+    assertEqual(call('2 kg << 2 '), 999)
+  } catch(e) {
+    assert(e.message.includes('Unexpected'))
+  }
+
+  try {
+    assertEqual(call('12 / 2kg '), 999)
+  } catch(e) {
+    assert(e.message.includes('invalid'))
+  }
+
+  assertEqual(call('(3+5) 2 kg * 2').value, 32)
+
+  // mixed subunits
+  assertEqual(String(call('1 meter 20 cm').toSI()), '1.2 m')
+  assertEqual(String(call('-1 meter 20 cm').toSI()), '-1.2 m')
+
+  assertEqual(String(call('1 meter 20 cm * 2').toSI()), '2.4 m')
+  assertEqual(String(call('1 meter 20 cm + 2m 50 cm * 3').toSI()), '8.7 m')
+
+  assertEqual(String(call('1 kg 300 gram / -2').toSI()), '-0.65 kg')
+
+  assertEqual(String(call('1 m 70 cm + 1 ft').toSI().value), 2.0048, ALMOST)
+
+  assertEqual(String(call('0.1km 11m 11 cm + 0.5 * 2 km 2 mm').toSI().value), 1111.111, ALMOST)
+
+  //money
+  assertEqual(call('10 USD').toString(), '10 USD')
+  assertEqual(call('10 usd').toString(), '10 USD')
+
+  assertEqual(call('10 Euro').toString(), '10 EUR')
+  assertEqual(call('€ 10').toString(), '10 EUR')
+  assertEqual(call('Eur10').toString(), '10 EUR')
+  assertEqual(call('eUro10').toString(), '10 EUR')
+
+  // different writing forms
+  assertEqual(call('12.34 ₴').toString(), '12.34 UAH')
+  assertEqual(call('12.34₴').toString(), '12.34 UAH')
+  assertEqual(call('₴12.34').toString(), '12.34 UAH')
+  assertEqual(call('₴ 12.34').toString(), '12.34 UAH')
+  assertEqual(call('uAh12.34').toString(), '12.34 UAH')
+  assertEqual(call('uAh 12.34').toString(), '12.34 UAH')
+  assertEqual(call('12.34uAh').toString(), '12.34 UAH')
+  assertEqual(call('12.34 uAh').toString(), '12.34 UAH')
+  assertEqual(call('₴ 12.34 uaH').toString(), '12.34 UAH')
+  assertEqual(call('₴12.34uaH').toString(), '12.34 UAH')
+
+
+  assertEqual(call('2.5 $').toString(), '2.5 USD')
+  assertEqual(call('$ 2.5').toString(), '2.5 USD')
+  assertEqual(call('2.5 ₴').toString(), '2.5 UAH')
+  assertEqual(call('₴ 2.5').toString(), '2.5 UAH')
+  assertEqual(call('UAH 2.5').toString(), '2.5 UAH')
+
+
+  assertEqual(call('-10 USD').toString(), '-10 USD')
+
+  assertEqual(call('3 USD + 2 USD').toString(), '5 USD')
+
+  assertEqual(call('$8 / 2').toString(), '4 USD')
+  assertEqual(call('(5+3)$').toString(), '8 USD')
+
+  assertEqual(call('-2.5 USD + $3.1 +(1/2)usd').toString(), '1.1 USD')
+
+  try {
+    assertEqual(call('2 kg + 4 USD'), 999)
+  } catch(e) {
+    assertEqual(e.message, 'Units do not match')
+  }
+
+  assertEqual(call('4 UAH  2').toString(), '8 UAH')
+
+
+  try {
+    assertEqual(call('2 GBP ^ 2'), 999)   // cannot exponent units
+  } catch(e) {
+    assert(e.message.includes('Unexpected'))
+  }
+
+  // negative units
+  assertEqual(call('-2 UAH - (-3UAH)').toString(), '1 UAH')
+
+
+  try {
+    assertEqual(call('2 UAH << 2 '), 999)
+  } catch(e) {
+    assert(e.message.includes('Unexpected'))
+  }
+
+  try {
+    assertEqual(call('12 / 2UAH '), 999)
+  } catch(e) {
+    assert(e.message.includes('invalid'))
+  }
+
+  assertEqual(call('(3+5) 2 Euro * 2').toString(), '32 EUR')
+
+  assertEqual(call('1 UAH * pi').toNumber(), 3.14, ALMOST)
+
+
+  // mixed currencies
+  assertEqual(call('1 USD + 1 TENDOLL').toNumber('USD'), 11)
+  assertEqual(call('1 TENDOLL + 1 USD').toNumber('USD'), 11)
+  assertEqual(call('1 ZUAH + 1 USD + 1 ZEUR').toNumber('ZUAH'), 1 + 28 + 28*1.1, ALMOST)
+  assertEqual(call('(1 USD)2 + 1 ZEUR').value, 1*2 + 1.1)
+  assertEqual(call('1 USD + 1 EUR').value, call('1 EUR + 1 USD').value, ALMOST)
+
+
+  // rates checks
+  //console.log('rcd:', rates['CAD'])
+  assertEqual(call('$1 CAD').toNumber('USD'), rates['CAD'])
+  assertEqual(call('$1 CAD + 1 EUR ').toNumber('USD'),
+              rates['CAD'] + rates['EUR'], ALMOST)
+
+
+  // implicit conversion: "number ± unit" treat as "unit ± unit"
+  assertEqual(call('3 USD + 2').toString(), '5 USD')
+  assertEqual(call('3 + 2 USD').toString(), '5 USD')
+  assertEqual(call('3 - 1 cad').toNumber('CAD'), 2, ALMOST)
+  assertEqual(call('3 CAD - 1').toNumber('CAD'), 2, ALMOST)
+
+
+  // units conversion
+  assertEqual(call('1 kg to gram').toString(), '1000 gram')
+  assertEqual(call('0.4 + 0.6 inch to cm').toString(), '2.54 cm')
+  assertEqual(call('4.5 kg to gram').toString(), '4500 gram')
+  assertEqual(call('3(4km - 2000 m / 2) /200 to dm').toString(), '450 dm')
+  assertEqual(call('1 yard into cm').toString(), '91.44 cm')
+  assertEqual(call('2 * 2 ft as mm').toString(), '1219.2 mm')
+  assertEqual(call('0 degC to K').toString(), '273.15 K')
+
+
+
+  // money conversion (used z-prefixes artifictial fixed-rate currencies for testing)
+  assertEqual(call('1 ZUSD to ZUAH').toString(), '28 ZUAH')
+  assertEqual(call('0.4 + 0.6 ZEUR in ZUSD').toString(), '1.1 ZUSD')
+  assertEqual(call('110 USD to ZEUR').toNumber('ZEUR'), 100, ALMOST)
+  assertEqual(call('56 ZUAH in ZUSD').toNumber('ZUSD'), 2, ALMOST)
+  assertEqual(call('56 ZUAH into ZUSD').toNumber('ZUSD'), 2, ALMOST)
+
+  // %: simple operations
+  assertEqual(call('10 %').toString(), '10 PERCENT')
+  assertEqual(call('3%+2').toString(), '5 PERCENT')  //implicit conversion
+  assertEqual(call('10% + 5%').toString(), '15 PERCENT')
+  assertEqual(call('-3%+5 %').toNumber('PERCENT'), 2, ALMOST)
+  assertEqual(call('7% / 2').toString(), '3.5 PERCENT')
+
+  // % operations (by sheet order)
+  assertEqual(call('2%+3%').toString(), '5 PERCENT')
+  assertEqual(call('2% - 3%').toString(), '-1 PERCENT')
+  assertEqual(call('2% + 5').toString(), '7 PERCENT')
+  assertEqual(call('200 + 3%'), 206)
+  assertEqual(call('200 - 3%'), 194)
+  assertEqual(call('2% - 5').toString(), '-3 PERCENT')
+  assertEqual(call('300% - 6').toString(), '294 PERCENT')
+
+  try {
+    assertEqual(call('6% + 3cm'), 999)
+  } catch(e) {
+    assert(e.message.includes('invalid'))
+  }
+
+  assertEqual(call('400 km + 5%').toString(), '420 km')
+
+  try {
+    assertEqual(call('7% + 3kg'), 999)
+  } catch(e) {
+    assert(e.message.includes('invalid'))
+  }
+
+  assertEqual(call('500 kg - 120%').toString(), '-100 kg')
+
+
+  // random complex operations with %
+  assertEqual(call('(3%+2%) (1 +1)').toString(), '10 PERCENT')
+
+  // TODO: mul& div with percents
+  assertEqual(call('200 * 10%'), 20)
+
+  assertEqual(call('200 / 5%'), 4000 )
+  // 
+  assertEqual(call('200% * 2').toString(), '400 PERCENT')
+  assertEqual(call('-100% * 3').toString(), '-300 PERCENT')
+
+  assertEqual(call('200kg * 10%').toString(), '20 kg')
+  assertEqual(call('200kg / 5%').toNumber('kg'), 4000)
+
+  // as a % of/on/off for numbers
+  assertEqual(call('24 as a % of 120').toString(), '20 PERCENT')
+  assertEqual(call('70 as a % on 20').toString(), '250 PERCENT')
+  assertEqual(call('20 as a % off 70').value, 28.57, ALMOST) // 20/0.7
+
+
+  // Tests from Specification
+  assertEqual(call('8 times 9'), 72)
+  assertEqual(call('1 meter 20 cm').toString(), '1.2 meter')
+  assertEqual(call('6(3)'), 18)
+  assertEqual(
+    call('$30 CAD + 5 USD - 7EUR').toNumber('USD'),
+    30 * rates['CAD'] + 5 - 7 * rates['EUR'], ALMOST)
+  assertEqual(call(`${1/rates['RUB']} roubles - 1 $`).toNumber('USD'), 0, ALMOST)
+  assertEqual(call('20% of 10$').toString(), '2 USD')
+  assertEqual(call('5% on $30').toString(), '31.5 USD')
+  assertEqual(call('6% off 40 EUR').toString(), '37.6 EUR')
+  assertEqual(call('50$ as a % of 100$').toString(), '50 PERCENT')
+  assertEqual(call('50$ as a % of 100$').toString(), '50 PERCENT')
+  assertEqual(call('50 kg as a % of 1 tonne').toString(), '5 PERCENT')
+  assertEqual(call('$70 as a % on $20').toString(), '250 PERCENT')
+  assertEqual(call('$20 as a % off $70').value, 28.57, ALMOST) // 20/0.7
+  assertEqual(call('5% of what is 6 EUR').toNumber('USD'), 0.3, ALMOST)
+  assertEqual(call('5% on what is 6 EUR').toNumber('EUR'), 6.3, ALMOST)
+  assertEqual(call('5% off what is 6 EUR').toNumber('EUR'), 5.7, ALMOST)
+
+  // Scales
+  assertEqual(call('4k'), 4000)
+  assertEqual(call('-1000 + 4.5k + 1000'), 4500)
+  assertEqual(call('1.5thousand'), 1500)
+  assertEqual(call('5M'), 5000000)
+  assertEqual(call('6 billion'), 6000000000)
+  assertEqual(call('1k-4M'), -3999000)
+  assertEqual(call('1000k - 1M'), 0)
+
+  assertEqual(call('2k K').toString(), '2000 K') // 2k Kelvins
+  assertEqual(call('$2k').toString(), '2000 USD')
+  assertEqual(call('2M eur').toNumber('EUR'), 2000000)
+
+  assertEqual(call('2k mm + 2m').toString(), '4 m')
+
+  assertEqual(call('$2.2k in ZEUR').toNumber('ZEUR'), 2000, ALMOST)
+
+  // assign variables
+  assertEqual(call('var1 = 2').value, 2)
+  assertEqual(call('var2 = 2 + 3').value, 5)
+  assertEqual(call('var2 = 2 * 10 kg').value.toString(), '20 kg')
+
+  console.log(1111, call('var4 = 2 + $4.4').value.toString(), 222)
+  assertEqual(call('var4 = 2 + $4.4').value.toString(), '6.4 USD')
+
+  try {
+    assertEqual(call('0wrongvar = 1 + 3').value, 999)
+  } catch(e) {
+    assert(e.message.includes('Unexpected'))
+  }
+
+  try {
+    assertEqual(call('sum = 1 + 3'), 999)
+  } catch(e) {
+    assert(e.message.includes('Empty'))
+  }
+
+  try {
+    assertEqual(call('USD = 2 + 5'), 999)
+  } catch(e) {
+    assert(e.message.includes('Unexpected'))
+  }
+
+
+  try {
+    assertEqual(call('kg = 4 + 9'), 999)
+  } catch(e) {
+    assert(e.message.includes('Empty'))
+  }
+
+  try {
+    assertEqual(call('K = 5 + 10'), 999)
+  } catch(e) {
+    assert(e.message.includes('Empty'))
+  }
+
+  assertEqual(call('var4 = 2 + $4.4').value.toString(), '6.4 USD')
+
+  // reuse number variables
+  assertEqual(call('varfive = 2 + 3').value, 5)
+  assertEqual(call('varfive + 4 '), 9)
+  assertEqual(call('varten = varfive * 2 ').value, 10)
+  assertEqual(call('varfifty = varfive * varten ').value, 50)
+
+  // reuse measure variables
+  assertEqual(call('five_cm = 2.5 * 2 cm').value.toString(), '5 cm')
+  assertEqual(call('five_cm').toNumber('cm'), 5)
+  assertEqual(call('five_cm + 4').toNumber('cm'), 9)
+  assertEqual(call('ten_cm = five_cm * 4 - 10').value.toString(), '10 cm')
+  assertEqual(call('six = 6').value, 6)
+  assertEqual(call('five_cm * six').toNumber('cm'), 30, ALMOST)
+
+  // 20 % of 300 kg with values
+  assertEqual(call('perc = 20 %').value.toString(), '20 PERCENT')
+  assertEqual(call('weight = 300 kg').value.toString(), '300 kg')
+  assertEqual(call('val = perc of weight').value.toNumber('kg'), 60, ALMOST)
+
+  // increase veriable
+  assertEqual(call('z = 20 km').value.toString(), '20 km')
+  assertEqual(call('z = z + 1 km').value.toString(), '21 km')
+
+  // combined assignments operations (+=)
+  assertEqual(call('var = 30$').value.toString(), '30 USD')
+  assertEqual(call('var += 5').value.toString(), '35 USD')
+  assertEqual(call('var *= 3').value.toString(), '105 USD')
+  assertEqual(call('var /= 3 + 2').value.toString(), '21 USD') // v = v / (3 + 2)
+
+  // variable tests from specification
+  assertEqual(call('v = $20').value.toString(), '20 USD')
+  assertEqual(call('v2 = 5%').value.toString(), '5 PERCENT')
+  assertEqual(call('v times 7 - v2').toString(), '133 USD')
+  assertEqual(call('v += 10').value.toString(), '30 USD')
+  assertEqual(call('v').toString(), '30 USD')
+
+
+  // 'prev' variable
+  try {
+    assertEqual(call('prev = 1 + 2'), 999)
+  } catch(e) {
+    assert(e.message.includes('Empty'))
+  }
+
+  assertEqual(call('30 ₴').toString(), '30 UAH')
+  assertEqual(call('prev').to('UAH').toString(), '30 UAH')
+
+  console.log('-------------------------------------')
+  assertEqual(call('v = 10 ₴ * 2').value.toString(), '20 UAH')
+  assertEqual(call('v = prev + 1').value.toString(), '21 UAH')
+  assertEqual(call('prev + prev').toNumber('UAH'), 42, ALMOST)
+
+  // test clearing variables
+  call('v = 1 + 1')
+  env.reset() //clearAllUserVariables()
+  try {
+    call('v')
+    assert(false, 'variable v is not cleared')
+  } catch(e) {
+    assert(e.message.includes('Unexpected'))
+  }
+
+
+  // testing prev of different types
+  call('v = 1')
+  call('30')
+  assertEqual(call('prev + v'), 31)
+
+  call('v = 40 km')
+  call('2')
+  assertEqual(call('v + prev').toString(), '42 km')
+
+  call('v = 5')
+  call('v *= 6 cm ')
+  assertEqual(call('prev').toString(), '30 cm')
+
+  // prev is cleared after error
+  call('v = 123')
+  try { assertEqual(call('zzzdsfads'), 999) } catch(e) { }
+  try { assertEqual(call('prev'), 999) } catch(e) {}
+
+  console.log('tests passed')
 }
-
-try {
-  assertEqual(call('2 fakeUnit'), 999)
-} catch(e) {
-  assert(e.message.indexOf('invalid') !== -1)
-}
-
-try {
-  assertEqual(call('2 tonne * 4 gram '), 999)
-} catch(e) {
-  assert(e.message.includes('invalid'))
-}
-
-assertEqual(call('4 kg  2').toString(), '8 kg')
-assertEqual(call('4 kg (1 - 0.5) + 100g').toString(), '2.1 kg')
-
-
-assertEqual(call('69 cm * 3 / 2 + 2km').toString(), '2.001035 km')
-
-
-try {
-  assertEqual(call('2 kg ^ 2').toString(), 999)   // cannot exponent units
-} catch(e) {
-  assert(e.message.includes('Unexpected'))
-}
-
-assertEqual(call('3(4kg - 2000 gram / 2) /2').toString(), '4.5 kg')
-
-// negative units
-assertEqual(call('-2 m - (-3m)').value, 1, ALMOST)
-
-
-try {
-  assertEqual(call('2 kg << 2 '), 999)
-} catch(e) {
-  assert(e.message.includes('Unexpected'))
-}
-
-try {
-  assertEqual(call('12 / 2kg '), 999)
-} catch(e) {
-  assert(e.message.includes('invalid'))
-}
-
-assertEqual(call('(3+5) 2 kg * 2').value, 32)
-
-// mixed subunits
-assertEqual(String(call('1 meter 20 cm').toSI()), '1.2 m')
-assertEqual(String(call('-1 meter 20 cm').toSI()), '-1.2 m')
-
-assertEqual(String(call('1 meter 20 cm * 2').toSI()), '2.4 m')
-assertEqual(String(call('1 meter 20 cm + 2m 50 cm * 3').toSI()), '8.7 m')
-
-assertEqual(String(call('1 kg 300 gram / -2').toSI()), '-0.65 kg')
-
-assertEqual(String(call('1 m 70 cm + 1 ft').toSI().value), 2.0048, ALMOST)
-
-assertEqual(String(call('0.1km 11m 11 cm + 0.5 * 2 km 2 mm').toSI().value), 1111.111, ALMOST)
-
-//money
-assertEqual(call('10 USD').toString(), '10 USD')
-assertEqual(call('10 usd').toString(), '10 USD')
-
-assertEqual(call('10 Euro').toString(), '10 EUR')
-assertEqual(call('€ 10').toString(), '10 EUR')
-assertEqual(call('Eur10').toString(), '10 EUR')
-assertEqual(call('eUro10').toString(), '10 EUR')
-
-// different writing forms
-assertEqual(call('12.34 ₴').toString(), '12.34 UAH')
-assertEqual(call('12.34₴').toString(), '12.34 UAH')
-assertEqual(call('₴12.34').toString(), '12.34 UAH')
-assertEqual(call('₴ 12.34').toString(), '12.34 UAH')
-assertEqual(call('uAh12.34').toString(), '12.34 UAH')
-assertEqual(call('uAh 12.34').toString(), '12.34 UAH')
-assertEqual(call('12.34uAh').toString(), '12.34 UAH')
-assertEqual(call('12.34 uAh').toString(), '12.34 UAH')
-assertEqual(call('₴ 12.34 uaH').toString(), '12.34 UAH')
-assertEqual(call('₴12.34uaH').toString(), '12.34 UAH')
-
-
-assertEqual(call('2.5 $').toString(), '2.5 USD')
-assertEqual(call('$ 2.5').toString(), '2.5 USD')
-assertEqual(call('2.5 ₴').toString(), '2.5 UAH')
-assertEqual(call('₴ 2.5').toString(), '2.5 UAH')
-assertEqual(call('UAH 2.5').toString(), '2.5 UAH')
-
-
-assertEqual(call('-10 USD').toString(), '-10 USD')
-
-assertEqual(call('3 USD + 2 USD').toString(), '5 USD')
-
-assertEqual(call('$8 / 2').toString(), '4 USD')
-assertEqual(call('(5+3)$').toString(), '8 USD')
-
-assertEqual(call('-2.5 USD + $3.1 +(1/2)usd').toString(), '1.1 USD')
-
-try {
-  assertEqual(call('2 kg + 4 USD'), 999)
-} catch(e) {
-  assertEqual(e.message, 'Units do not match')
-}
-
-assertEqual(call('4 UAH  2').toString(), '8 UAH')
-
-
-try {
-  assertEqual(call('2 GBP ^ 2'), 999)   // cannot exponent units
-} catch(e) {
-  assert(e.message.includes('Unexpected'))
-}
-
-// negative units
-assertEqual(call('-2 UAH - (-3UAH)').toString(), '1 UAH')
-
-
-try {
-  assertEqual(call('2 UAH << 2 '), 999)
-} catch(e) {
-  assert(e.message.includes('Unexpected'))
-}
-
-try {
-  assertEqual(call('12 / 2UAH '), 999)
-} catch(e) {
-  assert(e.message.includes('invalid'))
-}
-
-assertEqual(call('(3+5) 2 Euro * 2').toString(), '32 EUR')
-
-assertEqual(call('1 UAH * pi').toNumber(), 3.14, ALMOST)
-
-
-// mixed currencies
-assertEqual(call('1 USD + 1 TENDOLL').toNumber('USD'), 11)
-assertEqual(call('1 TENDOLL + 1 USD').toNumber('USD'), 11)
-assertEqual(call('1 ZUAH + 1 USD + 1 ZEUR').toNumber('ZUAH'), 1 + 28 + 28*1.1, ALMOST)
-assertEqual(call('(1 USD)2 + 1 ZEUR').value, 1*2 + 1.1)
-assertEqual(call('1 USD + 1 EUR').value, call('1 EUR + 1 USD').value, ALMOST)
-
-
-// rates checks
-//console.log('rcd:', rates['CAD'])
-assertEqual(call('$1 CAD').toNumber('USD'), rates['CAD'])
-assertEqual(call('$1 CAD + 1 EUR ').toNumber('USD'),
-            rates['CAD'] + rates['EUR'], ALMOST)
-
-
-// implicit conversion: "number ± unit" treat as "unit ± unit"
-assertEqual(call('3 USD + 2').toString(), '5 USD')
-assertEqual(call('3 + 2 USD').toString(), '5 USD')
-assertEqual(call('3 - 1 cad').toNumber('CAD'), 2, ALMOST)
-assertEqual(call('3 CAD - 1').toNumber('CAD'), 2, ALMOST)
-
-
-// units conversion
-assertEqual(call('1 kg to gram').toString(), '1000 gram')
-assertEqual(call('0.4 + 0.6 inch to cm').toString(), '2.54 cm')
-assertEqual(call('4.5 kg to gram').toString(), '4500 gram')
-assertEqual(call('3(4km - 2000 m / 2) /200 to dm').toString(), '450 dm')
-assertEqual(call('1 yard into cm').toString(), '91.44 cm')
-assertEqual(call('2 * 2 ft as mm').toString(), '1219.2 mm')
-assertEqual(call('0 degC to K').toString(), '273.15 K')
-
-
-
-// money conversion (used z-prefixes artifictial fixed-rate currencies for testing)
-assertEqual(call('1 ZUSD to ZUAH').toString(), '28 ZUAH')
-assertEqual(call('0.4 + 0.6 ZEUR in ZUSD').toString(), '1.1 ZUSD')
-assertEqual(call('110 USD to ZEUR').toNumber('ZEUR'), 100, ALMOST)
-assertEqual(call('56 ZUAH in ZUSD').toNumber('ZUSD'), 2, ALMOST)
-assertEqual(call('56 ZUAH into ZUSD').toNumber('ZUSD'), 2, ALMOST)
-
-// %: simple operations
-assertEqual(call('10 %').toString(), '10 PERCENT')
-assertEqual(call('3%+2').toString(), '5 PERCENT')  //implicit conversion
-assertEqual(call('10% + 5%').toString(), '15 PERCENT')
-assertEqual(call('-3%+5 %').toNumber('PERCENT'), 2, ALMOST)
-assertEqual(call('7% / 2').toString(), '3.5 PERCENT')
-
-// % operations (by sheet order)
-assertEqual(call('2%+3%').toString(), '5 PERCENT')
-assertEqual(call('2% - 3%').toString(), '-1 PERCENT')
-assertEqual(call('2% + 5').toString(), '7 PERCENT')
-assertEqual(call('200 + 3%'), 206)
-assertEqual(call('200 - 3%'), 194)
-assertEqual(call('2% - 5').toString(), '-3 PERCENT')
-assertEqual(call('300% - 6').toString(), '294 PERCENT')
-
-try {
-  assertEqual(call('6% + 3cm'), 999)
-} catch(e) {
-  assert(e.message.includes('invalid'))
-}
-
-assertEqual(call('400 km + 5%').toString(), '420 km')
-
-try {
-  assertEqual(call('7% + 3kg'), 999)
-} catch(e) {
-  assert(e.message.includes('invalid'))
-}
-
-assertEqual(call('500 kg - 120%').toString(), '-100 kg')
-
-
-// random complex operations with %
-assertEqual(call('(3%+2%) (1 +1)').toString(), '10 PERCENT')
-
-// TODO: mul& div with percents
-assertEqual(call('200 * 10%'), 20)
-
-assertEqual(call('200 / 5%'), 4000 )
-// 
-assertEqual(call('200% * 2').toString(), '400 PERCENT')
-assertEqual(call('-100% * 3').toString(), '-300 PERCENT')
-
-assertEqual(call('200kg * 10%').toString(), '20 kg')
-assertEqual(call('200kg / 5%').toNumber('kg'), 4000)
-
-// as a % of/on/off for numbers
-assertEqual(call('24 as a % of 120').toString(), '20 PERCENT')
-assertEqual(call('70 as a % on 20').toString(), '250 PERCENT')
-assertEqual(call('20 as a % off 70').value, 28.57, ALMOST) // 20/0.7
-
-
-// Tests from Specification
-assertEqual(call('8 times 9'), 72)
-assertEqual(call('1 meter 20 cm').toString(), '1.2 meter')
-assertEqual(call('6(3)'), 18)
-assertEqual(
-  call('$30 CAD + 5 USD - 7EUR').toNumber('USD'),
-  30 * rates['CAD'] + 5 - 7 * rates['EUR'], ALMOST)
-assertEqual(call(`${1/rates['RUB']} roubles - 1 $`).toNumber('USD'), 0, ALMOST)
-assertEqual(call('20% of 10$').toString(), '2 USD')
-assertEqual(call('5% on $30').toString(), '31.5 USD')
-assertEqual(call('6% off 40 EUR').toString(), '37.6 EUR')
-assertEqual(call('50$ as a % of 100$').toString(), '50 PERCENT')
-assertEqual(call('50$ as a % of 100$').toString(), '50 PERCENT')
-assertEqual(call('50 kg as a % of 1 tonne').toString(), '5 PERCENT')
-assertEqual(call('$70 as a % on $20').toString(), '250 PERCENT')
-assertEqual(call('$20 as a % off $70').value, 28.57, ALMOST) // 20/0.7
-assertEqual(call('5% of what is 6 EUR').toNumber('USD'), 0.3, ALMOST)
-assertEqual(call('5% on what is 6 EUR').toNumber('EUR'), 6.3, ALMOST)
-assertEqual(call('5% off what is 6 EUR').toNumber('EUR'), 5.7, ALMOST)
-
-// Scales
-assertEqual(call('4k'), 4000)
-assertEqual(call('-1000 + 4.5k + 1000'), 4500)
-assertEqual(call('1.5thousand'), 1500)
-assertEqual(call('5M'), 5000000)
-assertEqual(call('6 billion'), 6000000000)
-assertEqual(call('1k-4M'), -3999000)
-assertEqual(call('1000k - 1M'), 0)
-
-assertEqual(call('2k K').toString(), '2000 K') // 2k Kelvins
-assertEqual(call('$2k').toString(), '2000 USD')
-assertEqual(call('2M eur').toNumber('EUR'), 2000000)
-
-assertEqual(call('2k mm + 2m').toString(), '4 m')
-
-assertEqual(call('$2.2k in ZEUR').toNumber('ZEUR'), 2000, ALMOST)
-
-// assign variables
-assertEqual(call('var1 = 2').value, 2)
-assertEqual(call('var2 = 2 + 3').value, 5)
-assertEqual(call('var2 = 2 * 10 kg').value.toString(), '20 kg')
-
-console.log(1111, call('var4 = 2 + $4.4').value.toString(), 222)
-assertEqual(call('var4 = 2 + $4.4').value.toString(), '6.4 USD')
-
-try {
-  assertEqual(call('0wrongvar = 1 + 3').value, 999)
-} catch(e) {
-  assert(e.message.includes('Unexpected'))
-}
-
-try {
-  assertEqual(call('sum = 1 + 3'), 999)
-} catch(e) {
-  assert(e.message.includes('Empty'))
-}
-
-try {
-  assertEqual(call('USD = 2 + 5'), 999)
-} catch(e) {
-  assert(e.message.includes('Unexpected'))
-}
-
-
-try {
-  assertEqual(call('kg = 4 + 9'), 999)
-} catch(e) {
-  assert(e.message.includes('Empty'))
-}
-
-try {
-  assertEqual(call('K = 5 + 10'), 999)
-} catch(e) {
-  assert(e.message.includes('Empty'))
-}
-
-assertEqual(call('var4 = 2 + $4.4').value.toString(), '6.4 USD')
-
-// reuse number variables
-assertEqual(call('varfive = 2 + 3').value, 5)
-assertEqual(call('varfive + 4 '), 9)
-assertEqual(call('varten = varfive * 2 ').value, 10)
-assertEqual(call('varfifty = varfive * varten ').value, 50)
-
-// reuse measure variables
-assertEqual(call('five_cm = 2.5 * 2 cm').value.toString(), '5 cm')
-assertEqual(call('five_cm').toNumber('cm'), 5)
-assertEqual(call('five_cm + 4').toNumber('cm'), 9)
-assertEqual(call('ten_cm = five_cm * 4 - 10').value.toString(), '10 cm')
-assertEqual(call('six = 6').value, 6)
-assertEqual(call('five_cm * six').toNumber('cm'), 30, ALMOST)
-
-// 20 % of 300 kg with values
-assertEqual(call('perc = 20 %').value.toString(), '20 PERCENT')
-assertEqual(call('weight = 300 kg').value.toString(), '300 kg')
-assertEqual(call('val = perc of weight').value.toNumber('kg'), 60, ALMOST)
-
-// increase veriable
-assertEqual(call('z = 20 km').value.toString(), '20 km')
-assertEqual(call('z = z + 1 km').value.toString(), '21 km')
-
-// combined assignments operations (+=)
-assertEqual(call('var = 30$').value.toString(), '30 USD')
-assertEqual(call('var += 5').value.toString(), '35 USD')
-assertEqual(call('var *= 3').value.toString(), '105 USD')
-assertEqual(call('var /= 3 + 2').value.toString(), '21 USD') // v = v / (3 + 2)
-
-// variable tests from specification
-assertEqual(call('v = $20').value.toString(), '20 USD')
-assertEqual(call('v2 = 5%').value.toString(), '5 PERCENT')
-assertEqual(call('v times 7 - v2').toString(), '133 USD')
-assertEqual(call('v += 10').value.toString(), '30 USD')
-assertEqual(call('v').toString(), '30 USD')
-
-
-// 'prev' variable
-try {
-  assertEqual(call('prev = 1 + 2'), 999)
-} catch(e) {
-  assert(e.message.includes('Empty'))
-}
-
-assertEqual(call('30 ₴').toString(), '30 UAH')
-assertEqual(call('prev').toString(), '30 UAH')
-
-assertEqual(call('v = 10 ₴ * 2').value.toString(), '20 UAH')
-assertEqual(call('v = prev + 1').value.toString(), '21 UAH')
-assertEqual(call('prev + prev').toNumber('UAH'), 42, ALMOST)
-
-// test clearing variables
-call('v = 1 + 1')
-clearAllUserVariables()
-try {
-  call('v')
-  assert(false, 'variable v is not cleared')
-} catch(e) {
-  assert(e.message.includes('Unexpected'))
-}
-
-
-// testing prev of different types
-call('v = 1')
-call('30')
-assertEqual(call('prev + v'), 31)
-
-call('v = 40 km')
-call('2')
-assertEqual(call('v + prev').toString(), '42 km')
-
-call('v = 5')
-call('v *= 6 cm ')
-assertEqual(call('prev').toString(), '30 cm')
-
-// prev is cleared after error
-call('v = 123')
-try { call('zzzdsfads') } catch(e) {}
-assertEqual(call('prev '), 999)
-
-
-console.log('tests passed')
-
 
 function runmath(s) {
   let ans
@@ -751,4 +835,10 @@ if (readline.createInterface !== undefined) {
   });
 }
 
-module.exports = { runmath, prepareAndParse, prepareTxt, createParser }
+
+if (require.main === module) {
+  console.log('T400', this)
+  test()
+}
+
+module.exports = { runmath, prepareAndParse, prepareTxt, createParser, createCalcEnvironment }

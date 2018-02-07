@@ -62,6 +62,7 @@
       dot-notation: off,  // sometimes looks better: rates['USD']
       react/jsx-indent: off,    // sometimes incorrect for nested .maps functions
       object-curly-newline: off,   // seems not very critical
+      no-empty: ["error", { "allowEmptyCatch": true }],
     },
     "plugins": [
         "react",
