@@ -172,16 +172,26 @@ const calcEnvironmentProto = {
   results: [],
   userVariables: {},
 
-  test: 'XXX',
-
   sum() {
-    // TODO
-    return 'SUM HERE'
+    if (!this.results.length) return null
+
+    // use parser to sum items of different types
+    let sum
+    this.results.forEach( (r, i) => {
+      if (i === 0) {
+        sum = r
+      } else {
+        sum = this._callInternal(`${sum} + ${r}`)
+      }
+    })
+
+    return sum
   },
 
   average() {
-    // TODO
-    return 'AVERAGE HERE'
+    if (!this.results.length) return null
+
+    return this._callInternal(`${this.sum()} / ${this.results.length}`)
   },
 
   reset() {
@@ -190,28 +200,16 @@ const calcEnvironmentProto = {
     this.userVariables = {}
   },
 
-  calc(text, verbose=DEBUG) {
-    //nw this._CONTEXT = {zz: 'Z3'}
-    //console.log('TTT1', this)
+  _callInternal(text, verbose=DEBUG) {
+    const parser = prepareAndParse(text, verbose)
+    return parser.results[0]
+  },
 
-
-    // thiw nw
-    // const txt = prepareTxt(text)
-    // const parser = new nearley.Parser(grammar.ParserRules, grammar.ParserStart, { keepHistory: true, foo: 'bar'})
-    // const parserResults = parser.feed(txt)
-    // const result = parserResults.results[0]
-
-    // nw
-    // const parser = prepareAndParse.call(this, text, verbose)
-    // const result = parser.results[0]
-
-    //let context = createContext('calc2')
-
-    setContext(this)  // set parser context (to t
+  call(text, verbose=DEBUG) {
+    setContext(this)  // set parser context
     let result;
     try {
-      const parser = prepareAndParse(text, verbose)
-      result = parser.results[0]
+      result = this._callInternal(text, verbose)
     } catch(e) {
       console.warn('Error:', e)
       this.prev = `Error: ${e}`
@@ -224,12 +222,15 @@ const calcEnvironmentProto = {
     if (isUserVariable(result)) {
       // 113 temporarily set variable to variable INSTANCE (not value)
       this.userVariables[result.name] = result/*.value*/ //112 setUserVariable(result)
+
       this.prev = createUserVariable('prev', result.value)
+      this.results.push(result.value)
     } else {
       this.prev = createUserVariable('prev', result)
+      this.results.push(result)
     }
 
-    this.results.push(result)
+
     console.log('Context:', {p: this.prev, r: this.results, v: this.userVariables})
     return result
   }
@@ -257,11 +258,7 @@ function createCalcEnvironment() {
 function test() {
   const env = createCalcEnvironment()
 
-  function call(expr) {
-    //global._c = {a: 10}
-    //this._CONTEXT = {zz: 'Z2'}
-    return env.calc(expr)
-  }
+  const call = env.call.bind(env)
 
   // math expressions
   assertEqual(call('123'), 123)
@@ -751,7 +748,6 @@ function test() {
   assertEqual(call('30 ₴').toString(), '30 UAH')
   assertEqual(call('prev').to('UAH').toString(), '30 UAH')
 
-  console.log('-------------------------------------')
   assertEqual(call('v = 10 ₴ * 2').value.toString(), '20 UAH')
   assertEqual(call('v = prev + 1').value.toString(), '21 UAH')
   assertEqual(call('prev + prev').toNumber('UAH'), 42, ALMOST)
@@ -785,60 +781,111 @@ function test() {
   try { assertEqual(call('zzzdsfads'), 999) } catch(e) { }
   try { assertEqual(call('prev'), 999) } catch(e) {}
 
+  // test sum aggregation
+  env.reset()
+  env.call('v = 1')           // 1
+  env.call('10')              // 10
+  env.call('50 + 50')         // 100
+  env.call('prev * 10')       // 1000
+  assertEqual(env.sum(), 1111)
+
+  // test sum currency + number(auto-converted to currency)
+  env.reset()
+  env.call('v = 2 UAH')           // 2 UAH
+  env.call('20')              // 20 (converted to UAH)
+  env.call('100 + 100')         // 200 UAH
+  env.call('10 * prev')       // 2000 UAH
+  assertEqual(env.sum().to('UAH').toString(), '2222 UAH')
+
+  // test sum units
+  env.reset()
+  env.call('3.1 km')
+  env.call('5 m')
+  env.call('prev')
+  assertEqual(env.sum().to('m').toString(), '3110 m')
+
+  // prev test from specification
+  env.reset()
+  env.call('$20 ZUSD + 56 ZEUR')  // 20 + 56*1.1 = 81.6
+  env.call('prev - 5%')  // 77.52
+  assertEqual(env.results[0].to('ZUSD').value, 77.52, ALMOST)
+
+
+  // test sum percent
+  env.reset()
+  env.call('-100%')
+  env.call('30 %')
+  assertEqual(env.sum().to('PERCENT').toString(), '-70 PERCENT')
+
+  // test average
+  env.reset()
+  env.call('50 cm')
+  env.call('0.0015 km')
+  env.call('1 m')
+  assertEqual(env.average().to('m').toString(), '1 m')
+
+  console.log('---------------------')
+  // test incorrect sum
+  env.reset()
+  env.call('280 ZUAH')  // 10 ZUSD
+  env.call('5 ZUSD')    // 5 ZUSD
+  assertEqual(env.average().to('ZUSD').toString(), '7.5 ZUSD')
+  assertEqual(env.sum().to('ZUSD').toString(), '15 ZUSD')
+
   console.log('tests passed')
 }
 
-function runmath(s) {
-  let ans
-
-  try {
-    // let verbose = false      // hack for debugging
-    // if (s[0] === '!') {
-    //   s = s.slice(1)
-    //   verbose = true
-    // }
-
-    ans = call(s, DEBUG)
-
-    if (isUnit(ans)) {
-      console.log([ans.clone().toNumber(), ans.clone().format({notation: 'fixed', precision: 2}), ans.clone().toString()].join(' | '))
-    }
-
-    return ans
-  } catch(e) {
-    console.log('Error:', e)
-    if (e.offset) {
-      // Panic in style, by graphically pointing out the error location.
-      const out = new Array(PROMPT.length + e.offset + 1).join('-') + '^  Error.';
-      //                                    ^--- This comes from nearley!
-      return out;
-    }
-
-    return e
-  }
-}
-
-const readline = require('readline')
-
-if (readline.createInterface !== undefined) {
-  const rl = readline.createInterface(process.stdin, process.stdout);
-
-  rl.setPrompt(PROMPT);
-  rl.prompt();
-
-  rl.on('line', function(line) {
-    console.log(runmath(line));
-    rl.prompt();
-  }).on('close', function() {
-    //console.log('\nBye.');
-    process.exit(0);
-  });
-}
+// temporary console commented
+// function runmath(s) {
+//   let ans
+// 
+//   try {
+//     // let verbose = false      // hack for debugging
+//     // if (s[0] === '!') {
+//     //   s = s.slice(1)
+//     //   verbose = true
+//     // }
+// 
+//     ans = call(s, DEBUG)
+// 
+//     if (isUnit(ans)) {
+//       console.log([ans.clone().toNumber(), ans.clone().format({notation: 'fixed', precision: 2}), ans.clone().toString()].join(' | '))
+//     }
+// 
+//     return ans
+//   } catch(e) {
+//     console.log('Error:', e)
+//     if (e.offset) {
+//       // Panic in style, by graphically pointing out the error location.
+//       const out = new Array(PROMPT.length + e.offset + 1).join('-') + '^  Error.';
+//       //                                    ^--- This comes from nearley!
+//       return out;
+//     }
+// 
+//     return e
+//   }
+// }
+// 
+// const readline = require('readline')
+// 
+// if (readline.createInterface !== undefined) {
+//   const rl = readline.createInterface(process.stdin, process.stdout);
+// 
+//   rl.setPrompt(PROMPT);
+//   rl.prompt();
+// 
+//   rl.on('line', function(line) {
+//     console.log(runmath(line));
+//     rl.prompt();
+//   }).on('close', function() {
+//     //console.log('\nBye.');
+//     process.exit(0);
+//   });
+// }
 
 
 if (require.main === module) {
-  console.log('T400', this)
   test()
 }
 
-module.exports = { runmath, prepareAndParse, prepareTxt, createParser, createCalcEnvironment }
+module.exports = { prepareAndParse, prepareTxt, createParser, createCalcEnvironment }
