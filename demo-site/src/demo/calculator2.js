@@ -179,7 +179,7 @@ const calcEnvironmentProto = {
     let sum
     this.results.forEach( (r, i) => {
       if (i === 0) {
-        sum = r
+        sum = isUnit(r) ? r.clone() : r
       } else {
         sum = this._callInternal(`${sum} + ${r}`)
       }
@@ -677,7 +677,7 @@ function test() {
   try {
     assertEqual(call('sum = 1 + 3'), 999)
   } catch(e) {
-    assert(e.message.includes('Empty'))
+    assert(e.message.includes('invalid syntax'))  //Empty
   }
 
   try {
@@ -787,7 +787,7 @@ function test() {
   env.call('10')              // 10
   env.call('50 + 50')         // 100
   env.call('prev * 10')       // 1000
-  assertEqual(env.sum(), 1111)
+  assertEqual(env.call('sum'), 1111)
 
   // test sum currency + number(auto-converted to currency)
   env.reset()
@@ -795,42 +795,40 @@ function test() {
   env.call('20')              // 20 (converted to UAH)
   env.call('100 + 100')         // 200 UAH
   env.call('10 * prev')       // 2000 UAH
-  assertEqual(env.sum().to('UAH').toString(), '2222 UAH')
+  assertEqual(env.call('sum').to('UAH').toString(), '2222 UAH')
 
   // test sum units
   env.reset()
   env.call('3.1 km')
   env.call('5 m')
   env.call('prev')
-  assertEqual(env.sum().to('m').toString(), '3110 m')
+  assertEqual(env.call('sum').to('m').toString(), '3110 m')
 
   // prev test from specification
   env.reset()
   env.call('$20 ZUSD + 56 ZEUR')  // 20 + 56*1.1 = 81.6
   env.call('prev - 5%')  // 77.52
-  assertEqual(env.results[0].to('ZUSD').value, 77.52, ALMOST)
-
+  assertEqual(env.call('prev').to('ZUSD').value, 77.52, ALMOST)
 
   // test sum percent
   env.reset()
   env.call('-100%')
   env.call('30 %')
-  assertEqual(env.sum().to('PERCENT').toString(), '-70 PERCENT')
+  assertEqual(env.call('total').to('PERCENT').toString(), '-70 PERCENT')
 
   // test average
   env.reset()
   env.call('50 cm')
   env.call('0.0015 km')
   env.call('1 m')
-  assertEqual(env.average().to('m').toString(), '1 m')
+  assertEqual(env.call('average').to('m').toString(), '1 m')
 
-  console.log('---------------------')
   // test incorrect sum
   env.reset()
   env.call('280 ZUAH')  // 10 ZUSD
   env.call('5 ZUSD')    // 5 ZUSD
-  assertEqual(env.average().to('ZUSD').toString(), '7.5 ZUSD')
-  assertEqual(env.sum().to('ZUSD').toString(), '15 ZUSD')
+  assertEqual(env.call('avg').to('ZUSD').toString(), '7.5 ZUSD')
+
 
   console.log('tests passed')
 }

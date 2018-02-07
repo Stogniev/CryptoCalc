@@ -4,6 +4,10 @@
 function id(x) {return x[0]; }
 
   const math = require("mathjs");
+  const { isUnit, isPercent, isMeasure, isNumber, toUnit } = require('./common')
+  const { createUserVariable, validateVariableName, isUserVariable
+        } = require('./userVariables')
+  const { getContext } = require('./parserContext')
 
   function log() {
     if (process.env.DEBUG) {
@@ -11,35 +15,10 @@ function id(x) {return x[0]; }
     }
   }
 
-  const { isUnit, isPercent, isMeasure, isNumber, toUnit } = require('./common')
-  //const { confusingUnits } = require('./unitUtil')
-
-  ///console.log('TTTTT', this)
-
-  const { /*setUserVariable,*/ createUserVariable, /*userVariables,*/
-          validateVariableName, isUserVariable
-        } = require('./userVariables')
-
-  const { getContext } = require('./parserContext')
-
 var grammar = {
     Lexer: undefined,
     ParserRules: [
-    {"name": "main", "symbols": ["line"], "postprocess": function([line],l,rej) {
-          // NOTE: use arrow function to use external context (this)
-          //console.log('TTT2', /*this,*/ /*this.foo, global._c, this.zz,*/ getContext().test)
-        
-          //w const context = getContext()
-          //w context.test = 'YYY'
-        
-          return line
-        
-          /* let prev = isUserVariable(line) ? line.value : line
-          log('prev:', prev)
-          //setUserVariable('prev', prev)
-          return line */
-        }
-        },
+    {"name": "main", "symbols": ["line"], "postprocess": function([line],l,rej) { return line }},
     {"name": "line", "symbols": ["identifier", "_", {"literal":"="}, "EXPRESSION", "EOL"], "postprocess": 
         ([name,,,expression,],l,rej) => {
         
@@ -79,14 +58,16 @@ var grammar = {
     {"name": "AS_MEASURE", "symbols": ["AS_MEASURE", "plus", "MD_MEASURE"], "postprocess": (d,l,rej) => math.add(d[0], d[2])},
     {"name": "AS_MEASURE", "symbols": ["AS_MEASURE", "minus", "MD_MEASURE"], "postprocess": (d,l,rej) => math.subtract(d[0], d[2])},
     {"name": "AS_MEASURE", "symbols": ["AS_MEASURE", "plus", "MD_PERCENT"], "postprocess":  ([u,,p], l, rej) => {
-           log('m-%', u,p)
-           u.value = u.value + u.value/100*p.toNumber()
-           return u
+           log('m-%', u, p)
+           let r = u.clone()
+           r.value = u.value + u.value/100*p.toNumber()
+           return r
         } },
     {"name": "AS_MEASURE", "symbols": ["AS_MEASURE", "minus", "MD_PERCENT"], "postprocess":  ([u,,p], l, rej) => {
            log('m-%', u,p)
-           u.value = u.value - u.value/100*p.toNumber()
-           return u
+           let r = u.clone()
+           r.value = u.value - u.value/100*p.toNumber()
+           return r
         } },
     {"name": "AS_MEASURE", "symbols": ["MD_MEASURE"], "postprocess": id},
     {"name": "AS_PERCENT", "symbols": ["AS_PERCENT", "plus", "MD_PERCENT"], "postprocess": (d,l,rej) => math.add(d[0], d[2])},
@@ -161,6 +142,7 @@ var grammar = {
           let v
           if (name === 'prev') {
             v = getContext().prev
+        
           } else {
             v = getContext().userVariables[name]
           }
@@ -246,6 +228,8 @@ var grammar = {
     {"name": "FUNC", "symbols": ["FUNC$string$12", "P_NUM"], "postprocess": function(d) {return Math.log(d[1]); }},
     {"name": "FUNC$string$13", "symbols": [{"literal":"l"}, {"literal":"g"}], "postprocess": function joiner(d) {return d.join('');}},
     {"name": "FUNC", "symbols": ["FUNC$string$13", "P_NUM"], "postprocess": function(d) {return Math.log10(d[1]); }},
+    {"name": "FUNC", "symbols": ["sum"], "postprocess": (d) => getContext().sum()},
+    {"name": "FUNC", "symbols": ["average"], "postprocess": (d) => getContext().average()},
     {"name": "CONST$string$1", "symbols": [{"literal":"p"}, {"literal":"i"}], "postprocess": function joiner(d) {return d.join('');}},
     {"name": "CONST", "symbols": ["CONST$string$1"], "postprocess": function(d) {return Math.PI; }},
     {"name": "CONST", "symbols": [{"literal":"e"}], "postprocess": function(d) {return Math.E; }},
@@ -335,6 +319,14 @@ var grammar = {
     {"name": "convert", "symbols": ["__", "convert$string$3", "__"]},
     {"name": "convert$string$4", "symbols": [{"literal":"t"}, {"literal":"o"}], "postprocess": function joiner(d) {return d.join('');}},
     {"name": "convert", "symbols": ["__", "convert$string$4", "__"]},
+    {"name": "sum$string$1", "symbols": [{"literal":"s"}, {"literal":"u"}, {"literal":"m"}], "postprocess": function joiner(d) {return d.join('');}},
+    {"name": "sum", "symbols": ["_", "sum$string$1", "_"]},
+    {"name": "sum$string$2", "symbols": [{"literal":"t"}, {"literal":"o"}, {"literal":"t"}, {"literal":"a"}, {"literal":"l"}], "postprocess": function joiner(d) {return d.join('');}},
+    {"name": "sum", "symbols": ["_", "sum$string$2", "_"]},
+    {"name": "average$string$1", "symbols": [{"literal":"a"}, {"literal":"v"}, {"literal":"e"}, {"literal":"r"}, {"literal":"a"}, {"literal":"g"}, {"literal":"e"}], "postprocess": function joiner(d) {return d.join('');}},
+    {"name": "average", "symbols": ["_", "average$string$1", "_"]},
+    {"name": "average$string$2", "symbols": [{"literal":"a"}, {"literal":"v"}, {"literal":"g"}], "postprocess": function joiner(d) {return d.join('');}},
+    {"name": "average", "symbols": ["_", "average$string$2", "_"]},
     {"name": "_$ebnf$1", "symbols": []},
     {"name": "_$ebnf$1", "symbols": ["_$ebnf$1", /[\s]/], "postprocess": function arrpush(d) {return d[0].concat([d[1]]);}},
     {"name": "_", "symbols": ["_$ebnf$1"], "postprocess": function(d) {return null; }},

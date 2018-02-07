@@ -1,5 +1,9 @@
 @{%
   const math = require("mathjs");
+  const { isUnit, isPercent, isMeasure, isNumber, toUnit } = require('./common')
+  const { createUserVariable, validateVariableName, isUserVariable
+        } = require('./userVariables')
+  const { getContext } = require('./parserContext')
 
   function log() {
     if (process.env.DEBUG) {
@@ -7,34 +11,9 @@
     }
   }
 
-  const { isUnit, isPercent, isMeasure, isNumber, toUnit } = require('./common')
-  //const { confusingUnits } = require('./unitUtil')
-
-  ///console.log('TTTTT', this)
-
-  const { /*setUserVariable,*/ createUserVariable, /*userVariables,*/
-          validateVariableName, isUserVariable
-        } = require('./userVariables')
-
-  const { getContext } = require('./parserContext')
-
 %}
 
-main -> line {%  function([line],l,rej) {
-    // NOTE: use arrow function to use external context (this)
-    //console.log('TTT2', /*this,*/ /*this.foo, global._c, this.zz,*/ getContext().test)
-
-    //w const context = getContext()
-    //w context.test = 'YYY'
-
-    return line
-
-    /* let prev = isUserVariable(line) ? line.value : line
-    log('prev:', prev)
-    //setUserVariable('prev', prev)
-    return line */
-  }
-%}
+main -> line        {%  function([line],l,rej) { return line }   %}
 
 line ->
    identifier _ "=" EXPRESSION EOL {%
@@ -101,14 +80,16 @@ AS_MEASURE ->
  | AS_MEASURE minus MD_MEASURE {% (d,l,rej) => math.subtract(d[0], d[2]) %}
 
  | AS_MEASURE plus MD_PERCENT  {% ([u,,p], l, rej) => {
-      log('m-%', u,p)
-      u.value = u.value + u.value/100*p.toNumber()
-      return u
+      log('m-%', u, p)
+      let r = u.clone()
+      r.value = u.value + u.value/100*p.toNumber()
+      return r
    } %}
  | AS_MEASURE minus MD_PERCENT {% ([u,,p], l, rej) => {
       log('m-%', u,p)
-      u.value = u.value - u.value/100*p.toNumber()
-      return u
+      let r = u.clone()
+      r.value = u.value - u.value/100*p.toNumber()
+      return r
    } %}
  | MD_MEASURE                   {% id %}
 
@@ -212,6 +193,7 @@ VARIABLE ->
                       let v
                       if (name === 'prev') {
                         v = getContext().prev
+
                       } else {
                         v = getContext().userVariables[name]
                       }
@@ -223,6 +205,7 @@ VARIABLE ->
                       //log('VARIABLE', name, userVariables, r)
                       //112 return r
                     }  %}
+
 
 VARIABLE_UNIT ->
    VARIABLE    {% ([variable],l,rej) => isUnit(variable.value) ? variable.value : rej  %}
@@ -299,6 +282,8 @@ FUNC -> "sin" P_NUM  {% function(d) {return Math.sin(d[1]); } %}
    | "sqrt" P_NUM    {% function(d) {return Math.sqrt(d[1]); } %}
    | "ln" P_NUM      {% function(d) {return Math.log(d[1]); } %}
    | "lg" P_NUM      {% function(d) {return Math.log10(d[1]); } %}
+   | sum             {% (d) => getContext().sum() %}
+   | average         {% (d) => getContext().average() %}
 
 CONST -> "pi"          {% function(d) {return Math.PI; } %}
    | "e"           {% function(d) {return Math.E; } %}
@@ -384,6 +369,12 @@ convert -> __ "in" __
          | __ "into" __
          | __ "as" __
          | __ "to" __
+
+sum -> _ "sum" _
+     | _ "total" _
+
+average -> _ "average" _
+     | _ "avg" _
 
 
 # Whitespace. The important thing here is that the postprocessor
