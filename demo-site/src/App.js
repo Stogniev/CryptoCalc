@@ -268,11 +268,13 @@ class App extends React.Component {
   onInput = () => {
     const textholder = document.getElementById('textholder')
 
-    const inputs = textholder.innerText.split('\n')
+    const inputs = textholder.innerText.trim().split('\n')
 
     const env = createCalcEnvironment()
+
     inputs.forEach( input => env.call(input) )
 
+    console.log('env results:', env.expressions, env.results)
     // recreate expressions and results (keeping old if only succesful)
     const oldExpressions = this.state.expressions
     const oldResults = this.state.results
@@ -285,7 +287,7 @@ class App extends React.Component {
       const expression = formatAnswerExpression(env.expressions[i])
       const result = env.results[i]
 
-      if ( (expression !== '')
+      if ( (expression !== '')  // empty expressions just forget
            // broken because of EXPR changed (not something before for example)
            && (expression !== oldExpression)
            && isError(result)

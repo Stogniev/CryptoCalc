@@ -845,6 +845,12 @@ function test() {
   assertEqual(env.expressions[1], '2<EOL>')
   assertEqual(env.expressions.length, 2)
 
+  // operations with sum
+  env.reset()
+  env.call('1')
+  env.call('2')
+  assertEqual(env.call(' sum+1'), 4)
+
 
   console.log('tests passed')
 }

@@ -379,8 +379,8 @@ convert -> __ "in" __
          | __ "as" __
          | __ "to" __
 
-sum -> _ "sum" _
-     | _ "total" _
+sum -> "sum"
+     | "total"
 
 average -> _ "average" _
      | _ "avg" _
