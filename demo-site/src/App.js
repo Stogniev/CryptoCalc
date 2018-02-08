@@ -268,7 +268,7 @@ class App extends React.Component {
   onInput = () => {
     const textholder = document.getElementById('textholder')
 
-    const inputs = textholder.innerText.trim().split('\n')
+    const inputs = textholder.innerText.split('\n')
 
     const env = createCalcEnvironment()
 
@@ -301,7 +301,9 @@ class App extends React.Component {
           expressions.push(expression)
           results.push(result)
         } else {
-          // skip new error if old error too
+          // if both errors  (to sync with input)
+          expressions.push(null)
+          results.push(null)
         }
       }
     }
@@ -484,15 +486,17 @@ class App extends React.Component {
         <div className="container">
           <div className="autodraw">
             <div className="highlights">
-              { inputs.map( (inp, i) => <div key={`h_${i}`}>{this.renderHighlighted(inp)}</div>) }
+              { inputs.map( (inp, i) => <div key={`h_${i}_${inp}`}>{this.renderHighlighted(inp)}</div>) }
             </div>
             <div className="results" >
               { results.map( (r, i) => ([
-                (r && <span className="parsedExpression" key={`e_${i}`}>
-                  { this.renderHighlighted(expressions[i]) }
-                 </span>),
-                (r && <div className="res" key={`r_${i}`}>= {this.formatResult(r)}</div>),
-                <br key={`br_${i}`} />] ))}
+                  <span className="parsedExpression" key={`e_${i}_${r}`}>
+                    { r && this.renderHighlighted(expressions[i]) }
+                  </span>,
+                  <div className="res" key={`r_${i}_${r}`}>
+                  { r && ['=', this.formatResult(r)] }
+                  </div>,
+                  <br key={`br_${i}_${r}`} />] ))}
             </div>
           </div>
           <div id="textholder-keeper">
