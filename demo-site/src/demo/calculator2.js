@@ -165,6 +165,7 @@ function prepareAndParse(text, verbose=false) {
 
 const calcEnvironmentProto = {
   prev: null,
+  expressions: [],
   results: [],
   userVariables: {},
   //parser: createParser(),
@@ -186,7 +187,7 @@ const calcEnvironmentProto = {
         sum = isUnit(r) ? r.clone() : r      // init
       } else {
         const expression = `${sum} + (${r}) ` // brase second arg to sum negatives
-        const s = this.callInternal(expression)
+        const s = this.prepareAndCallInternal(expression, DEBUG)
         if (s instanceof Error) {
           console.warn(`Summarize error (${expression}):`, s)
           return null
@@ -195,42 +196,30 @@ const calcEnvironmentProto = {
       }
     }
 
-
-    // this.results.forEach( (r, i) => {
-    //   if (r instanceof Error) return null
-    // 
-    //   if (i === 0) {
-    //     sum = isUnit(r) ? r.clone() : r      // init
-    //   } else {
-    //     const expression = `${sum} + (${r}) ` // brase second arg to sum negatives
-    //     const s = this.callInternal(expression)
-    //     if (s instanceof Error) {
-    //       console.warn(`Summarize error (${expression}):`, s)
-    //       return null
-    //     }
-    //     sum = s
-    //   }
-    // })
-
     return sum
   },
 
   average() {
-    if (!this.results.length) return null
-    let sum = this.sum()
+    //if (!this.results.length) return null
+    const sum = this.sum()
     if (!sum) return null
-    return this.callInternal(`${this.sum()} / ${this.results.length}`)
+    return this.prepareAndCallInternal(`${this.sum()} / ${this.results.length}`)
   },
 
   reset() {
     this.prev = null
+    this.expressions = []
     this.results = []
     this.userVariables = {}
     //this.parser = createParser() //recreate parser (alt: save place stored somewhere)
   },
 
-  callInternal(text, verbose=DEBUG) {
-    const txt = prepareTxt(text, verbose)
+  prepareAndCallInternal(text, verbose=DEBUG) {
+    const prepared = prepareTxt(text, verbose)
+    return this.callInternal(prepared, verbose)
+  },
+
+  callInternal(txt, verbose=DEBUG) {
 
     const parser = createParser()
     //let info = parser.save()
@@ -277,7 +266,12 @@ const calcEnvironmentProto = {
     setContext(this)  // set parser context
     //let result;
     // try {
-    const result = this.callInternal(text, verbose)
+
+
+    const prepared = prepareTxt(text, verbose)
+    this.expressions.push(prepared)
+    const result = this.callInternal(prepared, verbose)
+
     // } catch(e) {
     //   console.warn('Error:', e)
     //   this.prev = `Error: ${e}`
@@ -331,7 +325,7 @@ function test() {
   // return
 
 
-  // math expressions
+  // math expr
   assertEqual(call('123'), 123)
   assertEqual(call('3 + 2'), 5)
 
@@ -403,7 +397,7 @@ function test() {
 
 
 
-  // word-described math expressions
+  // word-described math expr
   assertEqual(call('3 + 2'), 5)
 
   assertEqual(call('1 and 2 multiplied by 3'), 7)
@@ -819,6 +813,7 @@ function test() {
   env.call('1 m')
   assertEqual(env.call('average').to('m').toString(), '1 m')
 
+
   // test incorrect sum
   env.reset()
   env.call('280 ZUAH')  // 10 ZUSD
@@ -839,6 +834,13 @@ function test() {
   env.call('3')
   assertEqual(env.call('avg'), null)
 
+  //internal test: storing expressions
+  env.reset()
+  env.call('1')
+  env.call('2')
+  assertEqual(env.expressions[0], '1<EOL>')
+  assertEqual(env.expressions[1], '2<EOL>')
+  assertEqual(env.expressions.length, 2)
 
 
   console.log('tests passed')
