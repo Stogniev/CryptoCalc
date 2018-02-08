@@ -528,16 +528,18 @@ Implemented:
   - money and units scales
   - multiline input
   - paste from clipboard
-  - user variables (NEW)
+  - user variables
+  - process part of line until error
+  - prev variable (NEW)
+  - sum (NEW)
+  - average (NEW)
 
-Not implemented yet:
-  - prev variable
+ToDo list:
   - refreshing currency rates
   - pixel-perfect markup
   - top menu
   - summarizes, average
   - expression and answer visual formatting
-  - process part of line until error
   - result formatting
   - other clipboard operations
 
@@ -857,6 +859,18 @@ v2 = 5%
 v times 7 - v2
 v += 10
 v
+
+10$
+15$
+sum
+
+10$
+20
+average
+
+1+1 
+prev + 2
+
 
 `
 

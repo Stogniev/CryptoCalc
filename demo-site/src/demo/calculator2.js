@@ -852,6 +852,10 @@ function test() {
   assertEqual(env.call(' sum+1'), 4)
 
 
+  // env.reset()
+  // console.log(env.call('10  + 20 uah'))
+  // //assertEqual(env.call(' sum+1'), 4)
+
   console.log('tests passed')
 }
 
