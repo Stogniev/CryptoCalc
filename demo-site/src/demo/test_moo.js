@@ -20,7 +20,7 @@ let currSymbolsList = Object.keys(currencies.symbolToCode).map(escapeStringRegex
 currSymbolsList = currSymbolsList.concat( currSymbolsList.map(x => x.toLocaleLowerCase()) )
 const currSymbols = currSymbolsList.join('|')
 
-console.log('currSymbols', currSymbols)
+//console.log('currSymbols', currSymbols)
 
 // highlightGrammar entered by user OR from prepareTxt (BOTH)
 const highlightGrammar = {
@@ -85,7 +85,7 @@ function tokenize(text) {
   highlightLexer.reset(text)
 
   for (let item of highlightLexer) {
-    console.log('-', item.value)
+    //console.log('-', item.value)
     r.push(`${item.value}:${item.type}`)
   }
 
@@ -114,7 +114,7 @@ function tokenize(text) {
 function fmt(text) {
   const tokens = tokenize(text)
   //console.log('tokens:', tokens)
-  console.log('R:', text, '\n ', tokens)
+  //console.log('R:', text, '\n ', tokens)
 }
 
 if (require.main === module) {

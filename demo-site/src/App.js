@@ -6,11 +6,11 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 import math from 'mathjs'
-import { prepareAndParse, createParser, prepareTxt } from './demo/calculator2'
-import { formatAnswerExpression, isUnit } from './demo/common'
+import { prepareAndParse, createCalcEnvironment } from './demo/calculator2'
+import { formatAnswerExpression, isUnit, isError } from './demo/common'
 import { isUserVariable } from './demo/userVariables'
 
-import { clearAllUserVariables } from './demo/userVariables'
+//import { clearAllUserVariables } from './demo/userVariables'
 
 
 import Helmet from 'react-helmet'
@@ -112,6 +112,8 @@ class App extends React.Component {
   }
 
   formatResult = (result) => {
+    if (result instanceof Error) return ''
+
     if (isUnit(result)) {
       //console.log('redult.toNumber:', result.clone().toNumber())
       //console.log('result:', result.clone())
@@ -119,9 +121,7 @@ class App extends React.Component {
       return parseFloat(r.toNumber().toFixed(2)) + ' ' + r.formatUnits()
     }
 
-    if (isUserVariable(result)) {
-      return result.value
-    }
+    if (isUserVariable(result)) return result.value
 
     return result
   }
@@ -268,57 +268,44 @@ class App extends React.Component {
   onInput = () => {
     const textholder = document.getElementById('textholder')
 
-    //
-    //     // trick to clear all formatting (after paste formatted html from clipboard)
-    //     // (NOTE: alternativelly would be using textarea instead of contenteditable)
-    //     if (textholder.innerText != textholder.innerHTML) {
-    //       textholder.innerText = textholder.innerText
-    //     }
-    //
-
-    clearAllUserVariables()
-
     const inputs = textholder.innerText.split('\n')
 
-    const results = []
-    const expressions = []
+    const env = createCalcEnvironment()
+    inputs.forEach( input => env.call(input) )
 
-    const parser = createParser()
-    inputs.forEach(
-      input => {
-        console.log('p&p', input)
-        const info = parser.save()
-        const prepared = prepareTxt(input)
-        const formattedExpression = formatAnswerExpression(prepared)
-        expressions.push(formattedExpression)
-        let error = null
-        try {
-          parser.feed(prepared)
-          if (parser.results.length === 0) {
-            throw Error(`Empty result for "${formattedExpression}"`)
-          }
-          if (parser.results.length > 1) {
-            throw Error(`Multiple result for "${formattedExpression}": ${parser.results}`)
-          }
-        } catch(e) {
-          console.warn('Error:', e)
-          //expressions.push(null)
-          results.push(null)
-          error = e
-        } finally {
-          if (!error) {
-            if (parser.results.length === 1) {
-              //expressions.push(formattedExpression)
-              results.push(parser.results[0])
-            }
-          }
-          parser.restore(info)
+    // recreate expressions and results (keeping old if only succesful)
+    const oldExpressions = this.state.expressions
+    const oldResults = this.state.results
+
+    const expressions = []
+    const results = []
+    for (const i in env.expressions) {
+      const oldExpression = (i < oldExpressions.length) && oldExpressions[i]
+      const oldResult = (i < oldResults.length) && oldResults[i]
+      const expression = formatAnswerExpression(env.expressions[i])
+      const result = env.results[i]
+
+      if ( (expression !== '')
+           // broken because of EXPR changed (not something before for example)
+           && (expression !== oldExpression)
+           && isError(result)
+           && oldResult
+           && !isError(oldResult) ) {
+        // keep old succesful expression & result if expression is changed to broken
+        expressions.push(oldExpression)
+        results.push(oldResult)
+      } else {
+        if (!isError(result)) {
+          expressions.push(expression)
+          results.push(result)
+        } else {
+          // skip new error if old error too
         }
       }
-    )
+    }
+    //const expressions = env.expressions.map( e => formatAnswerExpression(e) )
+    //const results = env.results
 
-    console.log('Inputs: ', inputs)
-    console.log('Results: ', results)
     this.setState( {inputs, expressions, results, placeholderInput: false} )
   }
 
@@ -495,15 +482,15 @@ class App extends React.Component {
         <div className="container">
           <div className="autodraw">
             <div className="highlights">
-              { inputs.map( (inp, i) => <div key={`h_${inp}`}>{this.renderHighlighted(inp)}</div>) }
+              { inputs.map( (inp, i) => <div key={`h_${i}`}>{this.renderHighlighted(inp)}</div>) }
             </div>
             <div className="results" >
               { results.map( (r, i) => ([
-                <span className="parsedExpression" key={`e_${r}`}>
+                (r && <span className="parsedExpression" key={`e_${i}`}>
                   { this.renderHighlighted(expressions[i]) }
-                </span>,
-                r && <div className="res" key={`r_${r}`}>= {this.formatResult(r)}</div>,
-                <br key={`br_${r}`} />] ))}
+                 </span>),
+                (r && <div className="res" key={`r_${i}`}>= {this.formatResult(r)}</div>),
+                <br key={`br_${i}`} />] ))}
             </div>
           </div>
           <div id="textholder-keeper">

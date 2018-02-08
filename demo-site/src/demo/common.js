@@ -49,6 +49,9 @@ function isNumber(x) {
   return typeof(x) === 'number'
 }
 
+function isError(x) {
+  return x instanceof Error
+}
 
 // // for human
 // function formatAnswerExpression(answer) {
@@ -105,5 +108,5 @@ function formatAnswerExpression(text) {
 
 const specVariables = ['sum', 'total', 'average', 'avg', 'prev']
 
-module.exports = { getUnitName, isUnit, isPercent, isMeasure, isNumber, toUnit, lexemSeparator, scales, formatAnswerExpression, specVariables }
+module.exports = { getUnitName, isUnit, isPercent, isMeasure, isNumber, toUnit, lexemSeparator, scales, formatAnswerExpression, specVariables, isError }
 

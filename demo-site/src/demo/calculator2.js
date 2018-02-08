@@ -299,11 +299,14 @@ const calcEnvironmentProto = {
 }
 
 function createCalcEnvironment() {
-  return Object.create(
+  //console.log('ccE', calcEnvironmentProto)
+  const r = Object.create(
     calcEnvironmentProto,
-    // {prev: { /*value: 'Carl',*/ writable: true, enumerable: true }},
+    // {prev: { value: 'Carl', writable: true, enumerable: true }},
     // {results: { /*value: 'Carl',*/ writable: true, enumerable: true }},
   )
+  r.reset()  // clone proto object properties (to avoid prototype's modifications)
+  return r
 }
 
 
