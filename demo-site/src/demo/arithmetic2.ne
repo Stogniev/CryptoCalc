@@ -1,8 +1,7 @@
 @{%
   const math = require("mathjs");
   const { isUnit, isPercent, isMeasure, isNumber, toUnit } = require('./common')
-  const { createUserVariable, validateVariableName, isUserVariable
-        } = require('./userVariables')
+  const { createUserVariable, validateVariableName } = require('./userVariables')
   const { getContext } = require('./parserContext')
 
   function log() {
@@ -282,8 +281,18 @@ FUNC -> "sin" P_NUM  {% function(d) {return Math.sin(d[1]); } %}
    | "sqrt" P_NUM    {% function(d) {return Math.sqrt(d[1]); } %}
    | "ln" P_NUM      {% function(d) {return Math.log(d[1]); } %}
    | "lg" P_NUM      {% function(d) {return Math.log10(d[1]); } %}
-   | sum             {% (d) => getContext().sum() %}
-   | average         {% (d) => getContext().average() %}
+   | sum             {% (d, l, rej) => {
+                          return getContext().sum()
+                          //const r = getContext().sum();
+                          //if (r === null) return rej
+                          //return r
+                        } %}
+   | average         {% (d, l, rej) => {
+                          return getContext().average()
+                          //const r = getContext().average()
+                          //if (r === null) return rej
+                          //return r
+                        } %}
 
 CONST -> "pi"          {% function(d) {return Math.PI; } %}
    | "e"           {% function(d) {return Math.E; } %}

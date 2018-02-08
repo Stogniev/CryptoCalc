@@ -1,5 +1,4 @@
 // This is an example of how to use a nearley-made grammar.
-const PROMPT = '> '
 const nearley = require('nearley')
 const grammar = require('./grammar2.js')
 const assert = require('assert')
@@ -15,7 +14,7 @@ const { UnitNames, UnitPrefixes } = require('./unitUtil')
 
 const { /*clearAllUserVariables,*/ isUserVariable, createUserVariable } = require('./userVariables')
 const { scales, isUnit, lexemSeparator } = require('./common')
-const { getContext, setContext } = require('./parserContext')
+const { setContext } = require('./parserContext')
 
 const ALMOST=true
 
@@ -130,9 +129,6 @@ function prepareTxt(text, verbose=false) {
   return txt
 }
 
-//grammar.ParserRules[0]._contextHack = {aa: 'bb'}
-//console.log('TT0', grammar.ParserRules)
-
 const createParser = () => new nearley.Parser(grammar.ParserRules, grammar.ParserStart, { keepHistory: true, foo: 'bar'})
 
 // TODO: refactor with call
@@ -171,53 +167,125 @@ const calcEnvironmentProto = {
   prev: null,
   results: [],
   userVariables: {},
+  //parser: createParser(),
+  //parserStartSavePlace: null,
+  //parserSave() { this.parserInfo = this.parser.save() },
+  //parserRestore() { this.parser.restore(this.parserInfo) },
 
   sum() {
+    console.log('Summarizing:', this.results)
     if (!this.results.length) return null
 
     // use parser to sum items of different types
     let sum
-    this.results.forEach( (r, i) => {
+
+    for (let [i, r] of this.results.entries()) {
+      if (r instanceof Error) return null
+
       if (i === 0) {
-        sum = isUnit(r) ? r.clone() : r
+        sum = isUnit(r) ? r.clone() : r      // init
       } else {
-        sum = this._callInternal(`${sum} + ${r}`)
+        const expression = `${sum} + (${r}) ` // brase second arg to sum negatives
+        const s = this.callInternal(expression)
+        if (s instanceof Error) {
+          console.warn(`Summarize error (${expression}):`, s)
+          return null
+        }
+        sum = s
       }
-    })
+    }
+
+
+    // this.results.forEach( (r, i) => {
+    //   if (r instanceof Error) return null
+    // 
+    //   if (i === 0) {
+    //     sum = isUnit(r) ? r.clone() : r      // init
+    //   } else {
+    //     const expression = `${sum} + (${r}) ` // brase second arg to sum negatives
+    //     const s = this.callInternal(expression)
+    //     if (s instanceof Error) {
+    //       console.warn(`Summarize error (${expression}):`, s)
+    //       return null
+    //     }
+    //     sum = s
+    //   }
+    // })
 
     return sum
   },
 
   average() {
     if (!this.results.length) return null
-
-    return this._callInternal(`${this.sum()} / ${this.results.length}`)
+    let sum = this.sum()
+    if (!sum) return null
+    return this.callInternal(`${this.sum()} / ${this.results.length}`)
   },
 
   reset() {
     this.prev = null
     this.results = []
     this.userVariables = {}
+    //this.parser = createParser() //recreate parser (alt: save place stored somewhere)
   },
 
-  _callInternal(text, verbose=DEBUG) {
-    const parser = prepareAndParse(text, verbose)
+  callInternal(text, verbose=DEBUG) {
+    const txt = prepareTxt(text, verbose)
+
+    const parser = createParser()
+    //let info = parser.save()
+    try {
+      //const parser = createParser()
+      parser.feed(txt);
+
+      if (parser.results.length > 1) {
+        console.warn(`Multiple result for "${txt}": ${parser.results}`)
+        throw new Error('multiresults')
+      }
+
+      if (parser.results.length === 0) {
+        throw new Error(`Empty result for "${txt}"`)
+      }
+
+      if (verbose) {
+        console.log(txt, '-c->', parser.results)
+      }
+      //return parser
+    } catch(e) {
+      //parser.restore(info)
+      if (verbose) {
+        console.log(`"${txt}" -E-> `, e)
+      }
+      //exp: 115  throw e
+      return e
+    }
+
     return parser.results[0]
   },
 
+  // parserSave() {
+  //   return this.parser.save()
+  //   //this.parserSavePlace = this.parser.save()
+  //   //return this.parserInfo
+  // },
+  // 
+  // parserRestore(info) {
+  //   this.parser.restore(info)  //this.parserSavePlace
+  // },
+
   call(text, verbose=DEBUG) {
     setContext(this)  // set parser context
-    let result;
-    try {
-      result = this._callInternal(text, verbose)
-    } catch(e) {
-      console.warn('Error:', e)
-      this.prev = `Error: ${e}`
-      this.results.push(`Error: ${e}`)
-      throw e
-    }
+    //let result;
+    // try {
+    const result = this.callInternal(text, verbose)
+    // } catch(e) {
+    //   console.warn('Error:', e)
+    //   this.prev = `Error: ${e}`
+    //   this.results.push(`Error: ${e}`)
+    //   throw e
+    // }
 
-    console.log('R:', result)
+    //console.log('R:', result)
 
     if (isUserVariable(result)) {
       // 113 temporarily set variable to variable INSTANCE (not value)
@@ -229,9 +297,9 @@ const calcEnvironmentProto = {
       this.prev = createUserVariable('prev', result)
       this.results.push(result)
     }
+    //116this.prev = createUserVariable('prev', result)
 
-
-    console.log('Context:', {p: this.prev, r: this.results, v: this.userVariables})
+    //console.log('Context:', {prev: this.prev, results: this.results, variables: this.userVariables})
     return result
   }
 }
@@ -246,11 +314,6 @@ function createCalcEnvironment() {
 
 
 
-// mini-sandbox
-//?assertEqual(call('(100 + 10%)4%/2'), '10 PERCENT')  //implicit conversion
-//console.log(formatAnswerExpression('100 USD; asapercentof 200 USD;'))
-//assertEqual(call('12 as a % of 120'), '10 PERCENT')
-
 
 //return
 
@@ -259,6 +322,14 @@ function test() {
   const env = createCalcEnvironment()
 
   const call = env.call.bind(env)
+
+  //mini-sandbox
+  // assertEqual(call('123'), 123)
+  // call('asdf')
+  // 
+  // console.log(call('sum = 1 + 3'))
+  // return
+
 
   // math expressions
   assertEqual(call('123'), 123)
@@ -392,23 +463,11 @@ function test() {
   assertEqual(call('8m / 2').toString(), '4 m')
   assertEqual(call('(5+3)km').toString(), '8 km')
 
-  try {
-    assertEqual(call('2 kg + 4 cm').toString(), 999)
-  } catch(e) {
-    assertEqual(e.message, 'Units do not match')
-  }
 
-  try {
-    assertEqual(call('2 fakeUnit'), 999)
-  } catch(e) {
-    assert(e.message.indexOf('invalid') !== -1)
-  }
+  assertEqual(call('2 kg + 4 cm').message, 'Units do not match')
+  assert(call('2 fakeUnit').message.includes('invalid'))
 
-  try {
-    assertEqual(call('2 tonne * 4 gram '), 999)
-  } catch(e) {
-    assert(e.message.includes('invalid'))
-  }
+  assert(call('2 tonne * 4 gram ').message.includes('invalid'))
 
   assertEqual(call('4 kg  2').toString(), '8 kg')
   assertEqual(call('4 kg (1 - 0.5) + 100g').toString(), '2.1 kg')
@@ -417,11 +476,7 @@ function test() {
   assertEqual(call('69 cm * 3 / 2 + 2km').toString(), '2.001035 km')
 
 
-  try {
-    assertEqual(call('2 kg ^ 2').toString(), 999)   // cannot exponent units
-  } catch(e) {
-    assert(e.message.includes('Unexpected'))
-  }
+  assert(call('2 kg ^ 2').message.includes('Unexpected'))
 
   assertEqual(call('3(4kg - 2000 gram / 2) /2').toString(), '4.5 kg')
 
@@ -429,17 +484,9 @@ function test() {
   assertEqual(call('-2 m - (-3m)').value, 1, ALMOST)
 
 
-  try {
-    assertEqual(call('2 kg << 2 '), 999)
-  } catch(e) {
-    assert(e.message.includes('Unexpected'))
-  }
+  assert(call('2 kg << 2 ').message.includes('Unexpected'))
 
-  try {
-    assertEqual(call('12 / 2kg '), 999)
-  } catch(e) {
-    assert(e.message.includes('invalid'))
-  }
+  assert(call('12 / 2kg ').message.includes('invalid'))
 
   assertEqual(call('(3+5) 2 kg * 2').value, 32)
 
@@ -494,36 +541,21 @@ function test() {
 
   assertEqual(call('-2.5 USD + $3.1 +(1/2)usd').toString(), '1.1 USD')
 
-  try {
-    assertEqual(call('2 kg + 4 USD'), 999)
-  } catch(e) {
-    assertEqual(e.message, 'Units do not match')
-  }
+  assertEqual(call('2 kg + 4 USD').message, 'Units do not match')
 
   assertEqual(call('4 UAH  2').toString(), '8 UAH')
 
 
-  try {
-    assertEqual(call('2 GBP ^ 2'), 999)   // cannot exponent units
-  } catch(e) {
-    assert(e.message.includes('Unexpected'))
-  }
+
+  assert(call('2 GBP ^ 2').message.includes('Unexpected'))
 
   // negative units
   assertEqual(call('-2 UAH - (-3UAH)').toString(), '1 UAH')
 
 
-  try {
-    assertEqual(call('2 UAH << 2 '), 999)
-  } catch(e) {
-    assert(e.message.includes('Unexpected'))
-  }
+  assert(call('2 UAH << 2 ').message.includes('Unexpected'))
 
-  try {
-    assertEqual(call('12 / 2UAH '), 999)
-  } catch(e) {
-    assert(e.message.includes('invalid'))
-  }
+  assert(call('12 / 2UAH ').message.includes('invalid'))
 
   assertEqual(call('(3+5) 2 Euro * 2').toString(), '32 EUR')
 
@@ -586,19 +618,11 @@ function test() {
   assertEqual(call('2% - 5').toString(), '-3 PERCENT')
   assertEqual(call('300% - 6').toString(), '294 PERCENT')
 
-  try {
-    assertEqual(call('6% + 3cm'), 999)
-  } catch(e) {
-    assert(e.message.includes('invalid'))
-  }
+  assert(call('6% + 3cm').message.includes('invalid'))
 
   assertEqual(call('400 km + 5%').toString(), '420 km')
 
-  try {
-    assertEqual(call('7% + 3kg'), 999)
-  } catch(e) {
-    assert(e.message.includes('invalid'))
-  }
+  assert(call('7% + 3kg').message.includes('invalid'))
 
   assertEqual(call('500 kg - 120%').toString(), '-100 kg')
 
@@ -660,46 +684,27 @@ function test() {
 
   assertEqual(call('$2.2k in ZEUR').toNumber('ZEUR'), 2000, ALMOST)
 
+
   // assign variables
   assertEqual(call('var1 = 2').value, 2)
   assertEqual(call('var2 = 2 + 3').value, 5)
   assertEqual(call('var2 = 2 * 10 kg').value.toString(), '20 kg')
 
-  console.log(1111, call('var4 = 2 + $4.4').value.toString(), 222)
+  //console.log(1111, call('var4 = 2 + $4.4').value.toString(), 222)
   assertEqual(call('var4 = 2 + $4.4').value.toString(), '6.4 USD')
 
-  try {
-    assertEqual(call('0wrongvar = 1 + 3').value, 999)
-  } catch(e) {
-    assert(e.message.includes('Unexpected'))
-  }
+  assert(call('0wrongvar = 1 + 3').message.includes('Unexpected'))
 
-  try {
-    assertEqual(call('sum = 1 + 3'), 999)
-  } catch(e) {
-    assert(e.message.includes('invalid syntax'))  //Empty
-  }
+  assert(call('sum = 1 + 3').message.includes('Empty'))
 
-  try {
-    assertEqual(call('USD = 2 + 5'), 999)
-  } catch(e) {
-    assert(e.message.includes('Unexpected'))
-  }
+  assert(call('USD = 2 + 5').message.includes('Unexpected'))
 
+  assert(call('kg = 4 + 9').message.includes('Empty'))
 
-  try {
-    assertEqual(call('kg = 4 + 9'), 999)
-  } catch(e) {
-    assert(e.message.includes('Empty'))
-  }
-
-  try {
-    assertEqual(call('K = 5 + 10'), 999)
-  } catch(e) {
-    assert(e.message.includes('Empty'))
-  }
+  assert(call('K = 5 + 10').message.includes('Empty'))
 
   assertEqual(call('var4 = 2 + $4.4').value.toString(), '6.4 USD')
+
 
   // reuse number variables
   assertEqual(call('varfive = 2 + 3').value, 5)
@@ -739,11 +744,7 @@ function test() {
 
 
   // 'prev' variable
-  try {
-    assertEqual(call('prev = 1 + 2'), 999)
-  } catch(e) {
-    assert(e.message.includes('Empty'))
-  }
+  assert(call('prev = 1 + 2').message.includes('Empty'))
 
   assertEqual(call('30 ₴').toString(), '30 UAH')
   assertEqual(call('prev').to('UAH').toString(), '30 UAH')
@@ -754,13 +755,8 @@ function test() {
 
   // test clearing variables
   call('v = 1 + 1')
-  env.reset() //clearAllUserVariables()
-  try {
-    call('v')
-    assert(false, 'variable v is not cleared')
-  } catch(e) {
-    assert(e.message.includes('Unexpected'))
-  }
+  env.reset()
+  assert(call('v').message.includes('Unexpected'))
 
 
   // testing prev of different types
@@ -776,10 +772,10 @@ function test() {
   call('v *= 6 cm ')
   assertEqual(call('prev').toString(), '30 cm')
 
-  // prev is cleared after error
+  // prev is error after error
   call('v = 123')
-  try { assertEqual(call('zzzdsfads'), 999) } catch(e) { }
-  try { assertEqual(call('prev'), 999) } catch(e) {}
+  assert(call('zzzdsfads').message.includes('Unexpected'))
+  assert(env.prev.value.message.includes('Unexpected'))
 
   // test sum aggregation
   env.reset()
@@ -829,6 +825,21 @@ function test() {
   env.call('5 ZUSD')    // 5 ZUSD
   assertEqual(env.call('avg').to('ZUSD').toString(), '7.5 ZUSD')
 
+  // sum with errors
+  env.reset()
+  env.call('1')
+  env.call('someErrorneous1')
+  env.call('3')
+  assertEqual(env.call('sum'), null)
+
+  // avg with errors
+  env.reset()
+  env.call('1')
+  env.call('someErrorneous1')
+  env.call('3')
+  assertEqual(env.call('avg'), null)
+
+
 
   console.log('tests passed')
 }
@@ -863,7 +874,8 @@ function test() {
 //     return e
 //   }
 // }
-// 
+//
+// const PROMPT = '> '
 // const readline = require('readline')
 // 
 // if (readline.createInterface !== undefined) {

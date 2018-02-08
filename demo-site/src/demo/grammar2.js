@@ -5,8 +5,7 @@ function id(x) {return x[0]; }
 
   const math = require("mathjs");
   const { isUnit, isPercent, isMeasure, isNumber, toUnit } = require('./common')
-  const { createUserVariable, validateVariableName, isUserVariable
-        } = require('./userVariables')
+  const { createUserVariable, validateVariableName } = require('./userVariables')
   const { getContext } = require('./parserContext')
 
   function log() {
@@ -228,8 +227,18 @@ var grammar = {
     {"name": "FUNC", "symbols": ["FUNC$string$12", "P_NUM"], "postprocess": function(d) {return Math.log(d[1]); }},
     {"name": "FUNC$string$13", "symbols": [{"literal":"l"}, {"literal":"g"}], "postprocess": function joiner(d) {return d.join('');}},
     {"name": "FUNC", "symbols": ["FUNC$string$13", "P_NUM"], "postprocess": function(d) {return Math.log10(d[1]); }},
-    {"name": "FUNC", "symbols": ["sum"], "postprocess": (d) => getContext().sum()},
-    {"name": "FUNC", "symbols": ["average"], "postprocess": (d) => getContext().average()},
+    {"name": "FUNC", "symbols": ["sum"], "postprocess":  (d, l, rej) => {
+          return getContext().sum()
+          //const r = getContext().sum();
+          //if (r === null) return rej
+          //return r
+        } },
+    {"name": "FUNC", "symbols": ["average"], "postprocess":  (d, l, rej) => {
+          return getContext().average()
+          //const r = getContext().average()
+          //if (r === null) return rej
+          //return r
+        } },
     {"name": "CONST$string$1", "symbols": [{"literal":"p"}, {"literal":"i"}], "postprocess": function joiner(d) {return d.join('');}},
     {"name": "CONST", "symbols": ["CONST$string$1"], "postprocess": function(d) {return Math.PI; }},
     {"name": "CONST", "symbols": [{"literal":"e"}], "postprocess": function(d) {return Math.E; }},
