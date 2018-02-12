@@ -151,6 +151,11 @@
   /* width: 50%; */
 }
 
+.hidden {
+  visibility: hidden;
+}
+
+
 /* user input highlights */
 .hl-number {
 }

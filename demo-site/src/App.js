@@ -310,6 +310,8 @@ class App extends React.Component {
     //const expressions = env.expressions.map( e => formatAnswerExpression(e) )
     //const results = env.results
 
+    console.log('ier:', inputs, expressions, results)
+
     this.setState( {inputs, expressions, results, placeholderInput: false} )
   }
 
@@ -409,7 +411,9 @@ class App extends React.Component {
     }
 
     //bconsole.log('returning:', r)
-    //console.log('renderHighlighted', r)
+    console.log('renderHighlighted', r)
+
+    if (r.length === 0) return null
 
     return r
 
@@ -418,8 +422,6 @@ class App extends React.Component {
      * //return exp
      * r = reactReplace(exp, '+', v => (<span className="hl-plus">+</span>))
      * //exp = reactReplace(exp, '$', v => (<span className="blue-color">$</span>))
-
-
 
      * return r*/
   }
@@ -486,7 +488,7 @@ class App extends React.Component {
         <div className="container">
           <div className="autodraw">
             <div className="highlights">
-              { inputs.map( (inp, i) => <div key={`h_${i}_${inp}`}>{this.renderHighlighted(inp)}</div>) }
+              { inputs.map( (inp, i) => <div key={`h_${i}_${inp}`}>{this.renderHighlighted(inp) || '\u00A0'}</div>) }
             </div>
             <div className="results" >
               { results.map( (r, i) => ([
@@ -501,8 +503,8 @@ class App extends React.Component {
                     <br key={`br_${i}_${r}`} />
                   ]
                   : [
-                    <span key={`e_${i}_${r}`} />,
-                    <div key={`r_${i}_${r}`} />,
+                    <span className="parsedExpression hidden" key={`e_${i}_${r}`}>{'\u00A0'}</span>,
+                    <div className="res hidden" key={`r_${i}_${r}`}>{'\u00A0'}</div>,
                     <br key={`br_${i}_${r}`} />
                   ]
               ]))
