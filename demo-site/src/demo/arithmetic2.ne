@@ -382,8 +382,8 @@ convert -> __ "in" __
 sum -> "sum"
      | "total"
 
-average -> _ "average" _
-     | _ "avg" _
+average -> "average"
+     | "avg"
 
 
 # Whitespace. The important thing here is that the postprocessor

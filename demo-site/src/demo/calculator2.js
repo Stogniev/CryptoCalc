@@ -851,6 +851,12 @@ function test() {
   env.call('2')
   assertEqual(env.call(' sum+1'), 4)
 
+  // operations with average
+  env.reset()
+  env.call('10')
+  env.call('20')
+  assertEqual(env.call('average+1'), 16)
+
 
   // env.reset()
   // console.log(env.call('10  + 20 uah'))

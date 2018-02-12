@@ -490,13 +490,23 @@ class App extends React.Component {
             </div>
             <div className="results" >
               { results.map( (r, i) => ([
-                  <span className="parsedExpression" key={`e_${i}_${r}`}>
-                    { r && this.renderHighlighted(expressions[i]) }
-                  </span>,
-                  <div className="res" key={`r_${i}_${r}`}>
-                  { r && ['=', this.formatResult(r)] }
-                  </div>,
-                  <br key={`br_${i}_${r}`} />] ))}
+                  r
+                  ? [
+                    <span className="parsedExpression" key={`e_${i}_${r}`}>
+                      { this.renderHighlighted(expressions[i]) }
+                    </span>,
+                    <div className="res" key={`r_${i}_${r}`}>
+                      = { this.formatResult(r) }
+                    </div>,
+                    <br key={`br_${i}_${r}`} />
+                  ]
+                  : [
+                    <span key={`e_${i}_${r}`} />,
+                    <div key={`r_${i}_${r}`} />,
+                    <br key={`br_${i}_${r}`} />
+                  ]
+              ]))
+              }
             </div>
           </div>
           <div id="textholder-keeper">

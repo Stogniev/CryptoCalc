@@ -79,61 +79,61 @@ const highlightGrammar = {
 
 const highlightLexer = moo.compile(highlightGrammar)
 
+// 
+// function tokenize(text) {
+//   const r = []
+//   highlightLexer.reset(text)
+// 
+//   for (let item of highlightLexer) {
+//     //console.log('-', item.value)
+//     r.push(`${item.value}:${item.type}`)
+//   }
+// 
+//   // let item;
+//   // while (true) {
+//   //   item = highlightLexer.next()
+//   //   if (!item) break;
+//   // 
+//   //   //if (['WS', 'semicolon'].includes(item.type)) continue;
+//   //   console.log('-', item.value)
+//   //   
+//   //   /* switch (item.type) {
+//   //       *     case 'plus':
+//   //       *        r.push('<', item.value, '>');
+//   //       *        break;
+//   //       *   default:
+//   //       *     r.push(item.value)
+//   //       * } */
+//   //   r.push(`${item.value}:${item.type}`)
+//   // }
+// 
+//   return r
+// }
+// 
 
-function tokenize(text) {
-  const r = []
-  highlightLexer.reset(text)
+// function fmt(text) {
+//   const tokens = tokenize(text)
+//   //console.log('tokens:', tokens)
+//   //console.log('R:', text, '\n ', tokens)
+// }
+// 
+// if (require.main === module) {
+//   // that user in put
+//   fmt('12.3 kg + 45 cm + pi / 2')
+//   fmt('€12.3 + $12.5')
+//   fmt('(€12.3 * 2) + 12.5 kg')
+//   fmt('50$ as a % of 100$')
+// 
+//   fmt('50 USD; asapercentof 100 USD;')
+// 
+//   fmt('3 + 4')
+//   fmt('4 + 5 ')
+//   fmt('12   ')
+// 
+//   fmt('prev ')
+// 
+//   fmt('17 \n')
+//   //fmt('d')
+// }
 
-  for (let item of highlightLexer) {
-    //console.log('-', item.value)
-    r.push(`${item.value}:${item.type}`)
-  }
-
-  // let item;
-  // while (true) {
-  //   item = highlightLexer.next()
-  //   if (!item) break;
-  // 
-  //   //if (['WS', 'semicolon'].includes(item.type)) continue;
-  //   console.log('-', item.value)
-  //   
-  //   /* switch (item.type) {
-  //       *     case 'plus':
-  //       *        r.push('<', item.value, '>');
-  //       *        break;
-  //       *   default:
-  //       *     r.push(item.value)
-  //       * } */
-  //   r.push(`${item.value}:${item.type}`)
-  // }
-
-  return r
-}
-
-
-function fmt(text) {
-  const tokens = tokenize(text)
-  //console.log('tokens:', tokens)
-  //console.log('R:', text, '\n ', tokens)
-}
-
-if (require.main === module) {
-  // that user in put
-  fmt('12.3 kg + 45 cm + pi / 2')
-  fmt('€12.3 + $12.5')
-  fmt('(€12.3 * 2) + 12.5 kg')
-  fmt('50$ as a % of 100$')
-
-  fmt('50 USD; asapercentof 100 USD;')
-
-  fmt('3 + 4')
-  fmt('4 + 5 ')
-  fmt('12   ')
-
-  fmt('prev ')
-
-  fmt('17 \n')
-  //fmt('d')
-}
-
-module.exports = { highlightLexer, fmt }
+module.exports = { highlightLexer }
