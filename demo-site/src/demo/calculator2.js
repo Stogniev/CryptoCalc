@@ -89,7 +89,7 @@ function prepareTxt(text, verbose=false) {
 
   // 35.2) convert remained signs (probably past-): "$" -> "USD"
   txt = txt.replace(
-    new RegExp(`([^A-Za-z_]+|^)(${currSymbols})(\\W+|$)`, 'gi'),
+    new RegExp(`([^A-Za-z_]+?|^)(${currSymbols})(\\W+|$)`, 'gi'),
     (match, begin, curr, end) => `${begin} ${currencies.detect(curr)} ${end}`
   )
 
@@ -325,7 +325,10 @@ function test() {
   // call('asdf')
   // 
   // console.log(call('sum = 1 + 3'))
-  // return
+
+  // env.reset()
+  // console.log(env.call('10$ + 20 uah'))
+  //return
 
 
   // math expr
@@ -511,15 +514,15 @@ function test() {
 
   // different writing forms
   assertEqual(call('12.34 ₴').toString(), '12.34 UAH')
-  assertEqual(call('12.34₴').toString(), '12.34 UAH')
-  assertEqual(call('₴12.34').toString(), '12.34 UAH')
-  assertEqual(call('₴ 12.34').toString(), '12.34 UAH')
-  assertEqual(call('uAh12.34').toString(), '12.34 UAH')
-  assertEqual(call('uAh 12.34').toString(), '12.34 UAH')
-  assertEqual(call('12.34uAh').toString(), '12.34 UAH')
-  assertEqual(call('12.34 uAh').toString(), '12.34 UAH')
-  assertEqual(call('₴ 12.34 uaH').toString(), '12.34 UAH')
-  assertEqual(call('₴12.34uaH').toString(), '12.34 UAH')
+  assertEqual(call('12.35₴').toString(), '12.35 UAH')
+  assertEqual(call('₴12.36').toString(), '12.36 UAH')
+  assertEqual(call('₴ 12.37').toString(), '12.37 UAH')
+  assertEqual(call('uAh12.38').toString(), '12.38 UAH')
+  assertEqual(call('uAh 12.39').toString(), '12.39 UAH')
+  assertEqual(call('12.40uAh').toString(), '12.4 UAH')
+  assertEqual(call('12.41 uAh').toString(), '12.41 UAH')
+  assertEqual(call('₴ 12.42 uaH').toString(), '12.42 UAH')
+  assertEqual(call('₴12.43uaH').toString(), '12.43 UAH')
 
 
   assertEqual(call('2.5 $').toString(), '2.5 USD')
@@ -532,6 +535,8 @@ function test() {
   assertEqual(call('-10 USD').toString(), '-10 USD')
 
   assertEqual(call('3 USD + 2 USD').toString(), '5 USD')
+
+  assertEqual(call('10$ + 20 ZUAH').value, 10.7, ALMOST)
 
   assertEqual(call('$8 / 2').toString(), '4 USD')
   assertEqual(call('(5+3)$').toString(), '8 USD')
@@ -857,10 +862,6 @@ function test() {
   env.call('20')
   assertEqual(env.call('average+1'), 16)
 
-
-  // env.reset()
-  // console.log(env.call('10  + 20 uah'))
-  // //assertEqual(env.call(' sum+1'), 4)
 
   console.log('tests passed')
 }

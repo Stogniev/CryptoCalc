@@ -409,7 +409,7 @@ class App extends React.Component {
     }
 
     //bconsole.log('returning:', r)
-    console.log('renderHighlighted', r)
+    //console.log('renderHighlighted', r)
 
     return r
 
@@ -426,7 +426,7 @@ class App extends React.Component {
 
   render() {
     const { inputs, expressions, results } = this.state
-    console.log('r:', inputs, expressions, results)
+    //console.log('r:', inputs, expressions, results)
     return (
       <div>
         <Helmet>
