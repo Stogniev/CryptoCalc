@@ -813,8 +813,8 @@ function test() {
 
   // prev test from specification
   env.reset()
-  env.call('$20 ZUSD + 56 ZEUR')  // 20 + 56*1.1 = 81.6
-  env.call('prev - 5%')  // 77.52
+  env.call('Cost: $20 ZUSD + 56 ZEUR')  // 20 + 56*1.1 = 81.6
+  env.call('Discounted: prev - 5%')  // 77.52
   assertEqual(env.call('prev').to('ZUSD').value, 77.52, ALMOST)
 
   // test sum percent
@@ -874,12 +874,28 @@ function test() {
 
   // test skipping all type comments, headers
   assertEqual(env.call('1 + 2 // comment'), 3)
-
-
   assert(call(' # 1 + 3').message.includes('Empty'))
   assertEqual(env.call(' 1 "just one" + "four" 4 '), 5)
 
-  // test comments
+  // sum test from specification
+  env.reset()
+  env.call('Line 1: $10')
+  env.call('Line 2: $15')
+  assertEqual(env.call('Result: sum').toString(), '25 USD')
+
+  // average test from specification
+  env.reset()
+  env.call('Line 1: $10')
+  env.call('Line 2: $20')
+  assertEqual(env.call('Result: average').toString(), '15 USD')
+
+  // format test from specification
+  env.reset()
+  env.call('# This is header')
+  env.call('$275 "for the "Model 227"')
+  env.call('// This is comment')
+  env.call('Price: $11 + $34.45')
+  assertEqual(env.call('prev').toString(), '45.45 USD')
 
   console.log('tests passed')
 }
