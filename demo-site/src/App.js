@@ -330,9 +330,6 @@ class App extends React.Component {
   renderHighlighted(exp) {
     let r = []
     highlightLexer.reset(exp)
-    //let item;
-
-
     try {
       for (let item of highlightLexer) {
         //console.log('-', item.value, item.type)
@@ -368,44 +365,6 @@ class App extends React.Component {
             //r.push(' ') // add breakable space between highlighted parts
         }
       }
-      // while (true) {
-      //   item = highlightLexer.next()
-      //   if (!item) break;
-      // 
-      //   console.log('-', item)
-      //   r.push(item.value)
-      // 
-      //   // switch (item.type) {
-      //   //     /* case 'WS':        NOTE: for HIGHLIGHT need just render space
-      //   //      * case 'semicolon':
-      //   //      *   break;*/
-      //   //   case 'comment':
-      //   //     r.push(<span className="grey-color" key={item.offset}>{item.value}</span>)
-      //   //     break;
-      //   //   case 'plus':
-      //   //   case 'minus':
-      //   //   case 'mul':
-      //   //   case 'divide':
-      //   //   case 'exp':
-      //   //   case 'convert':
-      //   //   case 'mod':
-      //   //   case 'leftShift':
-      //   //   case 'rightShift':
-      //   //     r.push(<span className="orange-color" key={item.offset}>{item.value}</span>)
-      //   //     break;
-      //   //   case 'currency':
-      //   //     r.push(<span className="blue-color" key={item.offset}>{item.value}</span>)
-      //   //     break;
-      //   //   case 'variable':
-      //   //     r.push(<span className="violet-color" key={item.offset}>{item.value}</span>)
-      //   //     break;
-      //   //   default:
-      //   //     r.push(<span key={item.offset}>{item.value}</span>)
-      //   //     //r.push(' ') // add breakable space between highlighted parts
-      //   // }
-      //}
-      //
-      //return r
     } catch(e) {
       // in case of parsing error just return parsed text (TODO: process parsing error ONLY)
       console.log('Parsing error', e)
@@ -420,13 +379,6 @@ class App extends React.Component {
 
     return r
 
-    /* let r;
-     * //return exp.split('+'), <mark>+</mark>)
-     * //return exp
-     * r = reactReplace(exp, '+', v => (<span className="hl-plus">+</span>))
-     * //exp = reactReplace(exp, '$', v => (<span className="blue-color">$</span>))
-
-     * return r*/
   }
 
   render() {
@@ -488,28 +440,32 @@ class App extends React.Component {
           </div>
         </section>
 
-        <div className="container">
+        <div className="ZZcontainer">
           <div className="autodraw">
             <div className="highlights">
-              { inputs.map( (inp, i) => <div key={`h_${i}_${inp}`}>{this.renderHighlighted(inp) || NBSP}</div>) }
+              { inputs.map( (inp, i) =>
+                <div key={`h_${i}_${inp}`}>
+                  {this.renderHighlighted(inp) || NBSP}
+                </div>)
+              }
             </div>
             <div className="results" >
               { results.map( (r, i) => ([
                   (r !== null)
-                  ? [
-                    <span className="parsedExpression" key={`e_${i}_${r}`}>
+                  ?
+                  <div className="result-sum">
+                    <span className="parsed-expression" key={`e_${i}_${r}`}>
                       { this.renderHighlighted(expressions[i]) }
-                    </span>,
+                    </span>
                     <div className="res" key={`r_${i}_${r}`}>
                       = { this.formatResult(r) }
-                    </div>,
-                    <br key={`br_${i}_${r}`} />
-                  ]
-                  : [
-                    <span className="parsedExpression hidden" key={`e_${i}_${r}`}>{NBSP} </span>,
-                    <div className="res hidden" key={`r_${i}_${r}`}>{NBSP}</div>,
-                    <br key={`br_${i}_${r}`} />
-                  ]
+                    </div>
+                  </div>
+                  :
+                  <div>
+                    <span className="parsedExpression hidden" key={`e_${i}_${r}`}>{NBSP} </span>
+                    <div className="res hidden" key={`r_${i}_${r}`}>{NBSP}</div>
+                  </div>
               ]))
               }
             </div>
@@ -545,17 +501,19 @@ Implemented:
   - paste from clipboard
   - user variables
   - process part of line until error
-  - prev variable (NEW)
-  - sum (NEW)
-  - average (NEW)
+  - prev variable
+  - sum
+  - average
+  - comments, labels, format line
+
+Done partially:
+  - expression and answer visual formatting
+  - result formatting
 
 ToDo list:
   - refreshing currency rates
   - pixel-perfect markup
   - top menu
-  - summarizes, average
-  - expression and answer visual formatting
-  - result formatting
   - other clipboard operations
 
 
@@ -626,8 +584,6 @@ pi(7 - 5)pi/(pi*pi) - 2
 (3)2^2
 (2)pi^2(3)
 4^-2
-
-
 
 // word-described math expressions
 3 + 2
@@ -714,10 +670,6 @@ pi + e
 0.1km 11m 11 cm + 0.5 * 2 km 2 mm
 
 
-
-
-
-
 //money
 10 USD
 10 usd
@@ -746,7 +698,6 @@ $ 2.5
 ₴ 2.5
 UAH 2.5
 
-
 -10 USD
 
 3 USD + 2 USD
@@ -757,7 +708,6 @@ $8 / 2
 -2.5 USD + $3.1 +(1/2)usd
 
 4 UAH  2
-
 
 // negative units
 -2 UAH - (-3UAH)
@@ -886,7 +836,10 @@ average
 1+1 
 prev + 2
 
+# this is formatting
+label: 1 + "inline comment" 1  //last comment
 
 `
 
 export default App;
+

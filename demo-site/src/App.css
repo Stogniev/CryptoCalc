@@ -47,7 +47,7 @@
 
 
 .autodraw, #textholder {
-  width: 55%;
+  /* width: 100%; */
   height: 100%;
   /* font: 20px/28px 'Open Sans', sans-serif; */
   font-family: 'RobotoMono-Regular';
@@ -55,8 +55,8 @@
 }
 
 #textholder-keeper {
-  /* position: absolute; */
-  /* 134 */
+  /* position: absolute;       don't use abosolute to fill vertical space     */
+
   /* display: flex; */
   /* align-items: top; */
 
@@ -104,7 +104,7 @@
   paddding: 2px;
   /* border: 2px solid #685972; */
   /* background-color: #fff; */
-  overflow: auto;
+  /* overflow: auto; */
   pointer-events: none;
   transition: transform 1s;
 }
@@ -114,7 +114,25 @@
   line-height: 4em;
 }
 
+/* .container div { */
+/*   right: 20%;        /\* to keep absolute positioned same width *\/ */
+/*   left: 20%; */
+/* } */
+.autodraw, #textholder-keeper {
+  right: 20%;        /* to keep absolute positioned same width */
+  left: 20%;
+}
+/* ugly copypaste ^^^ of non-absolute div */
+#textholder-keeper {
+  margin-right: 20%;
+  margin-left: 20%;
+}
+
+
+
+
 .results {
+  /* width: 100%; */
   /* ?? white-space: pre-wrap; */
   /* padding-top: 2em; */
   /* line-height: 2em; */
@@ -131,24 +149,29 @@
 .res {
   /* IE-  width: fit-content;  */  /* https://stackoverflow.com/a/16765030/1948511 */
   display: inline-block;
-
-
-
   /* margin-top: 1em; */
 }
 
-.parsedExpression {
+.parsed-expression {
   background-color: #fff;
   border: 1px solid #d6d6e1;
   border-radius: 5px;
 
-  margin-left: 1em;
-  margin-top: 2.5em;
-  margin-right: 5em;
-  height: 1.5em;
+  font-family: 'RobotoMono-Regular';
 
   display: inline-block;
   /* width: 50%; */
+
+  background-color: #fff;
+  padding: 5px 9px 4px;
+  border-radius: 5px;
+}
+
+.result-sum > * {
+  /* margin-left: 1em; */
+  margin-top: 2.05em;
+  /* margin-right: 5em; */
+  height: 1.95em;
 }
 
 .hidden {
@@ -170,4 +193,14 @@
 
 .violet-color {
   color: #6622cc;
+}
+
+.highlighted-input {
+    font-family: 'RobotoMono-Regular';
+}
+
+.result-sum {
+  margin: 0 0 0 15px;
+  display: flex;
+  justify-content: space-between;
 }

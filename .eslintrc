@@ -63,6 +63,7 @@
       react/jsx-indent: off,    // sometimes incorrect for nested .maps functions
       object-curly-newline: off,   // seems not very critical
       no-empty: ["error", { "allowEmptyCatch": true }],
+      no-lonely-if: off,     // sometimes conditions are different ideologically
     },
     "plugins": [
         "react",
