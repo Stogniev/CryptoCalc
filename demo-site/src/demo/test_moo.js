@@ -26,7 +26,10 @@ const currSymbols = currSymbolsList.join('|')
 const highlightGrammar = {
   float: new RegExp('\\d+(?:\\.\\d+)?'),
 
-
+  comment: new RegExp('//.*'),
+  hashComment: new RegExp('#.*'),
+  stringComment: new RegExp('".*?"'),
+  label: new RegExp('.*:'),
 
   plus: ['+', 'plus', 'and', 'with'],
   minus: ['-', 'minus', 'subtract', 'without'],
@@ -50,8 +53,6 @@ const highlightGrammar = {
   semicolon: ';',
 
   percent: ['%', 'PERCENT'],
-
-
 
   specVariables: specVariables,
 

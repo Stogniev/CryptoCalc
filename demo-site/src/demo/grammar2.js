@@ -4,20 +4,13 @@
 function id(x) {return x[0]; }
 
   const math = require("mathjs");
-  const { isUnit, isPercent, isMeasure, isNumber, toUnit } = require('./common')
+  const { isUnit, isPercent, isMeasure, isNumber, toUnit, log } = require('./common')
   const { createUserVariable, validateVariableName } = require('./userVariables')
   const { getContext } = require('./parserContext')
-
-  function log() {
-    if (process.env.DEBUG) {
-      console.log('-',Object.values(arguments))
-    }
-  }
-
 var grammar = {
     Lexer: undefined,
     ParserRules: [
-    {"name": "main", "symbols": ["line"], "postprocess": function([line],l,rej) { return line }},
+    {"name": "main", "symbols": ["line"], "postprocess": id},
     {"name": "line", "symbols": ["identifier", "_", {"literal":"="}, "EXPRESSION", "EOL"], "postprocess": 
         ([name,,,expression,],l,rej) => {
         
@@ -34,7 +27,8 @@ var grammar = {
           return v  */
         }
              },
-    {"name": "line", "symbols": ["EXPRESSION", "EOL"], "postprocess": ([expr], l, rej) => { return expr }},
+    {"name": "line", "symbols": ["EXPRESSION", "EOL"], "postprocess": ([expr,], l, rej) => { return expr }},
+    {"name": "line", "symbols": ["_", "EOL"], "postprocess": (d,l,rej) => rej},
     {"name": "EXPRESSION", "symbols": ["_", "OPS", "_"], "postprocess":  function([,ops,]) {
           log('>', ops);
           return ops

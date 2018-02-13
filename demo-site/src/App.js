@@ -23,6 +23,7 @@ import { highlightLexer } from './demo/test_moo'
 
 const B = true
 
+const NBSP = '\u00A0'
 
 function getTextNodeAtPosition(root, index) {
   //let lastNode = null;
@@ -336,11 +337,13 @@ class App extends React.Component {
       for (let item of highlightLexer) {
         //console.log('-', item.value, item.type)
         switch (item.type) {
-          /* case 'WS':        NOTE: for HIGHLIGHT need just render space
-            case 'semicolon':
-            break; */
           case 'comment':
+          case 'hashComment':
+          case 'stringComment':
             r.push(<span className="grey-color" key={item.offset}>{item.value}</span>)
+            break;
+          case 'label':
+            r.push(<span className="violet-color" key={item.offset}>{item.value}</span>)
             break;
           case 'plus':
           case 'minus':
@@ -411,7 +414,7 @@ class App extends React.Component {
     }
 
     //bconsole.log('returning:', r)
-    console.log('renderHighlighted', r)
+    //console.log('renderHighlighted', r)
 
     if (r.length === 0) return null
 
@@ -488,11 +491,11 @@ class App extends React.Component {
         <div className="container">
           <div className="autodraw">
             <div className="highlights">
-              { inputs.map( (inp, i) => <div key={`h_${i}_${inp}`}>{this.renderHighlighted(inp) || '\u00A0'}</div>) }
+              { inputs.map( (inp, i) => <div key={`h_${i}_${inp}`}>{this.renderHighlighted(inp) || NBSP}</div>) }
             </div>
             <div className="results" >
               { results.map( (r, i) => ([
-                  r
+                  (r !== null)
                   ? [
                     <span className="parsedExpression" key={`e_${i}_${r}`}>
                       { this.renderHighlighted(expressions[i]) }
@@ -503,8 +506,8 @@ class App extends React.Component {
                     <br key={`br_${i}_${r}`} />
                   ]
                   : [
-                    <span className="parsedExpression hidden" key={`e_${i}_${r}`}>{'\u00A0'}</span>,
-                    <div className="res hidden" key={`r_${i}_${r}`}>{'\u00A0'}</div>,
+                    <span className="parsedExpression hidden" key={`e_${i}_${r}`}>{NBSP} </span>,
+                    <div className="res hidden" key={`r_${i}_${r}`}>{NBSP}</div>,
                     <br key={`br_${i}_${r}`} />
                   ]
               ]))

@@ -13,7 +13,7 @@ const rates = require('./rates')
 const { UnitNames, UnitPrefixes } = require('./unitUtil')
 
 const { /*clearAllUserVariables,*/ isUserVariable, createUserVariable } = require('./userVariables')
-const { scales, isUnit, lexemSeparator } = require('./common')
+const { scales, isUnit, lexemSeparator, log } = require('./common')
 const { setContext } = require('./parserContext')
 
 const ALMOST=true
@@ -42,6 +42,15 @@ const StandartFunctions = ['sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'sqrt', 
 // magically adapting text for grammar parser
 function prepareTxt(text, verbose=false) {
   let txt = text
+
+  // 21.1) remove all "string comments"
+  txt = txt.replace(new RegExp('".*?"', 'g'), '')
+  // 21.2 remove all //double-slashed comments
+  txt = txt.replace(new RegExp('//.*', 'g'), '')
+  // 21.3 remove all #comments
+  txt = txt.replace(new RegExp('#.*', 'g'), '')
+  // 21.4 remove label:
+  txt = txt.replace(new RegExp('.*:', 'g'), '')
 
   // 3) simplify modifying assignments (like "a += 10" -> "a = a + 10") (reason implement it in grammar without copypaste is harder)
   txt = txt.replace(/(.*)([-+*/])=(.*)/, '$1 = $1 $2 ( $3 )')
@@ -174,7 +183,7 @@ const calcEnvironmentProto = {
   //parserRestore() { this.parser.restore(this.parserInfo) },
 
   sum() {
-    console.log('Summarizing:', this.results)
+    //log('Summarizing:', this.results)
     if (!this.results.length) return null
 
     // use parser to sum items of different types
@@ -189,7 +198,7 @@ const calcEnvironmentProto = {
         const expression = `${sum} + (${r}) ` // brase second arg to sum negatives
         const s = this.prepareAndCallInternal(expression, DEBUG)
         if (s instanceof Error) {
-          console.warn(`Summarize error (${expression}):`, s)
+          log(`Summarize error of "${expression}"):`, s)
           return null
         }
         sum = s
@@ -243,7 +252,7 @@ const calcEnvironmentProto = {
     } catch(e) {
       //parser.restore(info)
       if (verbose) {
-        console.log(`"${txt}" -E-> `, e)
+        log(`"${txt}" -E-> `, e)
       }
       //exp: 115  throw e
       return e
@@ -862,6 +871,15 @@ function test() {
   env.call('20')
   assertEqual(env.call('average+1'), 16)
 
+
+  // test skipping all type comments, headers
+  assertEqual(env.call('1 + 2 // comment'), 3)
+
+
+  assert(call(' # 1 + 3').message.includes('Empty'))
+  assertEqual(env.call(' 1 "just one" + "four" 4 '), 5)
+
+  // test comments
 
   console.log('tests passed')
 }

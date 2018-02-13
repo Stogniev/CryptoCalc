@@ -1,18 +1,11 @@
 @{%
   const math = require("mathjs");
-  const { isUnit, isPercent, isMeasure, isNumber, toUnit } = require('./common')
+  const { isUnit, isPercent, isMeasure, isNumber, toUnit, log } = require('./common')
   const { createUserVariable, validateVariableName } = require('./userVariables')
   const { getContext } = require('./parserContext')
-
-  function log() {
-    if (process.env.DEBUG) {
-      console.log('-',Object.values(arguments))
-    }
-  }
-
 %}
 
-main -> line        {%  function([line],l,rej) { return line }   %}
+main -> line        {% id %}
 
 line ->
    identifier _ "=" EXPRESSION EOL {%
@@ -31,7 +24,8 @@ line ->
           return v  */
         }
      %}
- | EXPRESSION EOL     {%  ([expr], l, rej) => { return expr } %}
+ | EXPRESSION EOL     {%  ([expr,], l, rej) => { return expr } %}
+ | _ EOL             {% (d,l,rej) => rej %}
 
 
 EXPRESSION -> _ OPS _     {% function([,ops,]) {
@@ -310,6 +304,8 @@ float -> int "." int   {% function(d) {return parseFloat(d[0] + d[1] + d[2])} %}
 int -> [0-9]:+      {% function(d) {/*log('int:', d[0].join(""));*/ return d[0].join(""); } %}
 
 identifier -> [a-zA-Z_] [a-zA-Z0-9_]:*    {% ([r1,r2]) => [...r1, ...r2].join("")  %}
+
+#any -> [^\n]
 
 unit ->
   # ([a-zA-Z]:+ [a-zA-Z0-9]:*)         # problem: multiple results (8: maybe remove +)

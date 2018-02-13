@@ -1,20 +1,20 @@
-// TODO: add all
-//export const StandartFunctions = ['sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'sqrt', 'ln']
+function log() {
+  if (process.env.DEBUG) {
+    console.log('.', Object.values(arguments))
+  }
+}
 
-// TODO: add all
-//export const Units = ['cm', 'm', 'km', 'usd', 'uah',]
-
-
+//const EMPTY_RESULT = 'EMPTY_RESULT'
 
 const scales = {
-  'k': 1E3,
-  'thousand': 1E3,
-  'thousands': 1E3,
-  'M': 1E6,
-  'million': 1E6,
-  'millions': 1E6,
-  'billion': 1E9,
-  'billions': 1E9
+  k: 1E3,
+  thousand: 1E3,
+  thousands: 1E3,
+  M: 1E6,
+  million: 1E6,
+  millions: 1E6,
+  billion: 1E9,
+  billions: 1E9
 }
 
 
@@ -108,5 +108,6 @@ function formatAnswerExpression(text) {
 
 const specVariables = ['sum', 'total', 'average', 'avg', 'prev']
 
-module.exports = { getUnitName, isUnit, isPercent, isMeasure, isNumber, toUnit, lexemSeparator, scales, formatAnswerExpression, specVariables, isError }
+module.exports = { getUnitName, isUnit, isPercent, isMeasure, isNumber, toUnit, lexemSeparator, scales, formatAnswerExpression, specVariables, isError, log, /* EMPTY_RESULT*/
+}
 
