@@ -7,9 +7,9 @@ import React from 'react';
 import './App.css';
 //import math from 'mathjs'
 import { prepareAndParse, createCalcEnvironment } from './demo/calculator2'
-import { formatAnswerExpression, isError } from './demo/common'
+import { isError } from './demo/common'
 //import { isUserVariable } from './demo/userVariables'
-import { formatResult } from './demo/formatting'
+import { humanizeExpression, formatResult } from './demo/formatting'
 //import is from 'is'
 
 
@@ -121,7 +121,7 @@ class App extends React.Component {
       const parser = prepareAndParse(lastExpression, 'verbose')
       console.log('parser:', parser)
       newState = {...newState,
-        expression: formatAnswerExpression(parser.lexer.buffer),
+        expression: humanizeExpression(parser.lexer.buffer),
         result: parser && parser.results[0],
         error: null
       }
@@ -192,7 +192,7 @@ class App extends React.Component {
     for (const i in env.expressions) {
       const oldExpression = (i < oldExpressions.length) && oldExpressions[i]
       const oldResult = (i < oldResults.length) && oldResults[i]
-      const expression = formatAnswerExpression(env.expressions[i])
+      const expression = humanizeExpression(env.expressions[i])
       const result = env.results[i]
 
       if ( (expression !== '')  // empty expressions just forget
@@ -235,7 +235,6 @@ class App extends React.Component {
 
 
   renderHighlighted(exp) {
-    console.log('RH', exp)
     let r = []
     highlightLexer.reset(exp)
     try {

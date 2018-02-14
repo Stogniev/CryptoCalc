@@ -64,6 +64,7 @@
       object-curly-newline: off,   // seems not very critical
       no-empty: ["error", { "allowEmptyCatch": true }],
       no-lonely-if: off,     // sometimes conditions are different ideologically
+      quote-props: off,     // sometimes similar qouted looks better
     },
     "plugins": [
         "react",
