@@ -162,97 +162,17 @@ class App extends React.Component {
   // }
 
 
-  render0() {
-    const { result, expression } = this.state
-    return (
-      <div className="App">
-
-        <Helmet>
-          <meta charSet="UTF-8" />
-          <meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=1.0, user-scalable=0" />
-          <title>Cripto Calc</title>
-          <link rel="stylesheet" href="css/light.css" />
-          {/*<link rel="stylesheet" href="dark.css">*/}
-          <link rel="stylesheet" href="css/fonts.css" />
-        </Helmet>
-
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Calculator demo 2018-01-22_18:38</h1>
-        </header>
-        <p className="center">
-          <input placeholder="2 + 2" onChange={this.expressionChanged} autoFocus
-                 value={this.state.lastExpression} />
-          <br />
-          { result
-            && [
-              <span className="successful-expression">{ expression }</span>,
-              <span> = { this.formatResult0() }</span>
-            ]
-          }
-        </p>
-        <p className="center error">{ this.state.error }</p>
-        <pre>{info}</pre>
-      </div>
-    )
-  }
-
-  test = () => {
-    const textHolder = document.getElementById('textHolder')
-
-    const restore = saveCaretPosition(textHolder)
-    let text = textHolder.textContent
-    text = text.replace(/[0-9]+/g, '<span class="hl-number">$&</span>')
-    text = text.replace(/EQ/g, `<br />\n=15`)
-    textHolder.innerHTML = text
-
-    restore()
-  }
-
-  onInput2 = (event) => {
-    const expressionHolder = document.getElementById('expressionHolder')
-
-    const restore = saveCaretPosition(document.getElementById('textHolder'))
-    const text = expressionHolder.textContent
-
-
-    console.log(text, this.renderEHTML(text))
-
-    this.setState( {
-      e1: text,
-      e1HTML: this.renderEHTML(text),
-      r1: '=10',
-      r1HTML: this.renderRHTML(text),
-    }, restore)
-
-    /* text = text.replace(/[0-9]+/g, '<span class="hl-number">$&</span>')
-     * text = text.replace(/EQ/g, `<br />\n=15`)
-     * textHolder.innerHTML = text*/
-
-    //restore()
-  }
-
-  renderEHTML(e) {
-    //let html = e
-    //html = html.replace(/[0-9]+/g, '<span class="hl-number">$&</span>')
-    //return html
-    return <div>{e}<span className="hl-number">+</span>22</div>
-  }
-
-  renderRHTML(e) {
-    //let html = e
-    //html = html.replace(/[0-9]+/g, '<span class="hl-number">$&</span>')
-    //return html
-    return <div>=<span className="hl-blue">r of: {e}</span></div>
-  }
-
-  renderE(e) {
-    return this.state.e1HTML
-  }
-
-  renderR() {
-    return <div contentEditable={false}>=<span>{this.state.e1HTML}</span></div>
-  }
+  // test = () => {
+  //   const textHolder = document.getElementById('textHolder')
+  // 
+  //   const restore = saveCaretPosition(textHolder)
+  //   let text = textHolder.textContent
+  //   text = text.replace(/[0-9]+/g, '<span class="hl-number">$&</span>')
+  //   text = text.replace(/EQ/g, `<br />\n=15`)
+  //   textHolder.innerHTML = text
+  // 
+  //   restore()
+  // }
 
   onPaste = (e) => {
     // prevent pasting formatted text (that broke highilghting overlay)
@@ -266,10 +186,21 @@ class App extends React.Component {
     // NOTE: insertText maybe nw in IE11. possible solution: (https://stackoverflow.com/questions/12027137/javascript-trick-for-paste-as-plain-text-in-execcommand#comment57489893_12028136)
   }
 
-  onInput = () => {
-    const textholder = document.getElementById('textholder')
+  // onKeyPress = (event) => {
+  //   const lines = event.target.innerText.split('\n')
+  //   console.log('lns', event.target.innerText, lines)
+  //   if ( lines.some( l => l.trim().length > 10 ) ) {
+  //     event.preventDefault()
+  //   }
+  // }
 
-    const inputs = textholder.innerText.split('\n')
+
+  onInput = (event) => {
+    let text = event.target.innerText
+    // text = text.replace(new RegExp('([^\n]{10})', 'g'), '$1\n')
+    // event.target.innerText = text
+
+    const inputs = text.split('\n')
 
     const env = createCalcEnvironment()
 
@@ -462,8 +393,10 @@ class App extends React.Component {
                     </div>
                   </div>
                   :
-                  <div>
-                    <span className="parsedExpression hidden" key={`e_${i}_${r}`}>{NBSP} </span>
+                  <div className="result-sum">
+                    <span className="parsed-expression hidden" key={`e_${i}_${r}`}>
+                      <span>{NBSP}</span>
+                    </span>
                     <div className="res hidden" key={`r_${i}_${r}`}>{NBSP}</div>
                   </div>
               ]))
@@ -472,7 +405,7 @@ class App extends React.Component {
           </div>
           <div id="textholder-keeper">
             { this.state.placeholderInput && <div className="textholder-placeholder">2+2</div> }
-            <div id="textholder" contentEditable onInput={this.onInput} onPaste={this.onPaste}
+            <div id="textholder" contentEditable /*onKeyPress={this.onKeyPress}*/ onInput={this.onInput} onPaste={this.onPaste}
                  onFocus={() => this.setState({placeholderInput: null})} >
             </div>
           </div>
