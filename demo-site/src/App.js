@@ -411,17 +411,16 @@ Implemented:
   - prev variable
   - sum
   - average
-  - comments, labels, format line
+  - comments, labels
+  - expression, result formatting and highlighting
 
 Done partially:
-  - expression and answer visual formatting
-  - result formatting
-
-ToDo list:
-  - refreshing currency rates
+  - clipboard operations
   - pixel-perfect markup
+
+ToDo:
+  - refreshing currency rates
   - top menu
-  - other clipboard operations
 
 
 
@@ -744,7 +743,7 @@ average
 prev + 2
 
 # this is formatting
-label: 1 + "inline comment" 1  //last comment
+my label: 1 + "inline comment" 2  //last comment
 
 `
 
