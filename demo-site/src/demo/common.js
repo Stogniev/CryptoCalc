@@ -106,8 +106,8 @@ function formatAnswerExpression(text) {
 }
 
 
+
 const specVariables = ['sum', 'total', 'average', 'avg', 'prev']
 
-module.exports = { getUnitName, isUnit, isPercent, isMeasure, isNumber, toUnit, lexemSeparator, scales, formatAnswerExpression, specVariables, isError, log, /* EMPTY_RESULT*/
-}
+module.exports = { getUnitName, isUnit, isPercent, isMeasure, isNumber, toUnit, lexemSeparator, scales, formatAnswerExpression, specVariables, isError, log }
 

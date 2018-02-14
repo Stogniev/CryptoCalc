@@ -35,6 +35,7 @@ const highlightGrammar = {
   minus: ['-', 'minus', 'subtract', 'without'],
   mul: ['*', 'times', 'multiplied by', 'mul'],
   divide: ['/', 'divide', 'divide by'],
+  assign: ['=', '+=', '-=', '*=', '/*'],
   exp: ['^'],
   mod: ['mod'],
   leftShift: ['<<'],
@@ -65,7 +66,7 @@ const highlightGrammar = {
   unit: new RegExp(`(?:${UP})(?:${UN})`),
 
 
-  comment: /\/\/.*?$/,
+  //comment: /\/\/.*?$/,
   //number: /0|[1-9][0-9]*/,
   string: /"(?:\\["\\]|[^\n"\\])*"/,
   lparen: '(',

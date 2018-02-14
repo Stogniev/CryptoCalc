@@ -3,12 +3,15 @@
 
 import React from 'react';
 //import PropTypes from 'prop-types';
-import logo from './logo.svg';
+//import logo from './logo.svg';
 import './App.css';
-import math from 'mathjs'
+//import math from 'mathjs'
 import { prepareAndParse, createCalcEnvironment } from './demo/calculator2'
-import { formatAnswerExpression, isUnit, isError } from './demo/common'
-import { isUserVariable } from './demo/userVariables'
+import { formatAnswerExpression, isError } from './demo/common'
+//import { isUserVariable } from './demo/userVariables'
+import { formatResult } from './demo/formatting'
+//import is from 'is'
+
 
 //import { clearAllUserVariables } from './demo/userVariables'
 
@@ -25,39 +28,39 @@ const B = true
 
 const NBSP = '\u00A0'
 
-function getTextNodeAtPosition(root, index) {
-  //let lastNode = null;
+// function getTextNodeAtPosition(root, index) {
+//   //let lastNode = null;
+// 
+//   const treeWalker = document.createTreeWalker(
+//     root, NodeFilter.SHOW_TEXT, function next(elem) {
+//       if (index > elem.textContent.length) {
+//         index -= elem.textContent.length
+//         //lastNode = elem;
+//         return NodeFilter.FILTER_REJECT
+//       }
+//       return NodeFilter.FILTER_ACCEPT
+//     })
+//   const c = treeWalker.nextNode();
+//   return {
+//     node: c || root,
+//     position: c ? index: 0
+//   }
+// }
 
-  const treeWalker = document.createTreeWalker(
-    root, NodeFilter.SHOW_TEXT, function next(elem) {
-      if (index > elem.textContent.length) {
-        index -= elem.textContent.length
-        //lastNode = elem;
-        return NodeFilter.FILTER_REJECT
-      }
-      return NodeFilter.FILTER_ACCEPT
-    })
-  const c = treeWalker.nextNode();
-  return {
-    node: c || root,
-    position: c ? index: 0
-  }
-}
-
-function saveCaretPosition(context) {
-  const selection = window.getSelection()
-  let range = selection.getRangeAt(0)
-  range.setStart(context, 0)
-  const len = range.toString().length
-
-  return function restore() {
-    const pos = getTextNodeAtPosition(context, len)
-    selection.removeAllRanges()
-    range = new Range()
-    range.setStart(pos.node ,pos.position)
-    selection.addRange(range)
-  }
-}
+// function saveCaretPosition(context) {
+//   const selection = window.getSelection()
+//   let range = selection.getRangeAt(0)
+//   range.setStart(context, 0)
+//   const len = range.toString().length
+// 
+//   return function restore() {
+//     const pos = getTextNodeAtPosition(context, len)
+//     selection.removeAllRanges()
+//     range = new Range()
+//     range.setStart(pos.node ,pos.position)
+//     selection.addRange(range)
+//   }
+// }
 
 /* 
  * function reactReplace(s, oldStr, fun) {
@@ -101,31 +104,6 @@ class App extends React.Component {
   }
 
   //state = App._defaultState
-
-  formatResult0 = () => {
-    let { result } = this.state
-    if (result instanceof math.type.Unit) {
-      //console.log('redult.toNumber:', result.clone().toNumber())
-      //console.log('result:', result.clone())
-      result = result.clone().toString()
-    }
-    return result
-  }
-
-  formatResult = (result) => {
-    if (result instanceof Error) return ''
-
-    if (isUnit(result)) {
-      //console.log('redult.toNumber:', result.clone().toNumber())
-      //console.log('result:', result.clone())
-      const r = result.clone()
-      return parseFloat(r.toNumber().toFixed(2)) + ' ' + r.formatUnits()
-    }
-
-    if (isUserVariable(result)) return result.value
-
-    return result
-  }
 
   expressionChanged = (event) => {
     if (B) return
@@ -197,8 +175,6 @@ class App extends React.Component {
 
   onInput = (event) => {
     let text = event.target.innerText
-    // text = text.replace(new RegExp('([^\n]{10})', 'g'), '$1\n')
-    // event.target.innerText = text
 
     const inputs = text.split('\n')
 
@@ -206,7 +182,7 @@ class App extends React.Component {
 
     inputs.forEach( input => env.call(input) )
 
-    console.log('env results:', env.expressions, env.results)
+    //console.log('env results:', env.expressions, env.results)
     // recreate expressions and results (keeping old if only succesful)
     const oldExpressions = this.state.expressions
     const oldResults = this.state.results
@@ -242,7 +218,7 @@ class App extends React.Component {
     //const expressions = env.expressions.map( e => formatAnswerExpression(e) )
     //const results = env.results
 
-    console.log('ier:', inputs, expressions, results)
+    //console.log('ier:', inputs, expressions, results)
 
     this.setState( {inputs, expressions, results, placeholderInput: false} )
   }
@@ -259,6 +235,7 @@ class App extends React.Component {
 
 
   renderHighlighted(exp) {
+    console.log('RH', exp)
     let r = []
     highlightLexer.reset(exp)
     try {
@@ -282,6 +259,7 @@ class App extends React.Component {
           case 'mod':
           case 'leftShift':
           case 'rightShift':
+          case 'assign':
             r.push(<span className="orange-color" key={item.offset}>{item.value}</span>)
             break;
           case 'currency':
@@ -302,9 +280,6 @@ class App extends React.Component {
       //return r //exp
       r = exp  // don't highlight unparsed expression
     }
-
-    //bconsole.log('returning:', r)
-    //console.log('renderHighlighted', r)
 
     if (r.length === 0) return null
 
@@ -384,20 +359,20 @@ class App extends React.Component {
               { results.map( (r, i) => ([
                   (r !== null)
                   ?
-                  <div className="result-sum">
-                    <span className="parsed-expression" key={`e_${i}_${r}`}>
+                  <div className="result-sum" key={`rs_${i}_${r}`}>
+                    <span className="parsed-expression">
                       { this.renderHighlighted(expressions[i]) }
                     </span>
-                    <div className="res" key={`r_${i}_${r}`}>
-                      = { this.formatResult(r) }
+                    <div className="res">
+                      = { formatResult(r) }
                     </div>
                   </div>
                   :
-                  <div className="result-sum">
-                    <span className="parsed-expression hidden" key={`e_${i}_${r}`}>
+                  <div className="result-sum" key={`rs_${i}_${r}`}>
+                    <span className="parsed-expression hidden">
                       <span>{NBSP}</span>
                     </span>
-                    <div className="res hidden" key={`r_${i}_${r}`}>{NBSP}</div>
+                    <div className="res hidden">{NBSP}</div>
                   </div>
               ]))
               }
