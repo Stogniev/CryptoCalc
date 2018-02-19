@@ -11,7 +11,9 @@
     "start": "(cd ./demo-site && yarn run start)",
     "build": "(cd ./demo-site && npm run build && rm -rf ../docs/* && cp -rf build/* ../docs/ && cd .. && sed -i 's/\\/static/static/g' docs/index.html && git add docs/static/js/\\*.js)",
     "build-and-run": "npm run build && npm run localServer",
-    "localServer": "(cd docs && python -m SimpleHTTPServer 9000)"
+    "localServer": "(cd docs && python -m SimpleHTTPServer 9000)",
+    "firebase-deploy-functions": "(cd firebase/functions && firebase deploy --only functions)",
+    "firebase-shell": "(cd firebase/functions && GOOGLE_APPLICATION_CREDENTIALS=../cryptocalc1-d51fa5762f45.json firebase experimental:functions:shell)"
   },
   "dependencies": {
     "escape-string-regexp": "^1.0.5",
