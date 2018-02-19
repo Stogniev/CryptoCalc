@@ -426,13 +426,13 @@ Implemented:
   - average
   - comments, labels
   - expression, result formatting and highlighting
+  - refreshing currency rates
 
 Done partially:
   - clipboard operations
   - pixel-perfect markup
 
 ToDo:
-  - refreshing currency rates
   - top menu
 
 
