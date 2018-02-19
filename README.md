@@ -61,3 +61,9 @@ Account: safecryptocalc@gmail.com (free with 1000 requests/month limit)
 Used to get crypty currencies rates (called by firebase function)
 
 (no account needed)
+
+## test-web-access
+
+sample web application with currency rates live updates
+
+

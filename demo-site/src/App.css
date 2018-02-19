@@ -216,3 +216,7 @@
   display: flex;
   justify-content: space-between;
 }
+
+.semi-transparent {
+  opacity: 0.5
+}

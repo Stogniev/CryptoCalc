@@ -2,18 +2,23 @@
 <html>
   <head>
 
+    <script src="https://www.gstatic.com/firebasejs/4.9.1/firebase.js"></script>
+
+    <!-- ?? -->
+    <!-- <script src="https://www.gstatic.com/firebasejs/4.9.1/firebase-app.js"></script> -->
+
+    <script src="https://www.gstatic.com/firebasejs/4.9.1/firebase-firestore.js"></script>
 
   </head>
 <body>
 
-<h2>Cryptocalc web app demo</h2>
+<h2>Currency rates (live updated)</h2>
 
 <button type="button" onclick="modifyDoc()">
   Try to modify doc (should miss privs)
 </button>
 
-<p id="demo"></p>
-
+<!-- <p id="demo"></p> -->
 <p id="rates"></p>
 
 
@@ -33,12 +38,6 @@
 <!-- </script> -->
 
 
-<script src="https://www.gstatic.com/firebasejs/4.9.1/firebase.js"></script>
-
-<!-- ?? -->
-<script src="https://www.gstatic.com/firebasejs/4.9.1/firebase-app.js"></script>
-
-<script src="https://www.gstatic.com/firebasejs/4.9.1/firebase-firestore.js"></script>
 
 <script>
   // Initialize Firebase
@@ -59,43 +58,43 @@
 
 
 <script>
-  function showDoc() {
-    var docRef = db.collection("users").doc("alovelace");
-
-    docRef.get().then(function(doc) {
-      if (doc.exists) {
-        console.log("Document data:", doc.data().last);
-      } else {
-        // doc.data() will be undefined in this case
-        console.log("No such document!");
-      }
-    }).catch(function(error) {
-      console.log("Error getting document:", error);
-    });
-  }
-
-  showDoc()
+  // function showDoc() {
+  //   var docRef = db.collection("users").doc("alovelace");
+  // 
+  //   docRef.get().then(function(doc) {
+  //     if (doc.exists) {
+  //       console.log("Document data:", doc.data().last);
+  //     } else {
+  //       // doc.data() will be undefined in this case
+  //       console.log("No such document!");
+  //     }
+  //   }).catch(function(error) {
+  //     console.log("Error getting document:", error);
+  //   });
+  // }
+  // 
+  // showDoc()
 
   function writeDoc() {
     var docRef = db.collection("users").doc("alovelace");
   }
 
-  // setup realtime update
-  db.collection('users').doc("alovelace").onSnapshot(
-    (doc) => {
-      console.log('alovelace:', doc.data())
-      document.getElementById('demo').innerText = doc.data().last
-    },
-    (error) => console.error('Snapshot init error', e)
-  )
+  // // setup realtime update
+  // db.collection('users').doc("alovelace").onSnapshot(
+  //   (doc) => {
+  //     console.log('alovelace:', doc.data())
+  //     document.getElementById('demo').innerText = doc.data().last
+  //   },
+  //   (error) => console.error('Snapshot init error', e)
+  // )
 
-  // setup realtime update
+  // setup realtime updated rates
   db.collection('rates').doc("all").onSnapshot(
     (doc) => {
-      console.log('alovelace:', doc.data())
-      document.getElementById('rates').innerText =  `Sample rates (for 1 USD): UAH: ${doc.data().UAH}, BTC: ${doc.data().BTC}`
+      console.log('Rates updated:', doc.data())
+      document.getElementById('rates').innerText =  `Rates (for 1 USD): UAH: ${doc.data().UAH}, BTC: ${doc.data().BTC}`
     },
-    (error) => console.error('Snapshot init error', e)
+    (e) => console.error('Snapshot init error', e)
   )
 
   function modifyDoc() {

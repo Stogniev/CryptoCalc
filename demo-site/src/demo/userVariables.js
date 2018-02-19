@@ -2,7 +2,7 @@ const { codes } = require('./currencies')
 
 const currencyCodes = codes
 //const currencies = require('./currencies')
-const { UnitNames, UnitPrefixes } = require('./unitUtil')
+const { unitNames, unitPrefixes } = require('./unitUtil')
 
 const { specVariables } = require('./common')
 
@@ -27,8 +27,8 @@ function validateVariableName(name) {
     throw new VariableNameError('is currency')
   }
 
-  const UP = UnitPrefixes.map(escape).join('|')
-  const UN = UnitNames.map(escape).join('|')
+  const UP = unitPrefixes().map(escape).join('|')
+  const UN = unitNames().map(escape).join('|')
   if (new RegExp(`^(${UP})(${UN})$`).test(name)) {
     throw new VariableNameError('is unit')
   }

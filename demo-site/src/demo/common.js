@@ -25,7 +25,7 @@ function getUnitName(u) {
 }
 
 // --- math helper
-const math = require("mathjs");
+const math = require('mathjs')
 
 function isUnit(x) {
   return x instanceof math.type.Unit

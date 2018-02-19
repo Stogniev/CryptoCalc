@@ -6,13 +6,13 @@ const escapeStringRegexp = require('escape-string-regexp');
 
 const { specVariables } = require('./common')
 
-
 // TODO: merge fu remove copypastes with tests
 // NOTE: but need consider parsing non-prepared TXT
 const UnitNames = Object.values(math.type.Unit.UNITS).map( u => u.name)
 const UnitPrefixes = Object.keys(math.type.Unit.PREFIXES.SHORTLONG)
 const UP = UnitPrefixes.map(escape).join('|')
 const UN = UnitNames.map(escape).join('|')
+
 
 // $, ₴, ...
 let currSymbolsList = Object.keys(currencies.symbolToCode).map(escapeStringRegexp)

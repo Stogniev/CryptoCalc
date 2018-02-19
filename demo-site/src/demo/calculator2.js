@@ -8,9 +8,9 @@ const escapeStringRegexp = require('escape-string-regexp');
 
 const DEBUG = process.env.DEBUG
 const currencies = require('./currencies')
-const rates = require('./rates')
 
-const { UnitNames, UnitPrefixes } = require('./unitUtil')
+const { unitNames, unitPrefixes, refreshCurrencyUnits } = require('./unitUtil')
+const { fixedRates } = require('./fixedRates')
 
 const { /*clearAllUserVariables,*/ isUserVariable, createUserVariable } = require('./userVariables')
 const { scales, isUnit, lexemSeparator, log } = require('./common')
@@ -115,12 +115,12 @@ function prepareTxt(text, verbose=false) {
 
   // 40) wrap all units (USD, Gb, kg...) by lexem separator: " kg;"
   //    reason: to parse '10 cm' and same time avoid word cropping "1 and 2 m"ul 3
-  const UP = UnitPrefixes.map(escape).join('|')
-  const UN = UnitNames.map(escape).join('|')
+  const UP = unitPrefixes().map(escape).join('|')
+  const UN = unitNames().map(escape).join('|')
   txt = txt.replace(new RegExp(`([^a-zA-Z_])(${UP})(${UN})((?:[^a-zA-Z_]|$))`, 'g'), `$1 $2$3${lexemSeparator} $4`)
 
 
-  // (just not include confisuign units to UnitNames)
+  // (just not include confisuign units to unitNames)
   //
   // //40-2) back: remove ";" from confusing units (   ??!! better way (just not add first)
   // const CU = confusingUnits.map(escape).join('|')
@@ -530,6 +530,8 @@ function test() {
   assertEqual(call('uAh 12.39').toString(), '12.39 UAH')
   assertEqual(call('12.40uAh').toString(), '12.4 UAH')
   assertEqual(call('12.41 uAh').toString(), '12.41 UAH')
+
+
   assertEqual(call('₴ 12.42 uaH').toString(), '12.42 UAH')
   assertEqual(call('₴12.43uaH').toString(), '12.43 UAH')
 
@@ -581,11 +583,10 @@ function test() {
   assertEqual(call('1 USD + 1 EUR').value, call('1 EUR + 1 USD').value, ALMOST)
 
 
-  // rates checks
-  //console.log('rcd:', rates['CAD'])
-  assertEqual(call('$1 CAD').toNumber('USD'), rates['CAD'])
+  // fixedRates checks
+  assertEqual(call('$1 CAD').toNumber('USD'), 1/fixedRates['CAD'])
   assertEqual(call('$1 CAD + 1 EUR ').toNumber('USD'),
-              rates['CAD'] + rates['EUR'], ALMOST)
+              1/fixedRates['CAD'] + 1/fixedRates['EUR'], ALMOST)
 
 
   // implicit conversion: "number ± unit" treat as "unit ± unit"
@@ -655,7 +656,10 @@ function test() {
   // as a % of/on/off for numbers
   assertEqual(call('24 as a % of 120').toString(), '20 PERCENT')
   assertEqual(call('70 as a % on 20').toString(), '250 PERCENT')
+
+
   assertEqual(call('20 as a % off 70').value, 28.57, ALMOST) // 20/0.7
+
 
 
   // Tests from Specification
@@ -664,8 +668,8 @@ function test() {
   assertEqual(call('6(3)'), 18)
   assertEqual(
     call('$30 CAD + 5 USD - 7EUR').toNumber('USD'),
-    30 * rates['CAD'] + 5 - 7 * rates['EUR'], ALMOST)
-  assertEqual(call(`${1/rates['RUB']} roubles - 1 $`).toNumber('USD'), 0, ALMOST)
+    30 * 1/fixedRates['CAD'] + 5 - 7 * 1/fixedRates['EUR'], ALMOST)
+  assertEqual(call(`${fixedRates['RUB']} roubles - 1 $`).toNumber('USD'), 0, ALMOST)
   assertEqual(call('20% of 10$').toString(), '2 USD')
   assertEqual(call('5% on $30').toString(), '31.5 USD')
   assertEqual(call('6% off 40 EUR').toString(), '37.6 EUR')
@@ -694,7 +698,6 @@ function test() {
   assertEqual(call('2k mm + 2m').toString(), '4 m')
 
   assertEqual(call('$2.2k in ZEUR').toNumber('ZEUR'), 2000, ALMOST)
-
 
   // assign variables
   assertEqual(call('var1 = 2').value, 2)
@@ -951,6 +954,7 @@ function test() {
 
 
 if (require.main === module) {
+  refreshCurrencyUnits(fixedRates)
   test()
 }
 

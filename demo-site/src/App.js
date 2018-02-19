@@ -6,15 +6,13 @@ import React from 'react';
 //import logo from './logo.svg';
 import './App.css';
 //import math from 'mathjs'
-import { prepareAndParse, createCalcEnvironment } from './demo/calculator2'
+import { createCalcEnvironment } from './demo/calculator2'
 import { isError } from './demo/common'
 //import { isUserVariable } from './demo/userVariables'
 import { humanizeExpression, formatResult } from './demo/formatting'
 //import is from 'is'
 
-
 //import { clearAllUserVariables } from './demo/userVariables'
-
 
 import Helmet from 'react-helmet'
 //import nearley from 'nearley'
@@ -24,9 +22,12 @@ import Helmet from 'react-helmet'
 import { highlightLexer } from './demo/test_moo'
 /*eslint no-use-before-define: ["error", { "variables": false }]*/
 
-const B = true
+import { loadjs, canUseDOM } from './domutil'
+
+import { refreshCurrencyUnits } from './demo/unitUtil'
 
 const NBSP = '\u00A0'
+
 
 // function getTextNodeAtPosition(root, index) {
 //   //let lastNode = null;
@@ -100,38 +101,12 @@ class App extends React.Component {
   constructor(props) {
     super(props)
     this.state = App._defaultState
+    this.db = null  // firebase
     //this.parser = new nearley.Parser(grammar.ParserRules, grammar.ParserStart) //.feed(txt);
   }
 
   //state = App._defaultState
 
-  expressionChanged = (event) => {
-    if (B) return
-
-    const lastExpression = event.target.value
-
-    if (lastExpression === '') {
-      this.setState(App._defaultState)
-      return
-    }
-
-    let newState = { lastExpression }
-
-    try {
-      const parser = prepareAndParse(lastExpression, 'verbose')
-      console.log('parser:', parser)
-      newState = {...newState,
-        expression: humanizeExpression(parser.lexer.buffer),
-        result: parser && parser.results[0],
-        error: null
-      }
-    } catch(e) {
-      let error = `${e}`
-      newState = {...newState, error}
-    }
-
-    this.setState( newState )
-  }
 
   // componentWillUpdate(nextProps, nextState) {
   //   if (this.state.expression !== nextState.expression) {
@@ -175,11 +150,9 @@ class App extends React.Component {
 
   onInput = (event) => {
     let text = event.target.innerText
-
     const inputs = text.split('\n')
 
     const env = createCalcEnvironment()
-
     inputs.forEach( input => env.call(input) )
 
     //console.log('env results:', env.expressions, env.results)
@@ -217,20 +190,53 @@ class App extends React.Component {
     }
     //const expressions = env.expressions.map( e => formatAnswerExpression(e) )
     //const results = env.results
-
     //console.log('ier:', inputs, expressions, results)
 
     this.setState( {inputs, expressions, results, placeholderInput: false} )
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    //console.log('updated. Inputs:', this.state.inputs)
-    
+  componentDidMount() {
+    if (canUseDOM) this.initFirebase()
   }
 
-  componentDidMount() {
-    // make here to surpress react warning (1)
-    //if (B) document.getElementById('inputList').setAttribute('contenteditable', true)
+  componentDidUpdate(prevProps, prevState) {
+    //console.log('updated. Inputs:', this.state.inputs)
+
+    this.initFirebase()
+  }
+
+  initFirebase() {
+    if (typeof firebase !== 'undefined') return; // avoid reinitialize on live refresh
+
+    Promise.resolve(
+    ).then( () => loadjs('https://www.gstatic.com/firebasejs/4.9.1/firebase.js')
+    ).then( () => loadjs('https://www.gstatic.com/firebasejs/4.9.1/firebase-firestore.js')
+    ).then( () => {
+      const config = {
+        apiKey: 'AIzaSyA4HThdnU1J0rD4mHKmmDVPYVRMjoGE-Nw',
+        authDomain: 'cryptocalc1-76acb.firebaseapp.com',
+        databaseURL: 'https://cryptocalc1-76acb.firebaseio.com',
+        projectId: 'cryptocalc1-76acb',
+        storageBucket: 'cryptocalc1-76acb.appspot.com',
+        messagingSenderId: '89798210406'
+      }
+      /* eslint-disable no-undef */
+      firebase.initializeApp(config)
+      this.db = firebase.firestore()
+      /* eslint-enable no-undef */
+
+      this.db.collection('rates').doc('all').onSnapshot(
+        (doc) => {
+          const rates = doc.data()
+
+          console.log('Live rates:', rates)
+          document.getElementById('rates').innerText = `Live rates (for 1 USD): UAH: ${rates.UAH}, EUR: ${rates.EUR}, BTC: ${rates.BTC} (see console for others)`
+
+          refreshCurrencyUnits(rates)
+        },
+        (e) => console.error('Snapshot init error', e)
+      )
+    }).catch( e => console.error('initFirebase error:', e) )
   }
 
 
@@ -262,6 +268,7 @@ class App extends React.Component {
             r.push(<span className="orange-color" key={item.offset}>{item.value}</span>)
             break;
           case 'currency':
+          case 'unit':
             r.push(<span className="blue-color" key={item.offset}>{item.value}</span>)
             break;
           case 'variable':
@@ -349,7 +356,11 @@ class App extends React.Component {
           <div className="autodraw">
             <div className="highlights">
               { inputs.map( (inp, i) =>
-                <div key={`h_${i}_${inp}`}>
+                <div key={`h_${i}_${inp}`}
+                     /* className={[
+                         expressions[i] !== inputs[i] && 'semi-transparent',
+                         ].join(' ')} */
+                  >
                   {this.renderHighlighted(inp) || NBSP}
                 </div>)
               }
@@ -386,8 +397,10 @@ class App extends React.Component {
         </div>
 
         <br />
-        <hr />
-        <pre>{info}</pre>
+      <hr />
+      <p id="rates"></p>
+      <pre>{info}</pre>
+
       </div>
     )
   }

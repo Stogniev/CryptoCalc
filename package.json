@@ -6,7 +6,8 @@
   "author": "Alex_Y <yegupov@gmail.com>",
   "license": "",
   "scripts": {
-    "console": "(cd demo-site/src/demo && ./build-and-test2.sh)",
+    "test": "(cd demo-site/src/demo && ./build-and-test2.sh)",
+    "test-debug": "(cd demo-site/src/demo && DEBUG=1 ./build-and-test2.sh)",
     "console-debug": "(cd demo-site/src/demo && DEBUG=1 ./build-and-test2.sh)",
     "start": "(cd ./demo-site && yarn run start)",
     "build": "(cd ./demo-site && npm run build && rm -rf ../docs/* && cp -rf build/* ../docs/ && cd .. && sed -i 's/\\/static/static/g' docs/index.html && git add docs/static/js/\\*.js)",
