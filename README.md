@@ -1,27 +1,18 @@
-# CryptoCalc
+# CryptoCalc configuration
+
+## Node
+
+Tested on 8.9.4
 
 
-
-# Quick demo
-
-```
-npm install       #yarn install    
-npm run demo
-```
-
-
-# Accounts
-
-Cron-job: safecryptocalc@gmail.com
-
-
-# Configuration
 
 
 ## Firebase
 Used to store currency rates.
 
 Account: safecryptocalc@gmail.com  (paid because firebase functions request to EXTERNAL services to for the rates)
+
+Note: use "npm run firebase-deploy-functions" (or npm run firebase-deploy-functions-node6" from node6 in case of problem) to deploy a functiouns located in firebase/functions/index.js
 
 ### Database
 Location: https://console.firebase.google.com/u/1/project/cryptocalc1-76acb/database/firestore/data
@@ -47,6 +38,8 @@ Note: Firebase configuration local "patch" used: ```~/dev/cryptocalc/firebase/fu
 Used to call firebase functions periodically.
 
 Account: safecryptocalc@gmail.com (free)
+
+tasks: https://cron-job.org/en/members/jobs/
 
 https://cron-job.org/en/members/jobs/details/?jobid=913300
 https://cron-job.org/en/members/jobs/details/?jobid=913384
