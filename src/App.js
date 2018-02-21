@@ -6,7 +6,7 @@ import { Cryptocalc } from './Cryptocalc'
 const App = () => (
   <Router>
     <Route exact path="/" component={Cryptocalc} />
-    <Route exact path="/CryptoCalc" component={Cryptocalc} />
+    <Route exact path="/CryptoCalc/" component={Cryptocalc} />
   </Router>
 )
 export default App
