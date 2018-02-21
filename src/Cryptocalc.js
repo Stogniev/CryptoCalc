@@ -305,7 +305,7 @@ export class Cryptocalc extends React.Component {
           </div>
         </section>
 
-        <div className="ZZcontainer">
+        <div className="ZZ2container">
           <div className="autodraw">
             <div className="highlights">
               { inputs.map( (inp, i) =>
