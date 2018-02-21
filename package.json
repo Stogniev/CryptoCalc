@@ -4,6 +4,7 @@
   "main": "index.js",
   "repository": "git@github.com:Stogniev/CryptoCalc.git",
   "author": "Alex_Y <yegupov@gmail.com>",
+  "homepage" : "https://stogniev.github.io/CryptoCalc",
   "license": "",
   "private": true,
   "dependencies": {
