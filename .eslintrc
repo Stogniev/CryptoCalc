@@ -65,6 +65,11 @@
       no-empty: ["error", { "allowEmptyCatch": true }],
       no-lonely-if: off,     // sometimes conditions are different ideologically
       quote-props: off,     // sometimes similar qouted looks better
+      import/prefer-default-export: off, // disagree. sometimes multiple exports ok
+      prefer-destructuring: off,   // sometimes old way looks better
+      react/jsx-wrap-multilines: off,   // not error and not imroves looks
+      react/no-array-index-key: off,   // sometimes no other way than usin indices
+      react/self-closing-comp: off, // sometimes component potentially growc
     },
     "plugins": [
         "react",
@@ -108,7 +113,7 @@
 //         "browser": true,
 //         "node": true
 //     },
-// 
+//
 //     "rules": {
 //         "no-mixed-requires": [0, false],
 //         "quotes": [2, "single"],
@@ -134,13 +139,13 @@
 //         "react/self-closing-comp": 1,
 //         "react/wrap-multilines": 2
 //     },
-// 
+//
 //     "ecmaFeatures": {
 //         "jsx": true
 //     },
-// 
+//
 //     "plugins": [ "react" ],
-// 
+//
 //     "globals": {
 //         "require": "true",
 //         "module": "true",

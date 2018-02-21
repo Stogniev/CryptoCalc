@@ -7,6 +7,7 @@ public/*.html
 */.DS_Store
 public/build.txt
 
+build/*
 .tern-port
 
 \#*

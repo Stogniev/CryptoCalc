@@ -1,27 +1,42 @@
 {
   "name": "CryptoCalc",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "main": "index.js",
   "repository": "git@github.com:Stogniev/CryptoCalc.git",
   "author": "Alex_Y <yegupov@gmail.com>",
   "license": "",
-  "scripts": {
-    "test": "(cd demo-site/src/demo && ./build-and-test2.sh)",
-    "test-debug": "(cd demo-site/src/demo && DEBUG=1 ./build-and-test2.sh)",
-    "console-debug": "(cd demo-site/src/demo && DEBUG=1 ./build-and-test2.sh)",
-    "start": "(cd ./demo-site && yarn run start)",
-    "build": "(cd ./demo-site && npm run build && rm -rf ../docs/* && cp -rf build/* ../docs/ && cd .. && sed -i 's/\\/static/static/g' docs/index.html && git add docs/static/js/\\*.js)",
-    "build-and-run": "npm run build && npm run localServer",
-    "localServer": "(cd docs && python -m SimpleHTTPServer 9000)",
-    "firebase-deploy-functions-node6": "(cd firebase/functions && firebase deploy --only functions)",
-    "firebase-deploy-functions": "(cd firebase/functions && npx -p node-bin@6.11 -- firebase deploy --only functions)",
-    "firebase-shell": "(cd firebase/functions && GOOGLE_APPLICATION_CREDENTIALS=../cryptocalc1-d51fa5762f45.json firebase experimental:functions:shell)"
-  },
+  "private": true,
   "dependencies": {
+    "assert": "^1.4.1",
+    "currency-symbol-map": "^4.0.3",
     "escape-string-regexp": "^1.0.5",
     "is": "^3.2.1",
+    "mathjs": "^3.20.2",
     "moo": "^0.4.3",
-    "prop-types": "^15.6.0",
-    "react-helmet": "^5.2.0"
+    "nearley": "^2.11.1",
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0",
+    "react-helmet": "^5.2.0",
+    "react-router-dom": "^4.2.2",
+    "react-scripts": "1.1.1"
+  },
+  "scripts": {
+    "build-parser": "(cd src/parser && nearleyc grammar.ne -o grammar.js)",
+    "test": "react-scripts test --env=jsdom",
+    "test-noninteractive": "CI=true npm run test",
+    "start": "npm run build-parser && react-scripts start",
+    "build": "npm run build-parser && npm run test-noninteractive && react-scripts build",
+    "test-debug": "DEBUG=1 npm run test",
+    "build-demo": "npm run build && rm -rf docs/* && cp -rf build/* docs/ && sed -i 's/\\/static/static/g' docs/index.html",
+    "add-demo-to-git": "git add docs/static/js/\\*.js",
+    "build-demo-and-run": "npm run build-demo && $(npm bin)/serve docs",
+    "0firebase-deploy-functions-node6": "(cd firebase/functions && firebase deploy --only functions)",
+    "0firebase-deploy-functions": "(cd firebase/functions && npx -p node-bin@6.11 -- firebase deploy --only functions)",
+    "0firebase-shell": "(cd firebase/functions && GOOGLE_APPLICATION_CREDENTIALS=../cryptocalc1-d51fa5762f45.json firebase experimental:functions:shell)",
+    "eject": "react-scripts eject"    
+  },
+  "devDependencies": {
+    "npm-run-all": "^4.1.2",
+    "serve": "^6.4.11"
   }
 }
