@@ -1,12 +1,13 @@
 import React from 'react'
-import { BrowserRouter as Router, Route, /* Link*/ } from 'react-router-dom'
+import { HashRouter, BrowserRouter as Router, Route, /* Link*/ } from 'react-router-dom'
 import { Cryptocalc } from './Cryptocalc'
 
 
 const App = () => (
-  <Router>
-    <Route exact path="/" component={Cryptocalc} />
-    <Route exact path="/CryptoCalc/" component={Cryptocalc} />
-  </Router>
+  <HashRouter>
+    <div>
+      <Route exact path="/" component={Cryptocalc} />
+    </div>
+  </HashRouter>
 )
 export default App
