@@ -309,7 +309,7 @@ export class Cryptocalc extends React.Component {
           <div className="autodraw">
             <div className="highlights">
               { inputs.map( (inp, i) =>
-                <div key={`h_${i}_${inp}`}
+                <div key={`h__${i}_${inp}`}
                      /* className={[
                          expressions[i] !== inputs[i] && 'semi-transparent',
                          ].join(' ')} */
