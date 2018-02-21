@@ -1,11 +1,11 @@
 dist
 node_modules
 ./dist/*
-public/js/main.js
-public/*.html
+Zpublic/js/main.js
+Zpublic/*.html
+Zpublic/build.txt
 .idea
 */.DS_Store
-public/build.txt
 
 build/*
 .tern-port

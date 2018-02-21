@@ -55,7 +55,7 @@ export class Cryptocalc extends React.Component {
   constructor(props) {
     super(props)
     this.state = Cryptocalc._defaultState
-    this.db = null  // firebase
+    this.db = null;  // firebase
     //this.parser = new nearley.Parser(grammar.ParserRules, grammar.ParserStart) //.feed(txt);
   }
 
