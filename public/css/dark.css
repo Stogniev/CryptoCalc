@@ -207,9 +207,6 @@ div.currency-table-percent ul li span:first-child {
 .switch .light {
   display: none; }
 
-.open-search.black {
-  display: none; }
-
 .change-img-light {
   display: none; }
 
@@ -398,4 +395,29 @@ div.copy {
 #textholder[contentEditable=true]:empty:not(:focus)::before {
   content: attr(data-placeholder);
   color: gray;
+}
+
+#textholder {
+  caret-color: white;
+}
+
+/* from CruptoCalc.css */
+
+.error {
+  color: gray;
+  font-size: x-small;
+}
+
+.textholder-placeholder {
+  color: gray;
+}
+
+#textholder {
+  color: rgba(255,255,255, 0);
+  caret-color: white;
+}
+
+.parsed-expression {
+  background-color: #000;
+  border-color: #d6d6e1;
 }

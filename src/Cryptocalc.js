@@ -1,34 +1,23 @@
-/* eslint-disable jsx-a11y/href-no-hash */  //
-
 import React from 'react';
 //import PropTypes from 'prop-types';
-//import logo from './logo.svg';
 import Helmet from 'react-helmet'
-
-import './Cryptocalc.css';
-//import math from 'mathjs'
-import { createCalcEnvironment } from './parser/environment'
-import { isError } from './common'
-
-//import { isUserVariable } from './demo/userVariables'
-import { humanizeExpression, formatResult } from './parser/formatting'
 import is from 'is'
 
-//import { clearAllUserVariables } from './demo/userVariables'
+//import './Cryptocalc.css';
+import { createCalcEnvironment } from './parser/environment'
+import { isError } from './common'
+import { humanizeExpression, formatResult } from './parser/formatting'
 
-//import nearley from 'nearley'
-//import grammar from './demo/grammar2'
-
-// const moo = require('moo')
 import { highlightLexer } from './highlighter'
 /*eslint no-use-before-define: ["error", { "variables": false }]*/
 
 import { loadjs, canUseDOM } from './domutil'
-
 import { refreshCurrencyUnits } from './unitUtil'
 
 const NBSP = '\u00A0'
 
+
+/* eslint-disable jsx-a11y/href-no-hash */  //
 
 export class Cryptocalc extends React.Component {
   static _defaultState = {
@@ -50,7 +39,7 @@ export class Cryptocalc extends React.Component {
     expressions: [],  //active expressions
     results: [],   // calculated results of inputs
 
-    colorScheme: 'light',   // or 'dark'
+    lightColorScheme: true,
 
     e1: 'e1',
     e1HTML: '33 + 22',
@@ -84,36 +73,6 @@ export class Cryptocalc extends React.Component {
   //   }
   // }
 
-  onLoadDocClicked = (key, event) => {
-    this.setUserText(this.state.savedDocs[key])
-  }
-
-  deleteDocClicked = (name, event) => {
-    const savedDocs = {...this.state.savedDocs}
-    delete savedDocs[name]
-    this.setState( {savedDocs} )
-  }
-
-  onPlusClicked = () => {
-    this.setUserText('')
-    this.focusUserText()
-    this.setState({ menuActive: false })
-  }
-
-  generateDocName = () => {
-    let s = this.getUserText().replace('\n', ';')
-    const isLong = s.length > 10
-    s = s.slice(0, 10)
-    if (isLong) s += '...'
-    return s
-  }
-
-  onBurgerClicked = () => {
-    this.setState({
-      menuActive: !this.state.menuActive,
-      menuInput: this.generateDocName()
-    })
-  }
 
   componentDidMount() {
     if (canUseDOM) {
@@ -132,6 +91,24 @@ export class Cryptocalc extends React.Component {
     if (!prevState.menuActive && this.state.menuActive) {
       document.getElementById('menuInput').focus()
     }
+  }
+
+  onPlusClicked = () => {
+    this.setUserText('')
+    this.focusUserText()
+    this.setState({ menuActive: false })
+  }
+
+
+  onBurgerClicked = () => {
+    this.setState({
+      menuActive: !this.state.menuActive,
+      menuInput: this.generateDocName()
+    })
+  }
+
+  onLoadDocClicked = (key, event) => {
+    this.setUserText(this.state.savedDocs[key])
   }
 
   onSavingKeyPress = (event) => {
@@ -158,6 +135,20 @@ export class Cryptocalc extends React.Component {
   setUserText(text) {
     this.textHolderDOM().innerText = text
     this.onInput() // ~~ call handler manually
+  }
+
+  deleteDocClicked = (name, event) => {
+    const savedDocs = {...this.state.savedDocs}
+    delete savedDocs[name]
+    this.setState( {savedDocs} )
+  }
+
+  generateDocName = () => {
+    let s = this.getUserText().replace('\n', ';')
+    const isLong = s.length > 10
+    s = s.slice(0, 10)
+    if (isLong) s += '...'
+    return s
   }
 
   focusUserText() {
@@ -309,10 +300,15 @@ export class Cryptocalc extends React.Component {
     return r
   }
 
+  switchColorScheme = () => {
+    this.setState({ lightColorScheme: !this.state.lightColorScheme })
+  }
+
   render() {
-    const { inputs, expressions, results, env, savedDocs, menuActive, colorScheme } = this.state
+    const { inputs, expressions, results, env, savedDocs, menuActive, lightColorScheme } = this.state
     //console.log('r:', inputs, expressions, results, env)
     const total = env && env.sum()
+    const colorSchemeSuffix = lightColorScheme ? 'light': 'dark'
 
     return (
       <div>
@@ -320,8 +316,8 @@ export class Cryptocalc extends React.Component {
           <meta charSet="UTF-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=1.0, user-scalable=0" />
           <title>Cripto Calc</title>
-          {/* <link rel="stylesheet" href="css/common.css" /> */}
-          <link rel="stylesheet" href={`css/${colorScheme}.css`} />
+          <link rel="stylesheet" href="css/common.css" />
+          <link rel="stylesheet" href={`css/${colorSchemeSuffix}.css`} />
           <link rel="stylesheet" href="css/fonts.css" />
         </Helmet>
 
@@ -346,7 +342,9 @@ export class Cryptocalc extends React.Component {
               <img src="img/light-icon.svg" alt="light" className="light" />
               <img src="img/sun.svg" alt="light" className="dark" />
               <div>
-                <input type="checkbox" className="checkbox" id="checkbox" />
+                <input type="checkbox" className="checkbox" id="checkbox"
+                       checked={!lightColorScheme}
+                       onChange={this.switchColorScheme} />
                 <label htmlFor="checkbox"></label>
               </div>
               <img src="img/dark-icon.svg" alt="dark" className="change-img-light" />
@@ -358,11 +356,13 @@ export class Cryptocalc extends React.Component {
             </div>
             <div className="holder">
               <span className="plus" onClick={this.onPlusClicked}>
-                <img src={`img/plus-${colorScheme}.svg`} alt="+" />
+                <img src={`img/plus-${colorSchemeSuffix}.svg`} alt="+" />
               </span>
-              <span className={`open-search black ${menuActive ? 'active' : ''}`}><img src="img/burger.svg" alt="burger" onClick={this.onBurgerClicked} /></span>
-              <span className="open-search white"><img src="img/burger-white.svg" alt="burger" /></span>
-              <form className="search-form">
+              <span className={`open-search ${menuActive ? 'active' : ''}`}>
+                <img src={`img/burger-${colorSchemeSuffix}.svg`} alt="≣"
+                     onClick={this.onBurgerClicked} />
+              </span>
+              <form className={`search-form ${menuActive ? 'active': ''}`}>
                 <input id="menuInput" type="text"
                        value={this.state.menuInput}
                        onKeyPress={this.onSavingKeyPress}
@@ -441,6 +441,7 @@ export class Cryptocalc extends React.Component {
 
 }
 
+/*
 const info = `
 Implemented all from specification except:
   - clipboard operations
@@ -769,3 +770,4 @@ prev + 2
 my label: 1 + "inline comment" 2  //last comment
 
 `
+*/

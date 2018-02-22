@@ -204,9 +204,9 @@ div.constants-table ul li:first-child span {
 .change-img-dark {
   display: none; }
 
-.holder .open-search.white {
-  display: none;
-}
+/* .holder .open-search.white { */
+/*   display: none; */
+/* } */
 
 .holder .plus {
   padding: 0 9px 0 0;
@@ -326,6 +326,11 @@ div.constants-table ul li:first-child span {
     top: -7px;
     right: 9px; }
 
+  .search-form.active {
+    display: unset;
+  }
+
+
 .search-form ul li {
   color: #fff;
   font-size: 10px;
@@ -339,6 +344,8 @@ div.constants-table ul li:first-child span {
     width: 7px;
     height: 7px;
     background: url("img/close.svg") no-repeat; }
+
+
 
 .sum:hover + .copy {
   display: block; }
@@ -392,8 +399,38 @@ div.copy {
 
 /*# sourceMappingURL=light.css.map */
 
-/* display placeholder for empty editable div */
-#textholder[contentEditable=true]:empty:not(:focus)::before {
-  content: attr(data-placeholder);
+#textholder {
+  caret-color: black;
+}
+
+/* from CruptoCalc.css */
+.error {
   color: gray;
+ font-size: x-small;
+}
+
+.textholder-placeholder {
+  color: gray;
+}
+
+#textholder {
+  color: rgba(0,0,0, 0);
+  caret-color: black;
+}
+
+.parsed-expression {
+  background-color: #fff;
+  border-color: #d6d6e1;
+}
+
+.hl-number {
+  color: pink;
+}
+
+.hl-blue {
+  color: blue;
+}
+
+.violet-color {
+  color: #6622cc;
 }

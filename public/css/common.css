@@ -1,40 +1,8 @@
-.App {
-}
-
-.App-logo {
-  animation: App-logo-spin infinite 20s linear;
-  height: 80px;
-}
-
-.App-header {
-  background-color: #222;
-  height: 150px;
-  padding: 20px;
-  color: white;
-}
-
-.App-title {
-  font-size: 1.5em ;
-}
-
-.App-intro {
-  font-size: large;
-}
-
-@keyframes App-logo-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.App p {
-  margin: 10px;
-}
-
-.error {
+/* display placeholder for empty editable div */
+#textholder[contentEditable=true]:empty:not(:focus)::before {
+  content: attr(data-placeholder);
   color: gray;
-  font-size: x-small;
 }
-
 
 .center {
   text-align: center;
@@ -70,7 +38,7 @@
   position: absolute;
   line-height: 4em;
 
-  color: gray;
+  /* color: gray; */
 
   font-family: 'RobotoMono-Regular';
   letter-spacing: 1.2px;
@@ -79,8 +47,8 @@
 #textholder {
   z-index: -2;
   line-height: 4em;
-  color: rgba(0,0,0, 0);
-  caret-color: black;
+  /* color: rgba(0,0,0, 0); */
+  /* caret-color: black; */
 
   /* background-color: lightgray; */
 
@@ -156,8 +124,8 @@
 .parsed-expression {
   white-space: nowrap;
 
-  background-color: #fff;
-  border-color: #d6d6e1;
+  /* background-color: #fff; */
+  /* border-color: #d6d6e1; */
   border-radius: 5px;
 
   font-family: 'RobotoMono-Regular';
@@ -165,7 +133,6 @@
   display: inline-block;
   /* width: 50%; */
 
-  background-color: #fff;
   /* padding: 5px 9px 4px; */
   border-radius: 5px;
 }
@@ -196,17 +163,6 @@
 .hl-number {
 }
 
-.hl-number {
-  color: pink;
-}
-
-.hl-blue {
-  color: blue;
-}
-
-.violet-color {
-  color: #6622cc;
-}
 
 .highlighted-input {
     font-family: 'RobotoMono-Regular';

@@ -70,6 +70,7 @@
       react/jsx-wrap-multilines: off,   // not error and not imroves looks
       react/no-array-index-key: off,   // sometimes no other way than usin indices
       react/self-closing-comp: off, // sometimes component potentially growc
+      react/sort-comp: off,  // benefit less than afford to maintain
     },
     "plugins": [
         "react",
