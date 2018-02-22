@@ -233,9 +233,9 @@ var grammar = {
           //if (r === null) return rej
           //return r
         } },
-    {"name": "CONST$string$1", "symbols": [{"literal":"p"}, {"literal":"i"}], "postprocess": function joiner(d) {return d.join('');}},
+    {"name": "CONST$string$1", "symbols": [{"literal":"P"}, {"literal":"i"}], "postprocess": function joiner(d) {return d.join('');}},
     {"name": "CONST", "symbols": ["CONST$string$1"], "postprocess": function(d) {return Math.PI; }},
-    {"name": "CONST", "symbols": [{"literal":"e"}], "postprocess": function(d) {return Math.E; }},
+    {"name": "CONST", "symbols": [{"literal":"E"}], "postprocess": function(d) {return Math.E; }},
     {"name": "N", "symbols": ["float"], "postprocess": id},
     {"name": "N", "symbols": ["FUNC"], "postprocess": id},
     {"name": "N", "symbols": ["CONST"], "postprocess": id},

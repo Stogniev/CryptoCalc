@@ -288,8 +288,8 @@ FUNC -> "sin" P_NUM  {% function(d) {return Math.sin(d[1]); } %}
                           //return r
                         } %}
 
-CONST -> "pi"          {% function(d) {return Math.PI; } %}
-   | "e"           {% function(d) {return Math.E; } %}
+CONST -> "Pi"          {% function(d) {return Math.PI; } %}
+   | "E"           {% function(d) {return Math.E; } %}
 
 
 # A number value or a function of a number NOTE: no space between

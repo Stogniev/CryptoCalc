@@ -48,10 +48,10 @@ test(null, () => expect(call('5*(2 + 3)*4')).toBe(100))
 
 
 // math constants
-test(null, () => expect(call('e')).toBeCloseTo(Math.E, 5))
-test(null, () => expect(call('pi')).toBeCloseTo(3.14, 2))
-test(null, () => expect(call('pi + 1')).toBeCloseTo(4.14, 2))
-test(null, () => expect(call('1 + pi')).toBeCloseTo(4.141, 2))
+test(null, () => expect(call('E')).toBeCloseTo(Math.E, 5))
+test(null, () => expect(call('Pi')).toBeCloseTo(3.14, 2))
+test(null, () => expect(call('Pi + 1')).toBeCloseTo(4.14, 2))
+test(null, () => expect(call('1 + Pi')).toBeCloseTo(4.141, 2))
 //
 // implicit multiplication "*"
 test(null, () => expect(call('(3)7')).toBe(21))
@@ -69,8 +69,8 @@ test(null, () => expect(call('2 + 3 (2+4) / 2')).toBe(11))
 test(null, () => expect(call('1 + 3(5 + 4 - 6 / 3) / 2 * 4 - 3')).toBe(40))
 
 test(null, () => expect(call('3.139 * 1')).toBeCloseTo(3.14, 2) )
-test(null, () => expect(call('pi (7 - 5) - pi')).toBeCloseTo(3.14, 2)  )
-test(null, () => expect(call('pi(7 - 5)pi/(pi*pi) - 2')).toBe(0))
+test(null, () => expect(call('Pi (7 - 5) - Pi')).toBeCloseTo(3.14, 2)  )
+test(null, () => expect(call('Pi(7 - 5)Pi/(Pi*Pi) - 2')).toBe(0))
 
 // exponents
 test(null, () => expect(call('2^3')).toBe(8))
@@ -78,11 +78,11 @@ test(null, () => expect(call('2^3^2')).toBe(512))
 test(null, () => expect(call('(2^3)^2')).toBe(64))
 test(null, () => expect(call('2*3^2*3')).toBe(54))
 test(null, () => expect(call('2 * 3 ^ 2 * 3')).toBeCloseTo(54, 2))
-test(null, () => expect(call('2 * pi ^ 2 * 3')).toBeCloseTo(59.22, 2))
+test(null, () => expect(call('2 * Pi ^ 2 * 3')).toBeCloseTo(59.22, 2))
 // exponent + braces
 test(null, () => expect(call('2^2(3)')).toBe(12))
 test(null, () => expect(call('(3)2^2')).toBe(12))
-test(null, () => expect(call('(2)pi^2(3)')).toBeCloseTo(59.22, 2))
+test(null, () => expect(call('(2)Pi^2(3)')).toBeCloseTo(59.22, 2))
 test(null, () => expect(call('4^-2')).toBe(4 ** -2))
 
 
@@ -121,21 +121,21 @@ test(null, () => expect(call('3 << 4 + 9 >> 2')).toBe(6144))
 test(null, () => expect(call('sqrt(81)')).toBe(9))
 //test(null, () => expect(call('sqrt(-4)'), NaN)
 
-test(null, () => expect(call('sin(2 pi)')).toBe(call('2 sin(pi) cos(pi)')))
-test(null, () => expect(call('tan(3 pi)')).toBe(call('sin(3 pi)/cos(3 pi)')))
-test(null, () => expect(call('ln(e^5)')).toBe(5))
+test(null, () => expect(call('sin(2 Pi)')).toBe(call('2 sin(Pi) cos(Pi)')))
+test(null, () => expect(call('tan(3 Pi)')).toBe(call('sin(3 Pi)/cos(3 Pi)')))
+test(null, () => expect(call('ln(E^5)')).toBe(5))
 
 // unary "+" and "-"
 test(null, () => expect(call('-5')).toBe(-5))
 test(null, () => expect(call('-5+8')).toBe(3))
 test(null, () => expect(call('-5+8')).toBe(3))
 test(null, () => expect(call('-1 - -1')).toBe(0))
-test(null, () => expect(call('-sin(-pi/2)')).toBe(1))
+test(null, () => expect(call('-sin(-Pi/2)')).toBe(1))
 test(null, () => expect(call('-(-1)')).toBe(1))
 test(null, () => expect(call('-(-2 - -1)')).toBe(1))
 
 //consts
-test(null, () => expect(call('pi + e')).toBe(Math.PI + Math.E))
+test(null, () => expect(call('Pi + E')).toBe(Math.PI + Math.E))
 
 // floats
 test(null, () => expect(call('12.95 + 3.10')).toBeCloseTo(16.05, 2))
@@ -250,7 +250,7 @@ test(null, () => expect(call('12 / 2UAH ').message).toContain('invalid'))
 
 test(null, () => expect(call('(3+5) 2 Euro * 2').toString()).toBe('32 EUR'))
 
-test(null, () => expect(call('1 UAH * pi').toNumber()).toBeCloseTo(3.14, 2))
+test(null, () => expect(call('1 UAH * Pi').toNumber()).toBeCloseTo(3.14, 2))
 
 // mixed currencies
 test(null, () => expect(call('1 USD + 1 TENDOLL').toNumber('USD')).toBe(11))

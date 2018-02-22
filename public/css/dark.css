@@ -68,16 +68,14 @@ header {
   header .container {
     display: flex;
     justify-content: center; }
-    header .container .logo.light {
+    header .container .logo {
       font-size: 20px;
       font-weight: bold;
       display: flex;
       align-items: center;
       color: #fff; }
-      header .container .logo.light img {
+      header .container .logo img {
         padding: 0 14px 0 0; }
-    header .container .logo.dark {
-      display: none; }
     header .container .menu {
       display: flex; }
       header .container .menu li a {
@@ -204,11 +202,6 @@ div.currency-table-percent ul li span:first-child {
 .switch div {
   padding: 0 5px; }
 
-.switch .light {
-  display: none; }
-
-.change-img-light {
-  display: none; }
 
 .total span {
   color: #747e95;

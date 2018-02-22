@@ -68,15 +68,13 @@ header {
   header .container {
     display: flex;
     justify-content: center; }
-    header .container .logo.dark {
+    header .container .logo {
       font-size: 20px;
       font-weight: bold;
       display: flex;
       align-items: center; }
-      header .container .logo.dark img {
+      header .container .logo img {
         padding: 0 14px 0 0; }
-    header .container .logo.light {
-      display: none; }
     header .container .menu {
       display: flex; }
       header .container .menu li a {
@@ -198,11 +196,6 @@ div.constants-table ul li:first-child span {
 .switch div {
   padding: 0 5px; }
 
-.switch .dark {
-  display: none; }
-
-.change-img-dark {
-  display: none; }
 
 /* .holder .open-search.white { */
 /*   display: none; */

@@ -4,21 +4,22 @@ import Helmet from 'react-helmet'
 import is from 'is'
 
 //import './Cryptocalc.css';
-import { createCalcEnvironment } from './parser/environment'
-import { isError } from './common'
-import { humanizeExpression, formatResult } from './parser/formatting'
+import { createCalcEnvironment } from '../parser/environment'
+import { isError } from '../common'
+import { humanizeExpression, formatResult } from '../parser/formatting'
 
-import { highlightLexer } from './highlighter'
+import { highlightLexer } from '../highlighter'
 /*eslint no-use-before-define: ["error", { "variables": false }]*/
 
-import { loadjs, canUseDOM } from './domutil'
-import { refreshCurrencyUnits } from './unitUtil'
+import { loadjs, canUseDOM } from '../domutil'
+import LS from '../localStorageUtil'
+import { refreshCurrencyUnits } from '../unitUtil'
+import { CommonHeader } from './CommonHeader'
 
 const NBSP = '\u00A0'
 
 
 /* eslint-disable jsx-a11y/href-no-hash */  //
-
 export class Cryptocalc extends React.Component {
   static _defaultState = {
     lastExpression: '',
@@ -38,8 +39,7 @@ export class Cryptocalc extends React.Component {
     //parsedInputs: [], // parsed input lines
     expressions: [],  //active expressions
     results: [],   // calculated results of inputs
-
-    lightColorScheme: true,
+    lightColorScheme: LS.getItem('colorScheme') === 'light',
 
     e1: 'e1',
     e1HTML: '33 + 22',
@@ -78,7 +78,13 @@ export class Cryptocalc extends React.Component {
     if (canUseDOM) {
       this.initFirebase()
       //log(info)
+
+      // restore colorScheme from localStorage (Note: move to redux)
+      /* if (is.defined(localStorage)) {
+       *   this.setState({ lightColorScheme: localStorage.colorScheme === 'light' })
+       * }*/
     }
+
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -90,6 +96,12 @@ export class Cryptocalc extends React.Component {
     // focus menu input after show
     if (!prevState.menuActive && this.state.menuActive) {
       document.getElementById('menuInput').focus()
+    }
+
+    if (prevState.lightColorScheme !== this.state.lightColorScheme) {
+      if (is.defined(localStorage)) {
+        LS.setItem('colorScheme', this.state.lightColorScheme ? 'light' : 'dark')
+      }
     }
   }
 
@@ -321,34 +333,19 @@ export class Cryptocalc extends React.Component {
           <link rel="stylesheet" href="css/fonts.css" />
         </Helmet>
 
-        <header>
-          <div className="container">
-            <a className="logo light" href="#">
-              <img src="img/logo-light.svg" alt="logo" />cryptocalc
-            </a>
-            <a className="logo dark" href="#">
-              <img src="img/logo-dark.svg" alt="logo" />cryptocalc
-            </a>
-            <ul className="menu">
-              <li><a href="#">Calculator</a></li>
-              <li><a href="#">Docs</a></li>
-            </ul>
-          </div>
-        </header>
+        <CommonHeader colorSchemeSuffix={colorSchemeSuffix} />
 
         <section className="change">
           <div className="container">
             <div className="switch">
-              <img src="img/light-icon.svg" alt="light" className="light" />
-              <img src="img/sun.svg" alt="light" className="dark" />
+              <img src={`img/sun-${colorSchemeSuffix}.svg`} alt="light" />
               <div>
                 <input type="checkbox" className="checkbox" id="checkbox"
                        checked={!lightColorScheme}
                        onChange={this.switchColorScheme} />
                 <label htmlFor="checkbox"></label>
               </div>
-              <img src="img/dark-icon.svg" alt="dark" className="change-img-light" />
-              <img src="img/dark-icon-change.svg" alt="dark" className="change-img-dark" />
+              <img src={`img/moon-${colorSchemeSuffix}.svg`} alt="dark" />
             </div>
             <div className={`total ${total || 'hidden'}`}>
               <span>Tolal:{NBSP}</span>
