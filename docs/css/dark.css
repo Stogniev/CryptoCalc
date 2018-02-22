@@ -307,7 +307,8 @@ div.currency-table-percent ul li span:first-child {
     position: absolute;
     top: 10px;
     right: 10px;
-    background-image: url("img/search-black.svg"); }
+    /* background-image: url("../img/search-black.svg"); */
+  }
   .search-form:before {
     content: '';
     display: inline-block;
@@ -330,7 +331,7 @@ div.currency-table-percent ul li span:first-child {
     top: 9px;
     width: 7px;
     height: 7px;
-    background: url("img/close.svg") no-repeat; }
+    background: url("../img/close.svg") no-repeat; }
 
 .sum:hover + .copy {
   display: block; }

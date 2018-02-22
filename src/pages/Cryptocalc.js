@@ -42,7 +42,7 @@ export class Cryptocalc extends React.Component {
     //parsedInputs: [], // parsed input lines
     expressions: [],  //active expressions
     results: [],   // calculated results of inputs
-    lightColorScheme: LS.getItem('colorScheme') === 'light',
+    lightColorScheme: LS.getItem('colorScheme') !== 'dark',
 
     e1: 'e1',
     e1HTML: '33 + 22',
