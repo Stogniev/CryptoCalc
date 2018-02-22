@@ -100,8 +100,19 @@ export class Cryptocalc extends React.Component {
     this.setState({ menuActive: false })
   }
 
+  generateDocName = () => {
+    let s = this.getUserText().replace('\n', ';')
+    const isLong = s.length > 10
+    s = s.slice(0, 10)
+    if (isLong) s += '...'
+    return s
+  }
+
   onBurgerClicked = () => {
-    this.setState({ menuActive: !this.state.menuActive })
+    this.setState({
+      menuActive: !this.state.menuActive,
+      menuInput: this.generateDocName()
+    })
   }
 
   componentDidMount() {
@@ -114,7 +125,13 @@ export class Cryptocalc extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     //console.log('updated. Inputs:', this.state.inputs)
 
+    // to init firebase on development mode
     this.initFirebase()
+
+    // focus menu input after show
+    if (!prevState.menuActive && this.state.menuActive) {
+      document.getElementById('menuInput').focus()
+    }
   }
 
   onSavingKeyPress = (event) => {
@@ -346,7 +363,7 @@ export class Cryptocalc extends React.Component {
               <span className={`open-search black ${menuActive ? 'active' : ''}`}><img src="img/burger.svg" alt="burger" onClick={this.onBurgerClicked} /></span>
               <span className="open-search white"><img src="img/burger-white.svg" alt="burger" /></span>
               <form className="search-form">
-                <input id="menu" type="text"
+                <input id="menuInput" type="text"
                        value={this.state.menuInput}
                        onKeyPress={this.onSavingKeyPress}
                        onChange={
