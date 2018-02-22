@@ -1,5 +1,5 @@
 import React from 'react'
-import { HashRouter, BrowserRouter as Router, Route, /* Link*/ } from 'react-router-dom'
+import { HashRouter, Route } from 'react-router-dom'
 import { Cryptocalc } from './Cryptocalc'
 
 

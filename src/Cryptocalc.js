@@ -38,6 +38,7 @@ export class Cryptocalc extends React.Component {
     expression: null, // succesful expression
     result: null,     // succesful result
     error: null,
+    env: null,  // calculator environment
 
     inputs: [], // input lines
     //parsedInputs: [], // parsed input lines
@@ -90,7 +91,10 @@ export class Cryptocalc extends React.Component {
   // }
 
   componentDidMount() {
-    if (canUseDOM) this.initFirebase()
+    if (canUseDOM) {
+      this.initFirebase()
+      console.log(info)
+    }
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -143,7 +147,7 @@ export class Cryptocalc extends React.Component {
     //const results = env.results
     //console.log('ier:', inputs, expressions, results)
 
-    this.setState( {inputs, expressions, results, placeholderInput: false} )
+    this.setState( {inputs, expressions, results, placeholderInput: false, env} )
   }
   onPaste = (e) => {
     // prevent pasting formatted text (that broke highilghting overlay)
@@ -164,8 +168,8 @@ export class Cryptocalc extends React.Component {
     Promise.resolve(
     ).then( () => loadjs('https://www.gstatic.com/firebasejs/4.9.1/firebase.js')
     ).then( () => loadjs('https://www.gstatic.com/firebasejs/4.9.1/firebase-firestore.js')
-    ).then( () => {
-      const config = {
+    ).then( () => {  
+      const config = {   // keep firebase db readonly 
         apiKey: 'AIzaSyA4HThdnU1J0rD4mHKmmDVPYVRMjoGE-Nw',
         authDomain: 'cryptocalc1-76acb.firebaseapp.com',
         databaseURL: 'https://cryptocalc1-76acb.firebaseio.com',
@@ -182,8 +186,8 @@ export class Cryptocalc extends React.Component {
         (doc) => {
           const rates = doc.data()
 
-          console.log('Live rates:', rates)
-          document.getElementById('rates').innerText = `Live rates (for 1 USD): UAH: ${rates.UAH}, EUR: ${rates.EUR}, BTC: ${rates.BTC} (see console for others)`
+          console.log(`Currency rates for ${new Date()}:`, rates)
+          //document.getElementById('rates').innerText = `Live rates (for 1 USD): UAH: ${rates.UAH}, EUR: ${rates.EUR}, BTC: ${rates.BTC} (see console for others)`
 
           refreshCurrencyUnits(rates)
         },
@@ -191,7 +195,6 @@ export class Cryptocalc extends React.Component {
       )
     }).catch( e => console.error('initFirebase error:', e) )
   }
-
 
   renderHighlighted(exp) {
     let r = []
@@ -243,12 +246,13 @@ export class Cryptocalc extends React.Component {
     if (r.length === 0) return null
 
     return r
-
   }
 
   render() {
-    const { inputs, expressions, results } = this.state
-    //console.log('r:', inputs, expressions, results)
+    const { inputs, expressions, results, env } = this.state
+    //console.log('r:', inputs, expressions, results, env)
+    const total = env && env.sum()
+    
     return (
       <div>
         <Helmet>
@@ -287,7 +291,10 @@ export class Cryptocalc extends React.Component {
               <img src="img/dark-icon.svg" alt="dark" className="change-img-light" />
               <img src="img/dark-icon-change.svg" alt="dark" className="change-img-dark" />
             </div>
-            <div className="total"><span>Tolal:</span><span>€ 1,000,000,00</span></div>
+            <div className={`total ${total || 'hidden'}`}>             
+              <span>Tolal:{NBSP}</span>
+              <span>{ formatResult(total) }</span>
+            </div>
             <div className="holder">
               <span className="plus-black"><img src="img/plus.svg" alt="plus" /></span>
               <span className="plus-white"><img src="img/plus-white.svg" alt="plus" /></span>
@@ -350,9 +357,9 @@ export class Cryptocalc extends React.Component {
         </div>
 
         <br />
-      <hr />
+      {/* <hr />
       <p id="rates"></p>
-      <pre>{info}</pre>
+      <pre>{info}</pre> */}
 
       </div>
     )
@@ -361,34 +368,10 @@ export class Cryptocalc extends React.Component {
 }
 
 const info = `
-Implemented:
-  - math calculations
-  - unit calculations (including same-type mixed dimensions, scales)
-  - implicit number->unit implicit conversion (like "1 + 2 USD" -> "3 USD")
-  - currensy calculations (including mixed) (rates are just fixed for demo purpoces)
-  - unit and money conversions (see examples below)
-  - %-based expressions
-  - math scales
-  - money and units scales
-  - multiline input
-  - paste from clipboard
-  - user variables
-  - process part of line until error
-  - prev variable
-  - sum
-  - average
-  - comments, labels
-  - expression, result formatting and highlighting
-  - refreshing currency rates
-
-Done partially:
+Implemented all from specification except:
   - clipboard operations
   - pixel-perfect markup
-
-ToDo:
   - top menu
-
-
 
 Expression examples:
 
@@ -714,15 +697,3 @@ my label: 1 + "inline comment" 2  //last comment
 `
 
 
-
-
-// import React from 'react'
-// //import { BrowserRouter as Router, Route, Link } from 'react-router-dom'
-//
-//
-// export const Cryptocalc = () => (
-//   <div>
-//     <h2>Cryptocalc</h2>
-//   </div>
-// )
-//

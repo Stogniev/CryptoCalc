@@ -28,15 +28,18 @@ const calcEnvironmentProto = {
   //parserRestore() { this.parser.restore(this.parserInfo) },
 
   sum() {
-    //log('Summarizing:', this.results)
+    //log('Summarizing:', this.results, 'for expressions:', this.expressions)
     if (!this.results.length) return null
 
     // use parser to sum items of different types
     let sum
 
-    for (const [i, r] of this.results.entries()) {
+    for (const [i, r] of this.results.entries()) {     
+      // exception: just empty lines - skip
+      if (this.expressions[i] === '<EOL>') continue;
+      
       if (r instanceof Error) return null
-
+      
       if (i === 0) {
         sum = isUnit(r) ? r.clone() : r      // init
       } else {
@@ -50,6 +53,7 @@ const calcEnvironmentProto = {
       }
     }
 
+    //log('r', sum)
     return sum
   },
 
@@ -91,7 +95,7 @@ const calcEnvironmentProto = {
       }
 
       if (verbose) {
-        console.log(txt, '-c->', parser.results)
+        log(txt, '-c->', parser.results)
       }
       //return parser
     } catch(e) {

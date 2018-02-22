@@ -1,5 +1,5 @@
 function log() {
-  if (process.env.DEBUG) {
+  if (process.env.REACT_APP_DEBUG) {
     console.log('.', Object.values(arguments))
   }
 }
