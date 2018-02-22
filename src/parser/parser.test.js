@@ -1,4 +1,4 @@
-/* global it */
+/* global test */
 /* global expect */
 
 import { createCalcEnvironment } from './environment'
@@ -69,7 +69,7 @@ test(null, () => expect(call('2 + 3 (2+4) / 2')).toBe(11))
 test(null, () => expect(call('1 + 3(5 + 4 - 6 / 3) / 2 * 4 - 3')).toBe(40))
 
 test(null, () => expect(call('3.139 * 1')).toBeCloseTo(3.14, 2) )
-test(null, () => expect(call('Pi (7 - 5) - Pi')).toBeCloseTo(3.14, 2)  )
+test(null, () => expect(call('Pi (7 - 5) - Pi')).toBeCloseTo(3.14, 2) )
 test(null, () => expect(call('Pi(7 - 5)Pi/(Pi*Pi) - 2')).toBe(0))
 
 // exponents
@@ -84,15 +84,6 @@ test(null, () => expect(call('2^2(3)')).toBe(12))
 test(null, () => expect(call('(3)2^2')).toBe(12))
 test(null, () => expect(call('(2)Pi^2(3)')).toBeCloseTo(59.22, 2))
 test(null, () => expect(call('4^-2')).toBe(4 ** -2))
-
-
-
-
-
-
-
-
-
 
 // // word-described math expr
 test(null, () => expect(call('3 + 2')).toBe(5))
@@ -340,7 +331,7 @@ test(null, () => expect(call('20 as a % off 70').value).toBeCloseTo(28.57, 2))
 test(null, () => expect(call('8 times 9')).toBe(72))
 test(null, () => expect(call('1 meter 20 cm').toString()).toBe('1.2 meter'))
 test(null, () => expect(call('6(3)')).toBe(18))
-test(null, () => expect(call('$30 CAD + 5 USD - 7EUR').toNumber('USD')).toBeCloseTo(30 * 1/fixedRates['CAD'] + 5 - 7 * 1/fixedRates['EUR'],  2))
+test(null, () => expect(call('$30 CAD + 5 USD - 7EUR').toNumber('USD')).toBeCloseTo(30 * 1/fixedRates['CAD'] + 5 - 7 * 1/fixedRates['EUR'], 2))
 test(null, () => expect(call(`${fixedRates['RUB']} roubles - 1 $`).toNumber('USD')).toBeCloseTo(0, 2))
 test(null, () => expect(call('20% of 10$').toString()).toBe('2 USD'))
 test(null, () => expect(call('5% on $30').toString()).toBe('31.5 USD'))

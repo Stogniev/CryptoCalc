@@ -32,9 +32,9 @@
     "build-to-docs": "npm run build && npm run copy-build-to-docs && git add docs/*",
     "build-to-docs-and-run": "npm run build-to-docs && $(npm bin)/serve docs",
     "copy-build-to-docs": "rm -rf docs/* && cp -rf build/* docs/ ",
-    "0firebase-deploy-functions-node6": "(cd firebase/functions && firebase deploy --only functions)",
-    "0firebase-deploy-functions": "(cd firebase/functions && npx -p node-bin@6.11 -- firebase deploy --only functions)",
-    "0firebase-shell": "(cd firebase/functions && GOOGLE_APPLICATION_CREDENTIALS=../cryptocalc1-d51fa5762f45.json firebase experimental:functions:shell)",
+    "firebase-deploy-functions-node6": "(cd firebase/functions && firebase deploy --only functions)",
+    "firebase-deploy-functions": "(cd firebase/functions && npx -p node-bin@6.11 -- firebase deploy --only functions)",
+    "firebase-shell": "(cd firebase/functions && GOOGLE_APPLICATION_CREDENTIALS=../cryptocalc1-d51fa5762f45.json firebase experimental:functions:shell)",
     "eject": "react-scripts eject"
   },
   "devDependencies": {
