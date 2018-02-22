@@ -204,9 +204,13 @@ div.constants-table ul li:first-child span {
 .change-img-dark {
   display: none; }
 
-.holder .plus-white,
 .holder .open-search.white {
-  display: none; }
+  display: none;
+}
+
+.holder .plus {
+  padding: 0 9px 0 0;
+}
 
 .total {
   color: #747e95;
@@ -296,6 +300,7 @@ div.constants-table ul li:first-child span {
   width: 171px;
   z-index: 1; }
   .search-form input {
+    color: white;
     width: 161px;
     height: 20px;
     border-radius: 2px;
@@ -386,3 +391,9 @@ div.copy {
     padding: 0 5px; } }
 
 /*# sourceMappingURL=light.css.map */
+
+/* display placeholder for empty editable div */
+#textholder[contentEditable=true]:empty:not(:focus)::before {
+  content: attr(data-placeholder);
+  color: gray;
+}

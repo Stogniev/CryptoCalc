@@ -1,0 +1,11 @@
+narrow screen markup fix
+
+limit input lines length
+
+close menu if mouse click outside it
+
+autoclose menu after some delay mouse is out of menu
+
+use redux
+
+use react-redux-firebase

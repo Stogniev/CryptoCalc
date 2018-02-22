@@ -226,9 +226,7 @@ div.currency-table-percent ul li span:first-child {
       padding-right: 9px; }
     .holder span.active + .search-form {
       display: block; }
-  .holder .plus-black {
-    display: none; }
-  .holder .plus-white {
+  .holder .plus {
     padding: 0 9px 0 0; }
 
 .checkbox {
@@ -395,3 +393,9 @@ div.copy {
     padding: 0 5px; } }
 
 /*# sourceMappingURL=dark.css.map */
+
+/* display placeholder for empty editable div */
+#textholder[contentEditable=true]:empty:not(:focus)::before {
+  content: attr(data-placeholder);
+  color: gray;
+}

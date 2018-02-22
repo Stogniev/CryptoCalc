@@ -24,10 +24,10 @@
   "scripts": {
     "build-parser": "(cd src/parser && nearleyc grammar.ne -o grammar.js)",
     "test": "react-scripts test --env=jsdom",
-    "test-noninteractive": "CI=true npm run test",
+    "test-exit": "CI=true npm run test",
     "start": "npm run build-parser && BROWSER=none react-scripts start",
     "start-debug": "REACT_APP_DEBUG=1 npm run start",
-    "build": "npm run build-parser && npm run test-noninteractive && react-scripts build",
+    "build": "npm run build-parser && npm run test-exit && react-scripts build",
     "test-debug": "DEBUG=1 npm run test",
     "build-to-docs": "npm run build && npm run copy-build-to-docs && git add docs/*",
     "build-to-docs-and-run": "npm run build-to-docs && $(npm bin)/serve docs",
@@ -35,7 +35,7 @@
     "0firebase-deploy-functions-node6": "(cd firebase/functions && firebase deploy --only functions)",
     "0firebase-deploy-functions": "(cd firebase/functions && npx -p node-bin@6.11 -- firebase deploy --only functions)",
     "0firebase-shell": "(cd firebase/functions && GOOGLE_APPLICATION_CREDENTIALS=../cryptocalc1-d51fa5762f45.json firebase experimental:functions:shell)",
-    "eject": "react-scripts eject"    
+    "eject": "react-scripts eject"
   },
   "devDependencies": {
     "npm-run-all": "^4.1.2",

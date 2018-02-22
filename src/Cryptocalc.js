@@ -1,4 +1,3 @@
-//https://github.com/facebook/create-react-app/issues/1947#issuecomment-312702952
 /* eslint-disable jsx-a11y/href-no-hash */  //
 
 import React from 'react';
@@ -13,7 +12,7 @@ import { isError } from './common'
 
 //import { isUserVariable } from './demo/userVariables'
 import { humanizeExpression, formatResult } from './parser/formatting'
-//import is from 'is'
+import is from 'is'
 
 //import { clearAllUserVariables } from './demo/userVariables'
 
@@ -34,16 +33,24 @@ const NBSP = '\u00A0'
 export class Cryptocalc extends React.Component {
   static _defaultState = {
     lastExpression: '',
-    placeholderInput: true,
     expression: null, // succesful expression
     result: null,     // succesful result
     error: null,
     env: null,  // calculator environment
 
+    menuInput: '',
+    //inputText: '',
+
+    savedDocs: {}, //saved documents ("expression states") as {<name>: <inputText> ...}
+    menuActive: false,
+
+    // TODO: maybe merge to one structore
     inputs: [], // input lines
     //parsedInputs: [], // parsed input lines
-    expressions: [],
+    expressions: [],  //active expressions
     results: [],   // calculated results of inputs
+
+    colorScheme: 'light',   // or 'dark'
 
     e1: 'e1',
     e1HTML: '33 + 22',
@@ -69,19 +76,6 @@ export class Cryptocalc extends React.Component {
   //   }
   // }
 
-
-  // test = () => {
-  //   const textHolder = document.getElementById('textHolder')
-  //
-  //   const restore = saveCaretPosition(textHolder)
-  //   let text = textHolder.textContent
-  //   text = text.replace(/[0-9]+/g, '<span class="hl-number">$&</span>')
-  //   text = text.replace(/EQ/g, `<br />\n=15`)
-  //   textHolder.innerHTML = text
-  //
-  //   restore()
-  // }
-
   // onKeyPress = (event) => {
   //   const lines = event.target.innerText.split('\n')
   //   console.log('lns', event.target.innerText, lines)
@@ -90,10 +84,30 @@ export class Cryptocalc extends React.Component {
   //   }
   // }
 
+  onLoadDocClicked = (key, event) => {
+    this.setUserText(this.state.savedDocs[key])
+  }
+
+  deleteDocClicked = (name, event) => {
+    const savedDocs = {...this.state.savedDocs}
+    delete savedDocs[name]
+    this.setState( {savedDocs} )
+  }
+
+  onPlusClicked = () => {
+    this.setUserText('')
+    this.focusUserText()
+    this.setState({ menuActive: false })
+  }
+
+  onBurgerClicked = () => {
+    this.setState({ menuActive: !this.state.menuActive })
+  }
+
   componentDidMount() {
     if (canUseDOM) {
       this.initFirebase()
-      console.log(info)
+      //log(info)
     }
   }
 
@@ -103,8 +117,38 @@ export class Cryptocalc extends React.Component {
     this.initFirebase()
   }
 
+  onSavingKeyPress = (event) => {
+    const inputDOM = event.target
+    const name = inputDOM.value
+
+    if (is.equal(event.key, 'Enter') && !is.empty(name)) {
+      const savedDocs = {...this.state.savedDocs}
+      savedDocs[name] = this.getUserText()
+      this.setState( {savedDocs, menuActive: false, menuInput: ''} )
+    }
+  }
+
+  textHolderDOM() {
+    return document.getElementById('textholder')
+  }
+
+  // note: direct dom manipulation because of contentEditablebecause of contentEditable
+  getUserText() {
+    return this.textHolderDOM().innerText
+  }
+
+  // note: direct dom manipulation because of contentEditable
+  setUserText(text) {
+    this.textHolderDOM().innerText = text
+    this.onInput() // ~~ call handler manually
+  }
+
+  focusUserText() {
+    this.textHolderDOM().focus()
+  }
+
   onInput = (event) => {
-    const text = event.target.innerText
+    const text = this.getUserText()
     const inputs = text.split('\n')
 
     const env = createCalcEnvironment()
@@ -147,7 +191,7 @@ export class Cryptocalc extends React.Component {
     //const results = env.results
     //console.log('ier:', inputs, expressions, results)
 
-    this.setState( {inputs, expressions, results, placeholderInput: false, env} )
+    this.setState( {inputs, expressions, results, env} )
   }
   onPaste = (e) => {
     // prevent pasting formatted text (that broke highilghting overlay)
@@ -168,8 +212,8 @@ export class Cryptocalc extends React.Component {
     Promise.resolve(
     ).then( () => loadjs('https://www.gstatic.com/firebasejs/4.9.1/firebase.js')
     ).then( () => loadjs('https://www.gstatic.com/firebasejs/4.9.1/firebase-firestore.js')
-    ).then( () => {  
-      const config = {   // keep firebase db readonly 
+    ).then( () => {
+      const config = {   // keep firebase db readonly
         apiKey: 'AIzaSyA4HThdnU1J0rD4mHKmmDVPYVRMjoGE-Nw',
         authDomain: 'cryptocalc1-76acb.firebaseapp.com',
         databaseURL: 'https://cryptocalc1-76acb.firebaseio.com',
@@ -249,19 +293,19 @@ export class Cryptocalc extends React.Component {
   }
 
   render() {
-    const { inputs, expressions, results, env } = this.state
+    const { inputs, expressions, results, env, savedDocs, menuActive, colorScheme } = this.state
     //console.log('r:', inputs, expressions, results, env)
     const total = env && env.sum()
-    
+
     return (
       <div>
         <Helmet>
           <meta charSet="UTF-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=1.0, user-scalable=0" />
           <title>Cripto Calc</title>
-          <link rel="stylesheet" href="css/light.css" />
-          {/*<link rel="stylesheet" href="dark.css">*/}
-            <link rel="stylesheet" href="css/fonts.css" />
+          {/* <link rel="stylesheet" href="css/common.css" /> */}
+          <link rel="stylesheet" href={`css/${colorScheme}.css`} />
+          <link rel="stylesheet" href="css/fonts.css" />
         </Helmet>
 
         <header>
@@ -291,28 +335,39 @@ export class Cryptocalc extends React.Component {
               <img src="img/dark-icon.svg" alt="dark" className="change-img-light" />
               <img src="img/dark-icon-change.svg" alt="dark" className="change-img-dark" />
             </div>
-            <div className={`total ${total || 'hidden'}`}>             
+            <div className={`total ${total || 'hidden'}`}>
               <span>Tolal:{NBSP}</span>
               <span>{ formatResult(total) }</span>
             </div>
             <div className="holder">
-              <span className="plus-black"><img src="img/plus.svg" alt="plus" /></span>
-              <span className="plus-white"><img src="img/plus-white.svg" alt="plus" /></span>
-              <span className="open-search black"><img src="img/burger.svg" alt="burger" /></span>
+              <span className="plus" onClick={this.onPlusClicked}>
+                <img src={`img/plus-${colorScheme}.svg`} alt="+" />
+              </span>
+              <span className={`open-search black ${menuActive ? 'active' : ''}`}><img src="img/burger.svg" alt="burger" onClick={this.onBurgerClicked} /></span>
               <span className="open-search white"><img src="img/burger-white.svg" alt="burger" /></span>
               <form className="search-form">
-                <input type="text" defaultValue="text" />
+                <input id="menu" type="text"
+                       value={this.state.menuInput}
+                       onKeyPress={this.onSavingKeyPress}
+                       onChange={
+                         (event) => this.setState({ menuInput: event.target.value })
+                       }
+                />
                 <ul>
-                  <li>Summary</li>
-                  <li>1 add 1 <span></span></li>
-                  <li>Sample</li>
+                  { Object.keys(savedDocs).map( key =>
+                      <li onClick={this.onLoadDocClicked.bind(null, key)} key={`sd_${key}`}>
+                        {key}
+                        <span onClick={this.deleteDocClicked.bind(null,key)}>X</span>
+                      </li>
+                    )
+                  }
                 </ul>
               </form>
             </div>
           </div>
         </section>
 
-        <div className="ZZ2container">
+        <div className="ZZcontainer">
           <div className="autodraw">
             <div className="highlights">
               { inputs.map( (inp, i) =>
@@ -348,10 +403,12 @@ export class Cryptocalc extends React.Component {
               }
             </div>
           </div>
-          <div id="textholder-keeper">
-            { this.state.placeholderInput && <div className="textholder-placeholder">2+2</div> }
-            <div id="textholder" contentEditable /*onKeyPress={this.onKeyPress}*/ onInput={this.onInput} onPaste={this.onPaste}
-                 onFocus={() => this.setState({placeholderInput: null})} >
+          <div id="textholder-keeper" >
+            <div id="textholder" contentEditable /*onKeyPress={this.onKeyPress}*/
+                 data-placeholder="10% of 200 USD + 2 EUR"
+                 onInput={this.onInput}
+                 onPaste={this.onPaste}
+                 onFocus={() => this.setState({ menuActive: false })} >
             </div>
           </div>
         </div>
@@ -695,5 +752,3 @@ prev + 2
 my label: 1 + "inline comment" 2  //last comment
 
 `
-
-
