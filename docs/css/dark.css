@@ -68,16 +68,14 @@ header {
   header .container {
     display: flex;
     justify-content: center; }
-    header .container .logo.light {
+    header .container .logo {
       font-size: 20px;
       font-weight: bold;
       display: flex;
       align-items: center;
       color: #fff; }
-      header .container .logo.light img {
+      header .container .logo img {
         padding: 0 14px 0 0; }
-    header .container .logo.dark {
-      display: none; }
     header .container .menu {
       display: flex; }
       header .container .menu li a {
@@ -204,14 +202,6 @@ div.currency-table-percent ul li span:first-child {
 .switch div {
   padding: 0 5px; }
 
-.switch .light {
-  display: none; }
-
-.open-search.black {
-  display: none; }
-
-.change-img-light {
-  display: none; }
 
 .total span {
   color: #747e95;
@@ -226,9 +216,7 @@ div.currency-table-percent ul li span:first-child {
       padding-right: 9px; }
     .holder span.active + .search-form {
       display: block; }
-  .holder .plus-black {
-    display: none; }
-  .holder .plus-white {
+  .holder .plus {
     padding: 0 9px 0 0; }
 
 .checkbox {
@@ -395,3 +383,34 @@ div.copy {
     padding: 0 5px; } }
 
 /*# sourceMappingURL=dark.css.map */
+
+/* display placeholder for empty editable div */
+#textholder[contentEditable=true]:empty:not(:focus)::before {
+  content: attr(data-placeholder);
+  color: gray;
+}
+
+#textholder {
+  caret-color: white;
+}
+
+/* from CruptoCalc.css */
+
+.error {
+  color: gray;
+  font-size: x-small;
+}
+
+.textholder-placeholder {
+  color: gray;
+}
+
+#textholder {
+  color: rgba(255,255,255, 0);
+  caret-color: white;
+}
+
+.parsed-expression {
+  background-color: #000;
+  border-color: #d6d6e1;
+}

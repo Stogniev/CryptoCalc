@@ -19,6 +19,7 @@ import { CommonHeader } from './CommonHeader'
 const NBSP = '\u00A0'
 
 
+
 /* eslint-disable jsx-a11y/href-no-hash */  //
 export class Cryptocalc extends React.Component {
   static _defaultState = {
@@ -31,7 +32,9 @@ export class Cryptocalc extends React.Component {
     menuInput: '',
     //inputText: '',
 
-    savedDocs: {}, //saved documents ("expression states") as {<name>: <inputText> ...}
+    //saved documents ("expression states") as {<name>: <inputText> ...}
+    savedDocs: LS.getObject('savedDocs') || {},
+
     menuActive: false,
 
     // TODO: maybe merge to one structore
@@ -77,12 +80,6 @@ export class Cryptocalc extends React.Component {
   componentDidMount() {
     if (canUseDOM) {
       this.initFirebase()
-      //log(info)
-
-      // restore colorScheme from localStorage (Note: move to redux)
-      /* if (is.defined(localStorage)) {
-       *   this.setState({ lightColorScheme: localStorage.colorScheme === 'light' })
-       * }*/
     }
 
   }
@@ -99,10 +96,13 @@ export class Cryptocalc extends React.Component {
     }
 
     if (prevState.lightColorScheme !== this.state.lightColorScheme) {
-      if (is.defined(localStorage)) {
-        LS.setItem('colorScheme', this.state.lightColorScheme ? 'light' : 'dark')
-      }
+      LS.setItem('colorScheme', this.state.lightColorScheme ? 'light' : 'dark')
     }
+
+    if (Object.keys(prevState.savedDocs).length !== Object.keys(this.state.savedDocs).length) {
+      LS.setObject('savedDocs', this.state.savedDocs)
+    }
+
   }
 
   onPlusClicked = () => {

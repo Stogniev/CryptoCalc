@@ -1,0 +1,179 @@
+/* display placeholder for empty editable div */
+#textholder[contentEditable=true]:empty:not(:focus)::before {
+  content: attr(data-placeholder);
+  color: gray;
+}
+
+.center {
+  text-align: center;
+}
+
+.successful-expression {
+  /* color: gray; */
+}
+
+
+
+.autodraw, #textholder {
+  /* width: 100%; */
+  height: 100%;
+  /* font: 20px/28px 'Open Sans', sans-serif; */
+  font-family: 'RobotoMono-Regular';
+  letter-spacing: 1.2px;
+}
+
+
+#textholder-keeper {
+  /* position: absolute;       don't use abosolute to fill vertical space     */
+
+  /* display: flex; */
+  /* align-items: top; */
+
+  /* display: table; */
+}
+
+
+.textholder-placeholder {
+  white-space: nowrap;
+  position: absolute;
+  line-height: 4em;
+
+  /* color: gray; */
+
+  font-family: 'RobotoMono-Regular';
+  letter-spacing: 1.2px;
+}
+
+#textholder {
+  z-index: -2;
+  line-height: 4em;
+  /* color: rgba(0,0,0, 0); */
+  /* caret-color: black; */
+
+  /* background-color: lightgray; */
+
+
+  /* display: table-cell; vertical-align: top; */
+
+  /* display: inline-block; */
+  /* vertical-align: top; */
+
+  /* display: flex; */
+  /* flex-direction: column;*/
+  /* align-items: top; */
+}
+
+
+#textholder:focus {
+    outline: none;  /* remove blue focus border */
+}
+
+.autodraw {
+  position: absolute;
+  z-index: -1;
+  paddding: 2px;
+  /* border: 2px solid #685972; */
+  /* background-color: #fff; */
+  /* overflow: auto; */
+  pointer-events: none;
+  transition: transform 1s;
+}
+
+.highlights {
+  position:absolute;
+  line-height: 4em;
+}
+
+/* .container div { */
+/*   right: 20%;        /\* to keep absolute positioned same width *\/ */
+/*   left: 20%; */
+/* } */
+.autodraw, #textholder-keeper {
+  right: 20%;        /* to keep absolute positioned same width */
+  left: 20%;
+}
+/* ugly copypaste ^^^ of non-absolute div */
+#textholder-keeper {
+  margin-right: 20%;
+  margin-left: 20%;
+}
+
+
+
+
+.results {
+  /* width: 100%; */
+  /* ?? white-space: pre-wrap; */
+  /* padding-top: 2em; */
+  /* line-height: 2em; */
+  /* padding-bottom: 2em; */
+
+  padding-top: 0.5em;
+  word-wrap: break-word;
+  ZZcolor: red;
+  letter-spacing: 1.2px;
+
+}
+
+
+.parsed-expression, .res {
+  padding: 5px 9px 4px;
+  border: 1px solid;
+}
+
+.parsed-expression {
+  white-space: nowrap;
+
+  /* background-color: #fff; */
+  /* border-color: #d6d6e1; */
+  border-radius: 5px;
+
+  font-family: 'RobotoMono-Regular';
+
+  display: inline-block;
+  /* width: 50%; */
+
+  /* padding: 5px 9px 4px; */
+  border-radius: 5px;
+}
+
+.result-sum > * {
+  /* margin-left: 1em; */
+  margin-top: 2.05em;
+  /* margin-right: 5em; */
+  height: 1.95em;
+}
+
+.res {
+  /* IE-  width: fit-content;  */  /* https://stackoverflow.com/a/16765030/1948511 */
+  white-space: nowrap;
+
+  display: inline-block;
+  /* margin-top: 1em; */
+  border-color: transparent;
+}
+
+
+.hidden {
+  visibility: hidden;
+}
+
+
+/* user input highlights */
+.hl-number {
+}
+
+
+.highlighted-input {
+    font-family: 'RobotoMono-Regular';
+}
+
+.result-sum {
+  margin: 0 0 0 15px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.semi-transparent {
+  opacity: 0.5
+}
