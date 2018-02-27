@@ -77,6 +77,7 @@
   /* overflow: auto; */
   pointer-events: none;
   transition: transform 1s;
+  height: calc(100% - 111px);
 }
 
 .highlights {
@@ -89,13 +90,13 @@
 /*   left: 20%; */
 /* } */
 .autodraw, #textholder-keeper {
-  right: 20%;        /* to keep absolute positioned same width */
-  left: 20%;
+  right: 0;        /* to keep absolute positioned same width */
+  left: 0;
 }
 /* ugly copypaste ^^^ of non-absolute div */
 #textholder-keeper {
-  margin-right: 20%;
-  margin-left: 20%;
+  margin-right: 0;
+  margin-left: 0;
 }
 
 
@@ -176,4 +177,17 @@
 
 .semi-transparent {
   opacity: 0.5
+}
+
+@media screen and (max-width: 640px) {
+  .result-sum {
+    flex-direction: column;
+  }
+  .res {
+    align-self: flex-end;
+  }
+  .autodraw, #textholder-keeper {
+    left: 0;
+    right: 0;
+  }
 }
