@@ -13,6 +13,7 @@ const call = env.call.bind(env)
 
 //test('my sum', () => expect( (1+2) ).toBe(3) )
 
+
 test(null, () => expect(call('123')).toBe(123) )
 
 test(null, () => expect(call('3 + 2')).toBe(5))
@@ -289,6 +290,9 @@ test(null, () => expect(call('10% + 5%').toString()).toBe('15 PERCENT'))
 test(null, () => expect(call('-3%+5 %').toNumber('PERCENT')).toBeCloseTo(2, 2))
 test(null, () => expect(call('7% / 2').toString()).toBe('3.5 PERCENT'))
 
+test(null, () => expect(call('300% of 2')).toBe(6))
+
+
 // % operations (by sheet order)
 test(null, () => expect(call('2%+3%').toString()).toBe('5 PERCENT'))
 test(null, () => expect(call('2% - 3%').toString()).toBe('-1 PERCENT'))
@@ -305,7 +309,9 @@ test(null, () => expect(call('400 km + 5%').toString()).toBe('420 km'))
 test(null, () => expect(call('7% + 3kg').message).toContain('invalid'))
 
 test(null, () => expect(call('500 kg - 120%').toString()).toBe('-100 kg'))
+test(null, () => expect(call('600 - 10%')).toBe(540))
 
+test(null, () => expect(call('300% of 2')).toBe(6))
 
 // random complex operations with %
 test(null, () => expect(call('(3%+2%) (1 +1)').toString()).toBe('10 PERCENT'))
@@ -319,7 +325,10 @@ test(null, () => expect(call('200% * 2').toString()).toBe('400 PERCENT'))
 test(null, () => expect(call('-100% * 3').toString()).toBe('-300 PERCENT'))
 
 test(null, () => expect(call('200kg * 10%').toString()).toBe('20 kg'))
+test(null, () => expect(call('300 * 10%')).toBe(30))
+
 test(null, () => expect(call('200kg / 5%').toNumber('kg')).toBe(4000))
+test(null, () => expect(call('200 / 10%')).toBe(2000))
 
 // as a % of/on/off for numbers
 test(null, () => expect(call('24 as a % of 120').toString()).toBe('20 PERCENT'))
@@ -335,15 +344,23 @@ test(null, () => expect(call('$30 CAD + 5 USD - 7EUR').toNumber('USD')).toBeClos
 test(null, () => expect(call(`${fixedRates['RUB']} roubles - 1 $`).toNumber('USD')).toBeCloseTo(0, 2))
 test(null, () => expect(call('20% of 10$').toString()).toBe('2 USD'))
 test(null, () => expect(call('5% on $30').toString()).toBe('31.5 USD'))
+test(null, () => expect(call('5% on 30')).toBe(31.5))
 test(null, () => expect(call('6% off 40 EUR').toString()).toBe('37.6 EUR'))
+test(null, () => expect(call('6% off 40')).toBe(37.6))
 test(null, () => expect(call('50$ as a % of 100$').toString()).toBe('50 PERCENT'))
-test(null, () => expect(call('50$ as a % of 100$').toString()).toBe('50 PERCENT'))
+test(null, () => expect(call('50 as a % of 100').toString()).toBe('50 PERCENT'))
 test(null, () => expect(call('50 kg as a % of 1 tonne').toString()).toBe('5 PERCENT'))
+test(null, () => expect(call('50 as a % of 1000').toString()).toBe('5 PERCENT'))
 test(null, () => expect(call('$70 as a % on $20').toString()).toBe('250 PERCENT'))
+test(null, () => expect(call('70 as a % on 20').toString()).toBe('250 PERCENT'))
 test(null, () => expect(call('$20 as a % off $70').value).toBeCloseTo(28.57) )
+test(null, () => expect(call('20 as a % off 70').value).toBeCloseTo(28.57) )
 test(null, () => expect(call('5% of what is 6 EUR').toNumber('USD')).toBeCloseTo(0.37, 2))
+test(null, () => expect(call('5% of what is 6')).toBeCloseTo(0.30, 2))
 test(null, () => expect(call('5% on what is 6 EUR').toNumber('EUR')).toBeCloseTo(6.30, 2))
+test(null, () => expect(call('5% on what is 6')).toBeCloseTo(6.30, 2))
 test(null, () => expect(call('5% off what is 6 EUR').toNumber('EUR')).toBeCloseTo(5.70, 2))
+test(null, () => expect(call('5% off what is 6')).toBeCloseTo(5.70, 2))
 
 // Scales
 test(null, () => expect(call('4k')).toBe(4000))

@@ -149,6 +149,18 @@ MD_NUM ->
    | MD_NUM divide E_NUM  {% (d,l, rej) => math.divide(d[0], d[2]) %}
    | MD_NUM divide SIGNED_PERCENT  {% ([n,,p],l,rej) => n / p.value*100 %}
    | MD_NUM mod E_NUM  {% (d,l, rej) => math.mod(d[0], d[2]) %}
+
+
+
+   | VALUE_PERCENT __ "of" __ MD_NUM  {% ([p,,,,n],l, rej) =>{log('p of n', p, n); return math.multiply(n, p.value/100) } %}
+   | VALUE_PERCENT __ "ofwhatis" __ MD_NUM  {% ([p,,,,n],l, rej) =>{log('% of what is n', p, n); return math.multiply(n, p.value/100) } %}
+   | VALUE_PERCENT __ "on" __ MD_NUM  {% ([p,,,,n],l, rej) =>{log('p on n', p, n); return math.add(n, math.multiply(math.divide(n, 100), p.value)) } %}
+   | VALUE_PERCENT __ "onwhatis" __ MD_NUM  {% ([p,,,,n],l, rej) =>{log('p onwhatis n', p, n); return math.add(n, math.multiply(math.divide(n, 100), p.value)) } %}
+   | VALUE_PERCENT __ "off" __ MD_NUM  {% ([p,,,,n],l, rej) =>{log('p off n', p, n); return math.subtract(n, math.multiply(math.divide(n, 100), p.value)) } %}
+   | VALUE_PERCENT __ "offwhatis" __ MD_NUM  {% ([p,,,,n],l, rej) =>{log('p offwhatis n', p, n); return math.subtract(n, math.multiply(math.divide(n, 100), p.value)) } %}
+
+
+
    | E_NUM     {% id %}
 
 
@@ -167,8 +179,8 @@ E_NUM ->
 
 # Parentheses or unary signed number
 SIGNED_NUM ->
-    __ "+" _ VALUE_NUM  {% function(d) { /*log('value_num+');*/ return d[3]; } %}
-  | __ "-" _ VALUE_NUM  {% function(d) { /*log('value_num-');*/ return math.multiply(-1, d[3]) } %}
+    __ "+" _ VALUE_NUM  {% function([,,,n]) { /*log('value_num+');*/ return n; } %}
+  | __ "-" _ VALUE_NUM  {% function([,,,n]) { /*log('value_num-');*/ return math.multiply(-1, n) } %}
   | VALUE_NUM        {% function(d) {/*log('value_num:', d[0]);*/ return d[0]; } %}
 
 
