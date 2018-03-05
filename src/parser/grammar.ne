@@ -69,8 +69,8 @@ AS_MEASURE ->
  | AS_NUM minus AS_MEASURE     {% (d,l,rej) => math.subtract(toUnit(d[0], d[2]), d[2]) %}
  | AS_MEASURE minus MD_NUM     {% (d,l,rej) => math.subtract(d[0], toUnit(d[2], d[0])) %}
 
- | AS_MEASURE plus MD_MEASURE  {% (d,l,rej) => math.add(d[0], d[2]) %}
- | AS_MEASURE minus MD_MEASURE {% (d,l,rej) => math.subtract(d[0], d[2]) %}
+ | AS_MEASURE plus MD_MEASURE  {% ([m1,,m2],l,rej) => math.add(m2, m1) /*last unit */ %}
+ | AS_MEASURE minus MD_MEASURE {% ([m1,,m2],l,rej) => math.add(math.multiply(-1, m2), m1) %}
 
  | AS_MEASURE plus MD_PERCENT  {% ([u,,p], l, rej) => {
       log('m-%', u, p)
@@ -150,16 +150,12 @@ MD_NUM ->
    | MD_NUM divide SIGNED_PERCENT  {% ([n,,p],l,rej) => n / p.value*100 %}
    | MD_NUM mod E_NUM  {% (d,l, rej) => math.mod(d[0], d[2]) %}
 
-
-
    | VALUE_PERCENT __ "of" __ MD_NUM  {% ([p,,,,n],l, rej) =>{log('p of n', p, n); return math.multiply(n, p.value/100) } %}
    | VALUE_PERCENT __ "ofwhatis" __ MD_NUM  {% ([p,,,,n],l, rej) =>{log('% of what is n', p, n); return math.multiply(n, p.value/100) } %}
    | VALUE_PERCENT __ "on" __ MD_NUM  {% ([p,,,,n],l, rej) =>{log('p on n', p, n); return math.add(n, math.multiply(math.divide(n, 100), p.value)) } %}
    | VALUE_PERCENT __ "onwhatis" __ MD_NUM  {% ([p,,,,n],l, rej) =>{log('p onwhatis n', p, n); return math.add(n, math.multiply(math.divide(n, 100), p.value)) } %}
    | VALUE_PERCENT __ "off" __ MD_NUM  {% ([p,,,,n],l, rej) =>{log('p off n', p, n); return math.subtract(n, math.multiply(math.divide(n, 100), p.value)) } %}
    | VALUE_PERCENT __ "offwhatis" __ MD_NUM  {% ([p,,,,n],l, rej) =>{log('p offwhatis n', p, n); return math.subtract(n, math.multiply(math.divide(n, 100), p.value)) } %}
-
-
 
    | E_NUM     {% id %}
 

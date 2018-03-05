@@ -14,6 +14,18 @@ const call = env.call.bind(env)
 //test('my sum', () => expect( (1+2) ).toBe(3) )
 
 
+// when sum/subtract measures use LAST operand measure
+test(null, () => expect(call('10ZUSD + 20 ZUAH').toString()).toBe('300 ZUAH'))
+test(null, () => expect(call('280ZUAH + 1 ZUSD').toString()).toBe('11 ZUSD'))
+
+test(null, () => expect(call('10ZUSD - 20 ZUAH').toString()).toContain('260')) //ZUAH
+test(null, () => expect(call('280ZUAH - 1 ZUSD').toString()).toContain('9')) //ZUSD
+
+test(null, () => expect(call('1m + 1cm').toString()).toBe('101 cm'))
+
+
+
+
 test(null, () => expect(call('123')).toBe(123) )
 
 test(null, () => expect(call('3 + 2')).toBe(5))
@@ -159,7 +171,7 @@ test(null, () => expect(call('69 cm * 3 / 2 + 2km').toString()).toBe('2.001035 k
 
 test(null, () => expect(call('2 kg ^ 2').message).toContain('Unexpected'))
 
-test(null, () => expect(call('3(4kg - 2000 gram / 2) /2').toString()).toBe('4.5 kg'))
+test(null, () => expect(call('3(4kg - 2000 gram / 2) /2').toString()).toBe('4.5 kilogram'))
 
 // negative units
 test(null, () => expect(call('-2 m - (-3m)').value).toBeCloseTo(1, 2))

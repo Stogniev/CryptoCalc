@@ -48,8 +48,8 @@ var grammar = {
     {"name": "AS_MEASURE", "symbols": ["AS_MEASURE", "plus", "MD_NUM"], "postprocess": (d,l,rej) => math.add(d[0], toUnit(d[2], d[0]))},
     {"name": "AS_MEASURE", "symbols": ["AS_NUM", "minus", "AS_MEASURE"], "postprocess": (d,l,rej) => math.subtract(toUnit(d[0], d[2]), d[2])},
     {"name": "AS_MEASURE", "symbols": ["AS_MEASURE", "minus", "MD_NUM"], "postprocess": (d,l,rej) => math.subtract(d[0], toUnit(d[2], d[0]))},
-    {"name": "AS_MEASURE", "symbols": ["AS_MEASURE", "plus", "MD_MEASURE"], "postprocess": (d,l,rej) => math.add(d[0], d[2])},
-    {"name": "AS_MEASURE", "symbols": ["AS_MEASURE", "minus", "MD_MEASURE"], "postprocess": (d,l,rej) => math.subtract(d[0], d[2])},
+    {"name": "AS_MEASURE", "symbols": ["AS_MEASURE", "plus", "MD_MEASURE"], "postprocess": ([m1,,m2],l,rej) => math.add(m2, m1) /*last unit */},
+    {"name": "AS_MEASURE", "symbols": ["AS_MEASURE", "minus", "MD_MEASURE"], "postprocess": ([m1,,m2],l,rej) => math.add(math.multiply(-1, m2), m1)},
     {"name": "AS_MEASURE", "symbols": ["AS_MEASURE", "plus", "MD_PERCENT"], "postprocess":  ([u,,p], l, rej) => {
            log('m-%', u, p)
            let r = u.clone()
