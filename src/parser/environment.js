@@ -34,12 +34,11 @@ const calcEnvironmentProto = {
     // use parser to sum items of different types
     let sum
 
-    for (const [i, r] of this.results.entries()) {     
-      // exception: just empty lines - skip
-      if (this.expressions[i] === '<EOL>') continue;
-      
+    for (const [i, r] of this.results.entries()) {
+      if (this.expressions[i] === '<EOL>') return null;
+
       if (r instanceof Error) return null
-      
+
       if (i === 0) {
         sum = isUnit(r) ? r.clone() : r      // init
       } else {
