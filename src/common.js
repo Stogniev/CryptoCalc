@@ -46,7 +46,7 @@ function isMeasure(x) {
 }
 
 function isNumber(x) {
-  return typeof(x) === 'number'
+  return typeof x === 'number'
 }
 
 function isError(x) {

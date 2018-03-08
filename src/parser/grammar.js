@@ -4,7 +4,7 @@
 function id(x) { return x[0]; }
 
   const math = require("mathjs");
-  const { isUnit, isPercent, isMeasure, isNumber, toUnit, log } = require('../common')
+  const { isUnit, isPercent, isMeasure, isNumber, /*isError,*/ toUnit, log } = require('../common')
   const { createUserVariable, validateVariableName } = require('./userVariables')
   const { getContext } = require('./parserContext')
 var grammar = {
@@ -168,6 +168,7 @@ var grammar = {
     {"name": "VALUE_NUM", "symbols": ["P_NUM"], "postprocess": id},
     {"name": "VALUE_NUM", "symbols": ["N"], "postprocess": id},
     {"name": "VALUE_NUM", "symbols": ["VARIABLE_NUM"], "postprocess": id},
+    {"name": "VALUE_NUM", "symbols": ["FUNC_NUM"], "postprocess": id},
     {"name": "VALUE_UNIT", "symbols": ["P_UNIT"], "postprocess": id},
     {"name": "VALUE_UNIT", "symbols": ["VALUE_UNIT", "__", "VALUE_NUM", "_", "unit"], "postprocess":  // example: "1m 20 cm 30 mm"
          function(d,l, reject) {
@@ -205,8 +206,11 @@ var grammar = {
         }
                },
     {"name": "VALUE_UNIT", "symbols": ["VARIABLE_UNIT"], "postprocess": id},
+    {"name": "VALUE_UNIT", "symbols": ["FUNC_UNIT"], "postprocess": id},
     {"name": "P_NUM", "symbols": [{"literal":"("}, "_", "OPS_NUM", "_", {"literal":")"}], "postprocess": function(d) {return d[2]; }},
     {"name": "P_UNIT", "symbols": [{"literal":"("}, "_", "OPS_UNIT", "_", {"literal":")"}], "postprocess": function(d) {return d[2]; }},
+    {"name": "FUNC_UNIT", "symbols": ["FUNC"], "postprocess": ([v],l, rej) => isUnit(v) ? v : rej},
+    {"name": "FUNC_NUM", "symbols": ["FUNC"], "postprocess": ([v],l, rej) => (isNumber(v) || v === null) ? v : rej},
     {"name": "FUNC$string$1", "symbols": [{"literal":"s"}, {"literal":"i"}, {"literal":"n"}], "postprocess": function joiner(d) {return d.join('');}},
     {"name": "FUNC", "symbols": ["FUNC$string$1", "P_NUM"], "postprocess": function(d) {return Math.sin(d[1]); }},
     {"name": "FUNC$string$2", "symbols": [{"literal":"c"}, {"literal":"o"}, {"literal":"s"}], "postprocess": function joiner(d) {return d.join('');}},
@@ -249,7 +253,6 @@ var grammar = {
     {"name": "CONST", "symbols": ["CONST$string$1"], "postprocess": function(d) {return Math.PI; }},
     {"name": "CONST", "symbols": [{"literal":"E"}], "postprocess": function(d) {return Math.E; }},
     {"name": "N", "symbols": ["float"], "postprocess": id},
-    {"name": "N", "symbols": ["FUNC"], "postprocess": id},
     {"name": "N", "symbols": [{"literal":"<"}, "CONST", {"literal":">"}], "postprocess": ([,c,]) => c},
     {"name": "float", "symbols": ["int", {"literal":"."}, "int"], "postprocess": function(d) {return parseFloat(d[0] + d[1] + d[2])}},
     {"name": "float", "symbols": ["int"], "postprocess": function(d) {log('int', d); return parseInt(d[0], 10)}},

@@ -1,34 +1,17 @@
-// This is an example of how to use a nearley-made grammar.
-//const nearley = require('nearley')
-//const grammar = require('./grammar2.js')
-//const assert = require('assert')
-//const math = require('mathjs')
-//const escape = require('regexp.escape') not sure need convert $ to smth like %u060B than \\$ that works badly with moo
-//const escapeStringRegexp = require('escape-string-regexp');
-
-const DEBUG = process.env.DEBUG
-//const currencies = require('../currencies')
-
-//const { unitNames, unitPrefixes, refreshCurrencyUnits } = require('./unitUtil')
-//const { fixedRates } = require('./fixedRates')
-
-const { /*clearAllUserVariables,*/ isUserVariable, createUserVariable } = require('./userVariables')
+const { isUserVariable, createUserVariable } = require('./userVariables')
 const { isUnit, log } = require('../common')
 const { setContext } = require('./parserContext')
 const { prepareTxt, createParser } = require('./parser')
+
+const DEBUG = process.env.DEBUG
 
 const calcEnvironmentProto = {
   prev: null,
   expressions: [],
   results: [],
   userVariables: {},
-  //parser: createParser(),
-  //parserStartSavePlace: null,
-  //parserSave() { this.parserInfo = this.parser.save() },
-  //parserRestore() { this.parser.restore(this.parserInfo) },
 
   sum() {
-    //log('Summarizing:', this.results, 'for expressions:', this.expressions)
     if (!this.results.length) return null
 
     // use parser to sum items of different types
@@ -68,7 +51,6 @@ const calcEnvironmentProto = {
     this.expressions = []
     this.results = []
     this.userVariables = {}
-    //this.parser = createParser() //recreate parser (alt: save place stored somewhere)
   },
 
   prepareAndCallInternal(text, verbose=DEBUG) {
@@ -156,7 +138,6 @@ const calcEnvironmentProto = {
 }
 
 export function createCalcEnvironment() {
-  //console.log('ccE', calcEnvironmentProto)
   const r = Object.create(
     calcEnvironmentProto,
     // {prev: { value: 'Carl', writable: true, enumerable: true }},

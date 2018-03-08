@@ -14,7 +14,7 @@ const call = env.call.bind(env)
 //test('my sum', () => expect( (1+2) ).toBe(3) )
 
 
-/// TODO: use fixedRates everywhere instead of synthetic currencies like ZUSD
+//TODO: use fixedRates everywhere instead of synthetic currencies like ZUSD
 
 test(null, () => expect(call('123')).toBe(123) )
 

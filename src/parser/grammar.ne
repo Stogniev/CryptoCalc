@@ -1,6 +1,6 @@
 @{%
   const math = require("mathjs");
-  const { isUnit, isPercent, isMeasure, isNumber, toUnit, log } = require('../common')
+  const { isUnit, isPercent, isMeasure, isNumber, /*isError,*/ toUnit, log } = require('../common')
   const { createUserVariable, validateVariableName } = require('./userVariables')
   const { getContext } = require('./parserContext')
 %}
@@ -222,6 +222,7 @@ VALUE_NUM ->
     P_NUM         {% id %}
   | N             {% id %}
   | VARIABLE_NUM  {% id %}
+  | FUNC_NUM      {% id %}
 
 
 VALUE_UNIT ->
@@ -262,13 +263,15 @@ VALUE_UNIT ->
         }
        %}
   | VARIABLE_UNIT      {% id %}
+  | FUNC_UNIT           {% id %}
 
 
 # paretheses with something
 P_NUM -> "(" _ OPS_NUM _ ")" {% function(d) {return d[2]; } %}
-
 P_UNIT -> "(" _ OPS_UNIT _ ")" {% function(d) {return d[2]; } %}
 
+FUNC_UNIT ->   FUNC     {% ([v],l, rej) => isUnit(v) ? v : rej %}
+FUNC_NUM ->    FUNC     {% ([v],l, rej) => (isNumber(v) || v === null) ? v : rej %}
 
 FUNC -> "sin" P_NUM  {% function(d) {return Math.sin(d[1]); } %}
    | "cos" P_NUM     {% function(d) {return Math.cos(d[1]); } %}
@@ -302,7 +305,6 @@ CONST -> "Pi"          {% function(d) {return Math.PI; } %}
 
 # A number value or a function of a number NOTE: no space between
 N -> float          {% id %}
-   | FUNC           {% id %}
    | "<" CONST ">"          {% ([,c,]) => c %}
 
 # I use `float` to basically mean a number with a decimal point in it
