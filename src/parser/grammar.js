@@ -250,7 +250,7 @@ var grammar = {
     {"name": "CONST", "symbols": [{"literal":"E"}], "postprocess": function(d) {return Math.E; }},
     {"name": "N", "symbols": ["float"], "postprocess": id},
     {"name": "N", "symbols": ["FUNC"], "postprocess": id},
-    {"name": "N", "symbols": ["CONST"], "postprocess": id},
+    {"name": "N", "symbols": [{"literal":"<"}, "CONST", {"literal":">"}], "postprocess": ([,c,]) => c},
     {"name": "float", "symbols": ["int", {"literal":"."}, "int"], "postprocess": function(d) {return parseFloat(d[0] + d[1] + d[2])}},
     {"name": "float", "symbols": ["int"], "postprocess": function(d) {log('int', d); return parseInt(d[0], 10)}},
     {"name": "int$ebnf$1", "symbols": [/[0-9]/]},

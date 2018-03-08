@@ -303,7 +303,7 @@ CONST -> "Pi"          {% function(d) {return Math.PI; } %}
 # A number value or a function of a number NOTE: no space between
 N -> float          {% id %}
    | FUNC           {% id %}
-   | CONST          {% id %}
+   | "<" CONST ">"          {% ([,c,]) => c %}
 
 # I use `float` to basically mean a number with a decimal point in it
 float -> int "." int   {% function(d) {return parseFloat(d[0] + d[1] + d[2])} %}

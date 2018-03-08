@@ -14,17 +14,7 @@ const call = env.call.bind(env)
 //test('my sum', () => expect( (1+2) ).toBe(3) )
 
 
-// when sum/subtract measures use LAST operand measure
-test(null, () => expect(call('10ZUSD + 20 ZUAH').toString()).toBe('300 ZUAH'))
-test(null, () => expect(call('280ZUAH + 1 ZUSD').toString()).toBe('11 ZUSD'))
-
-test(null, () => expect(call('10ZUSD - 20 ZUAH').toString()).toContain('260')) //ZUAH
-test(null, () => expect(call('280ZUAH - 1 ZUSD').toString()).toContain('9')) //ZUSD
-
-test(null, () => expect(call('1m + 1cm').toString()).toBe('101 cm'))
-
-
-
+/// TODO: use fixedRates everywhere instead of synthetic currencies like ZUSD
 
 test(null, () => expect(call('123')).toBe(123) )
 
@@ -66,6 +56,8 @@ test(null, () => expect(call('Pi')).toBeCloseTo(3.14, 2))
 test(null, () => expect(call('Pi + 1')).toBeCloseTo(4.14, 2))
 test(null, () => expect(call('1 + Pi')).toBeCloseTo(4.141, 2))
 //
+
+
 // implicit multiplication "*"
 test(null, () => expect(call('(3)7')).toBe(21))
 test(null, () => expect(call('(1+7)3')).toBe(24))
@@ -295,6 +287,10 @@ test(null, () => expect(call('110 USD to ZEUR').toNumber('ZEUR')).toBeCloseTo(10
 test(null, () => expect(call('56 ZUAH in ZUSD').toNumber('ZUSD')).toBeCloseTo(2))
 test(null, () => expect(call('56 ZUAH into ZUSD').toNumber('ZUSD')).toBeCloseTo(2))
 
+// test: E const & ETH currency conversion
+test(null, () => expect(call('E ETH to USD').value).toBeCloseTo(Math.E/fixedRates['ETH']) )
+
+
 // %: simple operations
 test(null, () => expect(call('10 %').toString()).toBe('10 PERCENT'))
 test(null, () => expect(call('3%+2').toString()).toBe('5 PERCENT'))
@@ -391,6 +387,17 @@ test(null, () => expect(call('2k mm + 2m').toString()).toBe('4 m'))
 
 test(null, () => expect(call('$2.2k in ZEUR').toNumber('ZEUR')).toBeCloseTo(2000))
 
+
+// when sum/subtract measures use LAST operand measure
+test(null, () => expect(call('10ZUSD + 20 ZUAH').toString()).toBe('300 ZUAH'))
+test(null, () => expect(call('280ZUAH + 1 ZUSD').toString()).toBe('11 ZUSD'))
+
+test(null, () => expect(call('10ZUSD - 20 ZUAH').toString()).toContain('260')) //ZUAH
+test(null, () => expect(call('280ZUAH - 1 ZUSD').toString()).toContain('9')) //ZUSD
+
+test(null, () => expect(call('1m + 1cm').toString()).toBe('101 cm'))
+
+
 // assign variables
 test(null, () => expect(call('var1 = 2').value).toBe(2))
 test(null, () => expect(call('var2 = 2 + 3').value).toBe(5))
@@ -427,11 +434,14 @@ test(null, () => expect(call('val = perc of weight').value.toNumber('kg')).toBeC
 test(null, () => expect(call('z = 20 km').value.toString()).toBe('20 km'))
 test(null, () => expect(call('z = z + 1 km').value.toString()).toBe('21 km'))
 
+
 // combined assignments operations (+=)
 test(null, () => expect(call('var = 30$').value.toString()).toBe('30 USD'))
 test(null, () => expect(call('var += 5').value.toString()).toBe('35 USD'))
 test(null, () => expect(call('var *= 3').value.toString()).toBe('105 USD'))
 test(null, () => expect(call('var /= 3 + 2').value.toString()).toBe('21 USD') )
+
+
 
 // variable tests from specification
 test(null, () => expect(call('v = $20').value.toString()).toBe('20 USD'))
@@ -627,3 +637,6 @@ test(null, () => {
   env.call('Price: $11 + $34.45')
   expect(env.call('prev').toString()).toBe('45.45 USD')
 })
+
+
+

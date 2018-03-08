@@ -40,8 +40,9 @@ export function prepareTxt(text, verbose=false) {
   // 3) simplify modifying assignments (like "a += 10" -> "a = a + 10") (reason implement it in grammar without copypaste is harder)
   txt = txt.replace(/(.*)([-+*/])=(.*)/, '$1 = $1 $2 ( $3 )')
 
-  // 5) remove multispaces
-  txt = txt.replace(new RegExp('\\s+', 'gi'), ' ')
+  // mark supported constants (Pi, E) (use angle brackets instead of spaces to be more exact
+  // (spaces bad correlates with quotes like as "Pi(3+2) => cropped multispaces and so on)
+  txt = txt.replace(new RegExp(`\\b(Pi|E)\\b`, 'gi'), ' <$1> ')
 
   // 10) put spaces around all math braces (to simplify implicit multiplication grammar)
   //txt = txt.replace(new RegExp('([\(\)])', 'gi'), ' $1 ')
@@ -53,10 +54,8 @@ export function prepareTxt(text, verbose=false) {
   //txt = txt.replace(new RegExp(`(${st})\s+`, 'gi'), ' $1')
   txt = txt.replace(new RegExp(`(\\W+|^)(${st})\\s*\\(`, 'gi'), '$1$2(')
 
-
   // 30) Add spaces before all +/- signs (to simplify unary/binary sign logic)
   txt = txt.replace(new RegExp(`\\s*([+-])`, 'gi'), ' $1')
-
 
   // 34) convert scaled numbers (2.3k -> 2300) (in prepare to avoid confusing with units)
   const S = Object.keys(scales).join('|')

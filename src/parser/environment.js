@@ -13,7 +13,7 @@ const DEBUG = process.env.DEBUG
 //const { fixedRates } = require('./fixedRates')
 
 const { /*clearAllUserVariables,*/ isUserVariable, createUserVariable } = require('./userVariables')
-const { /* scales,*/ isUnit, /* lexemSeparator,*/ log } = require('../common')
+const { isUnit, log } = require('../common')
 const { setContext } = require('./parserContext')
 const { prepareTxt, createParser } = require('./parser')
 
