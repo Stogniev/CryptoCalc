@@ -30,7 +30,7 @@
     "start-debug": "REACT_APP_DEBUG=1 npm run start",
     "build": "npm run build-parser && npm run test-exit && react-scripts build",
     "build-to-docs": "npm run build && npm run copy-build-to-docs && git add docs/*",
-    "build-to-docs-and-run": "npm run build-to-docs && npx browse http://localhost:5001/CryptoCalc & && $(npm bin)/serve -p 5001",
+    "build-to-docs-and-run": "npm run build-to-docs && (npx browse http://localhost:5001/CryptoCalc &) && $(npm bin)/serve -p 5001",
     "copy-build-to-docs": "rm -rf docs/* && cp -rf build/* docs/ ",
     "firebase-deploy-functions-node6": "(cd firebase/functions && firebase deploy --only functions)",
     "firebase-deploy-functions": "(cd firebase/functions && npx -p node-bin@6.11 -- firebase deploy --only functions)",

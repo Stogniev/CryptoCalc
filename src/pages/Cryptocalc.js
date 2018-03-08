@@ -291,6 +291,7 @@ export class Cryptocalc extends React.Component {
           case 'unit':
             r.push(<span className="blue-color" key={item.offset}>{item.value}</span>)
             break;
+          case 'constant':
           case 'variable':
           case 'specVariables':
             r.push(<span className="violet-color" key={item.offset}>{item.value}</span>)

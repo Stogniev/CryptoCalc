@@ -40,6 +40,9 @@ const highlightGrammar = {
   mod: ['mod'],
   leftShift: ['<<'],
   rightShift: ['>>'],
+
+  specVariables: specVariables,  
+
   convert: [
     'in', 'into', 'as', 'to',
     'of',
@@ -55,10 +58,8 @@ const highlightGrammar = {
 
   percent: ['%', 'PERCENT'],
 
-  specVariables: specVariables,
-
   func: ['sin', 'cos', 'tan', 'asin', 'acos', 'atag', 'sqrt', 'ln'],
-  constant: ['pi', 'e'],
+  constant: ['Pi', 'E'],
 
   currency: new RegExp(`(?:${currSymbols})`),
   //currency: new RegExp(`(?:USD|UAH|\\$|\\€)`),
