@@ -34,6 +34,11 @@ const expressionHumanizers = {
   PERCENT: '%',
   '<EOL>': '',
 
+  // cons
+  '<Pi>': 'Pi',
+  '<E>': 'E',
+  
+
   // wrap all signs with space (NOTE: this is after all replacings like "plus -> +" )
   '([-+*/])': ' $1 ',
 
