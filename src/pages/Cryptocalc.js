@@ -19,7 +19,6 @@ import { CommonHeader } from './CommonHeader'
 const NBSP = '\u00A0'
 
 
-
 /* eslint-disable jsx-a11y/href-no-hash */  //
 export class Cryptocalc extends React.Component {
   static _defaultState = {
@@ -76,12 +75,26 @@ export class Cryptocalc extends React.Component {
   //   }
   // }
 
+  patchEmptyTextholder() {
+    // goal: make empty textholder contain div (to deny user-input first line to appear without div => first its style problems)
+    if (this.textHolderREF) {
+      if (this.textHolderREF.children.length > 0) return;
+
+      const div = document.createElement('div');
+      div.style.minHeight = '1em'  // to allow click to edit
+      div.setAttribute('data-hint', '10% of 200 USD + 3 EUR')
+      this.textHolderREF.appendChild(div);
+    }
+  }
 
   componentDidMount() {
     if (canUseDOM) {
       this.initFirebase()
+
+      this.patchEmptyTextholder()
     }
 
+    //console.log('CDM')
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -103,6 +116,7 @@ export class Cryptocalc extends React.Component {
       LS.setObject('savedDocs', this.state.savedDocs)
     }
 
+    this.fixVisualHeights()
   }
 
   onPlusClicked = () => {
@@ -211,8 +225,31 @@ export class Cryptocalc extends React.Component {
     //const results = env.results
     //console.log('ier:', inputs, expressions, results)
 
+
+    //this.fixVisualHeights()
+
     this.setState( {inputs, expressions, results, env} )
   }
+
+  fixVisualHeights = () => {
+    // set expressions/results margins considering possible multiline
+
+    const highlights = document.getElementById('highlights').children
+    const results = document.getElementById('results').children
+    const textholders = document.getElementById('textholder').children
+
+    Array.from(highlights).forEach( (h, i) => {
+      highlights[i].style.marginBottom = `${results[i].clientHeight}px`
+      if (textholders[i]) {
+        textholders[i].style.marginBottom = `${results[i].clientHeight}px`
+      }
+
+      if (results[i]) {
+        results[i].style.marginTop = `${h.clientHeight}px`
+      }
+    })
+  }
+
   onPaste = (e) => {
     // prevent pasting formatted text (that broke highilghting overlay)
     // https://stackoverflow.com/a/12028136/1948511
@@ -318,6 +355,7 @@ export class Cryptocalc extends React.Component {
   }
 
   render() {
+    //console.log('R')
     const { inputs, expressions, results, env, savedDocs, menuActive, lightColorScheme } = this.state
     //console.log('r:', inputs, expressions, results, env)
     const total = env && env.sum()
@@ -372,7 +410,7 @@ export class Cryptocalc extends React.Component {
                   { Object.keys(savedDocs).map( key =>
                       <li onClick={this.onLoadDocClicked.bind(null, key)} key={`sd_${key}`}>
                         {key}
-                        <span onClick={this.deleteDocClicked.bind(null,key)}>X</span>
+                        <span onClick={this.deleteDocClicked.bind(null, key)}>X</span>
                       </li>
                     )
                   }
@@ -384,7 +422,7 @@ export class Cryptocalc extends React.Component {
 
         <div className="ZZcontainer">
           <div className="autodraw">
-            <div className="highlights">
+            <div id="highlights" className="highlights">
               { inputs.map( (inp, i) =>
                 <div key={`h__${i}_${inp}`}
                      /* className={[
@@ -395,11 +433,13 @@ export class Cryptocalc extends React.Component {
                 </div>)
               }
             </div>
-            <div className="results" >
+            <div className="results" id="results" >
               { results.map( (r, i) => ([
                   (r !== null)
                   ?
-                  <div className="result-sum" key={`rs_${i}_${r}`}>
+                  <div className="result-sum" key={`rs_${i}_${r}`}
+                       id={`result-sum-${i}`}
+                       >
                     <span className="parsed-expression">
                       { this.renderHighlighted(expressions[i]) }
                     </span>
@@ -408,7 +448,9 @@ export class Cryptocalc extends React.Component {
                     </div>
                   </div>
                   :
-                  <div className="result-sum" key={`rs_${i}_${r}`}>
+                  <div className="result-sum"
+                       key={`rs_${i}_${r}`} id={`result-sum-${i}`}
+                       >
                     <span className="parsed-expression hidden">
                       <span>{NBSP}</span>
                     </span>
@@ -420,10 +462,12 @@ export class Cryptocalc extends React.Component {
           </div>
           <div id="textholder-keeper" >
             <div id="textholder" contentEditable /*onKeyPress={this.onKeyPress}*/
-                 data-placeholder="10% of 200 USD + 2 EUR"
+                 data-hint="10% of 200 USD + 2 EUR"
                  onInput={this.onInput}
                  onPaste={this.onPaste}
-                 onFocus={() => this.setState({ menuActive: false })} >
+                 onFocus={() => this.setState({ menuActive: false })}
+                 ref={(element) => { this.textHolderREF = element }}
+            >
             </div>
           </div>
         </div>

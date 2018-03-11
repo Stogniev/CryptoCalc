@@ -1,8 +1,10 @@
 /* display placeholder for empty editable div */
-#textholder[contentEditable=true]:empty:not(:focus)::before {
-  content: attr(data-placeholder);
+/* #textholder[contentEditable=true]:empty:not(:focus)::before { */
+#textholder > div:empty:not(:focus)::before {
+  content: attr(data-hint);
   color: gray;
 }
+
 
 .center {
   text-align: center;
@@ -34,9 +36,9 @@
 
 
 .textholder-placeholder {
-  white-space: nowrap;
+  /* ZZ2 white-space: nowrap; */
   position: absolute;
-  line-height: 4em;
+  ZZ1line-height: 4em;
 
   /* color: gray; */
 
@@ -46,7 +48,7 @@
 
 #textholder {
   z-index: -2;
-  line-height: 4em;
+  ZZ1line-height: 4em;
   /* color: rgba(0,0,0, 0); */
   /* caret-color: black; */
 
@@ -63,6 +65,9 @@
   /* align-items: top; */
 }
 
+/* #textholder > div { */
+/*   margin-bottom: 2em; */
+/* } */
 
 #textholder:focus {
     outline: none;  /* remove blue focus border */
@@ -81,8 +86,21 @@
 
 .highlights {
   position:absolute;
-  line-height: 4em;
+  ZZ1line-height: 4em;
 }
+
+
+
+/* .textholder > div { */
+/*   padding: 1em */
+/* } */
+/*  */
+/* .highlights > div { */
+/*   padding: 1em; */
+/* } */
+
+
+
 
 /* .container div { */
 /*   right: 20%;        /\* to keep absolute positioned same width *\/ */
@@ -105,10 +123,9 @@
   /* width: 100%; */
   /* ?? white-space: pre-wrap; */
   /* padding-top: 2em; */
-  /* line-height: 2em; */
   /* padding-bottom: 2em; */
 
-  padding-top: 0.5em;
+  /* ZZ4 padding-top: 0.5em; */
   word-wrap: break-word;
   ZZcolor: red;
   letter-spacing: 1.2px;
@@ -122,7 +139,7 @@
 }
 
 .parsed-expression {
-  white-space: nowrap;
+  /* ZZ2 white-space: nowrap; */
 
   /* background-color: #fff; */
   /* border-color: #d6d6e1; */
@@ -139,9 +156,9 @@
 
 .result-sum > * {
   /* margin-left: 1em; */
-  margin-top: 2.05em;
+  /* ZZ margin-top: 2.05em; */
   /* margin-right: 5em; */
-  height: 1.95em;
+  /* ZZ3 height: 1.95em; */
 }
 
 .res {
@@ -169,7 +186,7 @@
 }
 
 .result-sum {
-  margin: 0 0 0 15px;
+  /* ZZ4 margin: 0 0 0 15px; */
   display: flex;
   justify-content: space-between;
 }
