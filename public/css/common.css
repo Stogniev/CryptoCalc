@@ -111,13 +111,13 @@
 
 @media screen and (max-width: 639px) {
   .autodraw, .textholder-keeper {
-    right: 0%;        /* to keep absolute positioned same width */
-    left: 0%;
+    right: 10px;        /* to keep absolute positioned same width */
+    left: 10px;
   }
   /* ugly copypaste ^^^ of non-absolute div */
   .textholder-keeper {
-    margin-right: 0%;
-    margin-left: 0%;
+    margin-right: 10px;
+    margin-left: 10px;
   }
 
 }
