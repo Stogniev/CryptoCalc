@@ -1,6 +1,6 @@
 /* display placeholder for empty editable div */
 /* #textholder[contentEditable=true]:empty:not(:focus)::before { */
-#textholder > div:empty:not(:focus)::before {
+.textholder > div:empty:not(:focus)::before {
   content: attr(data-hint);
   color: gray;
 }
@@ -16,7 +16,7 @@
 
 
 
-.autodraw, #textholder {
+.autodraw, .textholder {
   /* width: 100%; */
   height: 100%;
   /* font: 20px/28px 'Open Sans', sans-serif; */
@@ -25,7 +25,7 @@
 }
 
 
-#textholder-keeper {
+.textholder-keeper {
   /* position: absolute;       don't use abosolute to fill vertical space     */
 
   /* display: flex; */
@@ -36,9 +36,7 @@
 
 
 .textholder-placeholder {
-  /* ZZ2 white-space: nowrap; */
   position: absolute;
-  ZZ1line-height: 4em;
 
   /* color: gray; */
 
@@ -46,9 +44,8 @@
   letter-spacing: 1.2px;
 }
 
-#textholder {
+.textholder {
   z-index: -2;
-  ZZ1line-height: 4em;
   /* color: rgba(0,0,0, 0); */
   /* caret-color: black; */
 
@@ -65,11 +62,11 @@
   /* align-items: top; */
 }
 
-/* #textholder > div { */
+/* .textholder > div { */
 /*   margin-bottom: 2em; */
 /* } */
 
-#textholder:focus {
+.textholder:focus {
     outline: none;  /* remove blue focus border */
 }
 
@@ -86,18 +83,30 @@
 
 .highlights {
   position:absolute;
-  ZZ1line-height: 4em;
 }
 
 
 
-/* .textholder > div { */
-/*   padding: 1em */
-/* } */
-/*  */
-/* .highlights > div { */
-/*   padding: 1em; */
-/* } */
+
+
+/* margin between expressions/highlights/results */
+.textholder > div {
+  padding-bottom: 0.1em;
+}
+.highlights > div {
+  padding-bottom: 0.1em;
+}
+
+
+.results > .result-sum {
+  padding-bottom: 0.5em;
+}
+
+
+.container {
+  padding: 0.5em 0em 0.5em 0em;
+}
+
 
 
 
@@ -106,12 +115,13 @@
 /*   right: 20%;        /\* to keep absolute positioned same width *\/ */
 /*   left: 20%; */
 /* } */
-.autodraw, #textholder-keeper {
+
+.autodraw, .textholder-keeper {
   right: 20%;        /* to keep absolute positioned same width */
   left: 20%;
 }
 /* ugly copypaste ^^^ of non-absolute div */
-#textholder-keeper {
+.textholder-keeper {
   margin-right: 20%;
   margin-left: 20%;
 }
@@ -125,9 +135,7 @@
   /* padding-top: 2em; */
   /* padding-bottom: 2em; */
 
-  /* ZZ4 padding-top: 0.5em; */
   word-wrap: break-word;
-  ZZcolor: red;
   letter-spacing: 1.2px;
 
 }
@@ -139,8 +147,6 @@
 }
 
 .parsed-expression {
-  /* ZZ2 white-space: nowrap; */
-
   /* background-color: #fff; */
   /* border-color: #d6d6e1; */
   border-radius: 5px;
@@ -156,9 +162,7 @@
 
 .result-sum > * {
   /* margin-left: 1em; */
-  /* ZZ margin-top: 2.05em; */
   /* margin-right: 5em; */
-  /* ZZ3 height: 1.95em; */
 }
 
 .res {
@@ -186,7 +190,6 @@
 }
 
 .result-sum {
-  /* ZZ4 margin: 0 0 0 15px; */
   display: flex;
   justify-content: space-between;
 }

@@ -420,7 +420,7 @@ export class Cryptocalc extends React.Component {
           </div>
         </section>
 
-        <div className="ZZcontainer">
+        <div className="container">
           <div className="autodraw">
             <div id="highlights" className="highlights">
               { inputs.map( (inp, i) =>
@@ -460,8 +460,8 @@ export class Cryptocalc extends React.Component {
               }
             </div>
           </div>
-          <div id="textholder-keeper" >
-            <div id="textholder" contentEditable /*onKeyPress={this.onKeyPress}*/
+          <div id="textholder-keeper" className="textholder-keeper" >
+            <div id="textholder" className="textholder" contentEditable /*onKeyPress={this.onKeyPress}*/
                  data-hint="10% of 200 USD + 2 EUR"
                  onInput={this.onInput}
                  onPaste={this.onPaste}

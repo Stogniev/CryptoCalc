@@ -61,7 +61,8 @@ body {
 .container {
   max-width: 620px;
   margin: 0 auto;
-  padding: 0 10px; }
+  /* padding: 0 10px; */
+}
 
 header {
   background-color: #f2f2f6; }
@@ -392,7 +393,7 @@ div.copy {
 
 /*# sourceMappingURL=light.css.map */
 
-#textholder {
+.textholder {
   caret-color: black;
 }
 
@@ -406,7 +407,7 @@ div.copy {
   color: gray;
 }
 
-#textholder {
+.textholder {
   color: rgba(0,0,0, 0);
   caret-color: black;
 }
