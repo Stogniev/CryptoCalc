@@ -1,8 +1,10 @@
 /* display placeholder for empty editable div */
-#textholder[contentEditable=true]:empty:not(:focus)::before {
-  content: attr(data-placeholder);
+/* #textholder[contentEditable=true]:empty:not(:focus)::before { */
+.textholder > div:empty:not(:focus)::before {
+  content: attr(data-hint);
   color: gray;
 }
+
 
 .center {
   text-align: center;
@@ -14,7 +16,7 @@
 
 
 
-.autodraw, #textholder {
+.autodraw, .textholder {
   /* width: 100%; */
   height: 100%;
   /* font: 20px/28px 'Open Sans', sans-serif; */
@@ -23,7 +25,7 @@
 }
 
 
-#textholder-keeper {
+.textholder-keeper {
   /* position: absolute;       don't use abosolute to fill vertical space     */
 
   /* display: flex; */
@@ -34,9 +36,7 @@
 
 
 .textholder-placeholder {
-  white-space: nowrap;
   position: absolute;
-  line-height: 4em;
 
   /* color: gray; */
 
@@ -44,9 +44,8 @@
   letter-spacing: 1.2px;
 }
 
-#textholder {
+.textholder {
   z-index: -2;
-  line-height: 4em;
   /* color: rgba(0,0,0, 0); */
   /* caret-color: black; */
 
@@ -63,8 +62,11 @@
   /* align-items: top; */
 }
 
+/* .textholder > div { */
+/*   margin-bottom: 2em; */
+/* } */
 
-#textholder:focus {
+.textholder:focus {
     outline: none;  /* remove blue focus border */
 }
 
@@ -81,23 +83,56 @@
 
 .highlights {
   position:absolute;
-  line-height: 4em;
 }
 
-/* .container div { */
-/*   right: 20%;        /\* to keep absolute positioned same width *\/ */
-/*   left: 20%; */
-/* } */
-.autodraw, #textholder-keeper {
-  right: 20%;        /* to keep absolute positioned same width */
-  left: 20%;
+
+
+
+
+/* margin between expressions/highlights/results */
+.textholder > div {
+  padding-bottom: 0.1em;
 }
-/* ugly copypaste ^^^ of non-absolute div */
-#textholder-keeper {
-  margin-right: 20%;
-  margin-left: 20%;
+.highlights > div {
+  padding-bottom: 0.1em;
 }
 
+
+.results > .result-sum {
+  padding-bottom: 0.5em;
+}
+
+
+.main-container {
+  padding: 0.5em 0em 0.5em 0em;
+}
+
+
+
+@media screen and (max-width: 639px) {
+  .autodraw, .textholder-keeper {
+    right: 10px;        /* to keep absolute positioned same width */
+    left: 10px;
+  }
+  /* ugly copypaste ^^^ of non-absolute div */
+  .textholder-keeper {
+    margin-right: 10px;
+    margin-left: 10px;
+  }
+
+}
+@media screen and (min-width: 640px) {
+  .autodraw, .textholder-keeper {
+    right: 20%;        /* to keep absolute positioned same width */
+    left: 20%;
+  }
+  /* ugly copypaste ^^^ of non-absolute div */
+  .textholder-keeper {
+    margin-right: 20%;
+    margin-left: 20%;
+  }
+
+}
 
 
 
@@ -105,12 +140,9 @@
   /* width: 100%; */
   /* ?? white-space: pre-wrap; */
   /* padding-top: 2em; */
-  /* line-height: 2em; */
   /* padding-bottom: 2em; */
 
-  padding-top: 0.5em;
   word-wrap: break-word;
-  ZZcolor: red;
   letter-spacing: 1.2px;
 
 }
@@ -122,8 +154,6 @@
 }
 
 .parsed-expression {
-  white-space: nowrap;
-
   /* background-color: #fff; */
   /* border-color: #d6d6e1; */
   border-radius: 5px;
@@ -139,9 +169,7 @@
 
 .result-sum > * {
   /* margin-left: 1em; */
-  margin-top: 2.05em;
   /* margin-right: 5em; */
-  height: 1.95em;
 }
 
 .res {
@@ -169,7 +197,6 @@
 }
 
 .result-sum {
-  margin: 0 0 0 15px;
   display: flex;
   justify-content: space-between;
 }

@@ -386,12 +386,12 @@ div.copy {
 /*# sourceMappingURL=dark.css.map */
 
 /* display placeholder for empty editable div */
-#textholder[contentEditable=true]:empty:not(:focus)::before {
+.textholder[contentEditable=true]:empty:not(:focus)::before {
   content: attr(data-placeholder);
   color: gray;
 }
 
-#textholder {
+.textholder {
   caret-color: white;
 }
 
@@ -406,7 +406,7 @@ div.copy {
   color: gray;
 }
 
-#textholder {
+.textholder {
   color: rgba(255,255,255, 0);
   caret-color: white;
 }
