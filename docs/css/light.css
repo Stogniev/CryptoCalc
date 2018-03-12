@@ -59,7 +59,7 @@ body {
   background-color: #e7e7ef; }
 
 .container {
-  max-width: 620px;
+  /* max-width: 620px; */
   margin: 0 auto;
   /* padding: 0 10px; */
 }
@@ -84,7 +84,7 @@ header {
         padding: 20px 0 17px;
         border-bottom: 3px solid #f2f2f6;
         margin-left: 29px; }
-        header .container .menu li a:active, header .container .menu li a:hover {
+        header .container .menu li a:active, header .container .menu li a.active/*hover*/ {
           color: #252424;
           border-bottom: 3px solid #252424; }
 
@@ -181,7 +181,8 @@ div.constants-table ul li:first-child span {
 
 /*Page-2 Calculator*/
 .main {
-  padding: 0; }
+  padding: 0;
+}
 
 .change {
   background-color: #ededf5;
@@ -208,7 +209,10 @@ div.constants-table ul li:first-child span {
 
 .total {
   color: #747e95;
-  font-family: 'RobotoMono-Regular'; }
+  font-family: 'RobotoMono-Regular';
+  font-size: 12px;
+  font-weight: 500;
+}
 
 .holder {
   position: relative; }

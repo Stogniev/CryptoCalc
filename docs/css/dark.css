@@ -59,9 +59,10 @@ body {
   background-color: #1f2026; }
 
 .container {
-  max-width: 620px;
+  /* max-width: 620px; */
   margin: 0 auto;
-  padding: 0 10px; }
+  /* padding: 0 10px; */
+}
 
 header {
   background-color: #27282d; }
@@ -84,13 +85,14 @@ header {
         padding: 20px 0 17px;
         border-bottom: 3px solid #27282d;
         margin-left: 29px; }
-        header .container .menu li a:active, header .container .menu li a:hover {
+        header .container .menu li a:active, header .container .menu li a.active/*:hover*/ {
           color: #fff;
           border-bottom: 3px solid #fff; }
 
 main {
   padding: 14px 0;
-  height: 100%; }
+  /* height: 100%; */
+}
 
 .example {
   padding: 20px;
@@ -205,7 +207,10 @@ div.currency-table-percent ul li span:first-child {
 
 .total span {
   color: #747e95;
-  font-family: 'RobotoMono-Regular'; }
+  font-family: 'RobotoMono-Regular';
+  font-size: 12px;
+  font-weight: 500;
+}
 
 .holder {
   position: relative; }
