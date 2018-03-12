@@ -388,7 +388,9 @@ export class Cryptocalc extends React.Component {
               </div>
               <img src={`img/moon-${colorSchemeSuffix}.svg`} alt="dark" />
             </div>
-            <div className={`total ${total || 'hidden'}`}>
+            <div className={`total ${total || 'hidden'}`}
+                 onClick={ (e) => this.copyToCliboard(`Total: ${formatResult(total)}`)}
+                 >
               <span>Total:{NBSP}</span>
               <span>{ formatResult(total) }</span>
             </div>
@@ -475,12 +477,22 @@ export class Cryptocalc extends React.Component {
         </div>
 
         <br />
+
+        <input id="clipboard" />
       {/* <hr />
       <p id="rates"></p>
       <pre>{info}</pre> */}
 
       </div>
     )
+  }
+
+
+  copyToCliboard(text) {
+    const elem = document.getElementById('clipboard')
+    elem.value = text
+    elem.select()
+    document.execCommand('copy')
   }
 
 }
