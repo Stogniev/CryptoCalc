@@ -90,7 +90,8 @@ header {
 
 main {
   padding: 14px 0;
-  height: 100%; }
+  /* height: 100%; */
+}
 
 .example {
   padding: 20px;

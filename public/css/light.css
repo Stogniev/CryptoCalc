@@ -181,7 +181,8 @@ div.constants-table ul li:first-child span {
 
 /*Page-2 Calculator*/
 .main {
-  padding: 0; }
+  padding: 0;
+}
 
 .change {
   background-color: #ededf5;
