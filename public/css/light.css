@@ -209,7 +209,10 @@ div.constants-table ul li:first-child span {
 
 .total {
   color: #747e95;
-  font-family: 'RobotoMono-Regular'; }
+  font-family: 'RobotoMono-Regular';
+  font-size: 12px;
+  font-weight: 500;
+}
 
 .holder {
   position: relative; }
