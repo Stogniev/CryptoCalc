@@ -18,6 +18,7 @@ import { refreshCurrencyUnits } from '../unitUtil'
 
 const NBSP = '\u00A0'
 
+
 /* eslint-disable jsx-a11y/href-no-hash */  //
 export class Cryptocalc extends React.Component {
   static _defaultState = {
@@ -78,7 +79,7 @@ export class Cryptocalc extends React.Component {
       if (this.textHolderREF.children.length > 0) return;
 
       const div = document.createElement('div');
-      div.style.minHeight = '1em'  // to allow click to edit
+      div.style.minHeight = '1em'  // to allow click to edit  //move to css?
       div.setAttribute('data-hint', '10% of 200 USD + 3 EUR')
       this.textHolderREF.appendChild(div);
     }
@@ -118,6 +119,7 @@ export class Cryptocalc extends React.Component {
 
   onPlusClicked = () => {
     this.setUserText('')
+    this.patchEmptyTextholder()
     this.focusUserText()
     this.setState({ menuActive: false })
   }
@@ -157,6 +159,9 @@ export class Cryptocalc extends React.Component {
   }
 
   onTextHolderKeyDown = (event) => {
+    console.log('key', event.key, event.ctrlKey, event.altKey, event.shiftKey)
+
+    // C-S-c  copy result of current line to clipboard
     if (event.key === 'C' && event.ctrlKey && !event.altKey && event.shiftKey) {
       const activeLineIndex = this.getActiveLineIndex()
       const activeLineResult = formatResult(this.state.results[activeLineIndex])
@@ -164,6 +169,43 @@ export class Cryptocalc extends React.Component {
 
       event.preventDefault()
     }
+
+    // C-S-0  surround with parentheses
+    if (event.key === ')' && event.ctrlKey && !event.altKey && event.shiftKey) {
+      const activeLineIndex = this.getActiveLineIndex()
+      const element = this.textHolderDOM().children[activeLineIndex]
+      element.innerText = `(${element.innerText})`
+      this.onInput() // call handler manually
+      event.preventDefault()
+    }
+
+    // C-M-backspace  delete all
+    if (event.key === 'Backspace' && event.ctrlKey && event.altKey && !event.shiftKey) {
+      this.setUserText('')
+      this.patchEmptyTextholder()
+      this.onInput() // call handler manually
+      event.preventDefault()
+    }
+
+    // C-M-c  copy all expressions to clipboard
+    if (event.key === 'c' && event.ctrlKey && event.altKey && !event.shiftKey) {
+      this.copyToCliboard(this.getUserText())
+      event.preventDefault()
+    }
+
+    // C-o  "import" (from clipboard)
+    if (event.key === 'o' && event.ctrlKey && !event.altKey && !event.shiftKey) {
+
+      /* const elem = document.getElementById('c2')
+       * elem.focus()
+       * elem.select();
+       * //document.execCommand('Paste');
+       * document.execCommand("Paste")*/
+
+      event.preventDefault()
+    }
+
+
   }
 
   textHolderDOM() {
@@ -494,7 +536,7 @@ export class Cryptocalc extends React.Component {
 
         <br />
 
-        <input id="clipboard" />
+        <textarea id="clipboard" />
       {/* <hr />
       <p id="rates"></p>
       <pre>{info}</pre> */}
