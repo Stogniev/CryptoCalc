@@ -109,32 +109,38 @@
 
 
 
+/* ---------------- rel 1 ------------------------ */
+
+
+
 @media screen and (max-width: 639px) {
   .autodraw, .textholder-keeper {
-    right: 10px;        /* to keep absolute positioned same width */
-    left: 10px;
+    right: 1%;
+    left: 1%;
   }
-  /* ugly copypaste ^^^ of non-absolute div */
   .textholder-keeper {
-    margin-right: 10px;
-    margin-left: 10px;
+    margin-right: 1%;
+    margin-left: 1%;
   }
-
+  .container {
+    max-width: calc(100% - 1% * 2);
+  }
 }
 @media screen and (min-width: 640px) {
   .autodraw, .textholder-keeper {
-    right: 20%;        /* to keep absolute positioned same width */
+    right: 20%;
     left: 20%;
   }
-  /* ugly copypaste ^^^ of non-absolute div */
   .textholder-keeper {
     margin-right: 20%;
     margin-left: 20%;
   }
-
+  .container {
+    max-width: calc(100% - 20% * 2);
+  }
 }
 
-
+/* -------------------------------------------- */
 
 .results {
   /* width: 100%; */
