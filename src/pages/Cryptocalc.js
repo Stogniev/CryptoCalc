@@ -173,7 +173,7 @@ export class Cryptocalc extends React.Component {
   }
 
   generateDocName = () => {
-    let s = this.getUserText().replace('\n', ';')
+    let s = this.getUserText().trim().replace('\n', ';')
     const isLong = s.length > 10
     s = s.slice(0, 10)
     if (isLong) s += '...'
@@ -412,7 +412,7 @@ export class Cryptocalc extends React.Component {
                   { Object.keys(savedDocs).map( key =>
                       <li onClick={this.onLoadDocClicked.bind(null, key)} key={`sd_${key}`}>
                         {key}
-                        <span onClick={this.deleteDocClicked.bind(null, key)}>X</span>
+                        <span onClick={this.deleteDocClicked.bind(null, key)}></span>
                       </li>
                     )
                   }
