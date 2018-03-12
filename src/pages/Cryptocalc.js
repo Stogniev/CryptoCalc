@@ -31,7 +31,7 @@ export class Cryptocalc extends React.Component {
     //inputText: '',
 
     //saved documents ("expression states") as {<name>: <inputText> ...}
-    savedDocs: LS.getObject('savedDocs') || {},
+    savedDocs: {},
 
     menuActive: false,
 
@@ -41,13 +41,6 @@ export class Cryptocalc extends React.Component {
     expressions: [],  //active expressions
     results: [],   // calculated results of inputs
     lightColorScheme: true,
-
-    e1: 'e1',
-    e1HTML: '33 + 22',
-    e2: '10 + 5',
-    r1: 'r1',
-    r1HTML: 'r1HTML',
-    r2: '15'
   }
 
   constructor(props) {
@@ -56,6 +49,7 @@ export class Cryptocalc extends React.Component {
     this.state = {
       ...Cryptocalc._defaultState,
       lightColorScheme: LS.getItem('colorScheme') !== 'dark',
+      savedDocs: LS.getObject('savedDocs') || {},
     }
     this.db = null;  // firebase
     //this.parser = new nearley.Parser(grammar.ParserRules, grammar.ParserStart) //.feed(txt);
@@ -148,6 +142,27 @@ export class Cryptocalc extends React.Component {
       const savedDocs = {...this.state.savedDocs}
       savedDocs[name] = this.getUserText()
       this.setState( {savedDocs, menuActive: false, menuInput: ''} )
+    }
+  }
+
+  getActiveLineIndex() {   //return textholder active line index
+    const selection = document.getSelection()
+    if (!selection) return -1
+    if (!selection.focusNode) return -1
+
+    const activeLineText = selection.focusNode.data
+    const index = this.state.inputs.indexOf(activeLineText)
+
+    return index
+  }
+
+  onTextHolderKeyDown = (event) => {
+    if (event.key === 'C' && event.ctrlKey && !event.altKey && event.shiftKey) {
+      const activeLineIndex = this.getActiveLineIndex()
+      const activeLineResult = formatResult(this.state.results[activeLineIndex])
+      this.copyToCliboard(activeLineResult)
+
+      event.preventDefault()
     }
   }
 
@@ -465,7 +480,8 @@ export class Cryptocalc extends React.Component {
             </div>
           </div>
           <div id="textholder-keeper" className="textholder-keeper" >
-            <div id="textholder" className="textholder" contentEditable /*onKeyPress={this.onKeyPress}*/
+            <div id="textholder" className="textholder" contentEditable
+                 onKeyDown={this.onTextHolderKeyDown}
                  data-hint="10% of 200 USD + 2 EUR"
                  onInput={this.onInput}
                  onPaste={this.onPaste}
