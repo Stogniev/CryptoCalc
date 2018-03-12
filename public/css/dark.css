@@ -84,7 +84,7 @@ header {
         padding: 20px 0 17px;
         border-bottom: 3px solid #27282d;
         margin-left: 29px; }
-        header .container .menu li a:active, header .container .menu li a:hover {
+        header .container .menu li a:active, header .container .menu li a.active/*:hover*/ {
           color: #fff;
           border-bottom: 3px solid #fff; }
 

@@ -3,15 +3,24 @@ import { HashRouter, Route } from 'react-router-dom'
 import { Cryptocalc } from './pages/Cryptocalc'
 import { Docs } from './pages/Docs'
 
+import { CommonHeader } from './pages/CommonHeader'
 
-const App = () => (
-  <HashRouter>
-    <div>
-      {/* <Route exact path="/" component={Cryptocalc} /> */}
+const colorSchemeSuffix = 'light'
 
-      <Route exact path="/" component={Cryptocalc} />
-      <Route path="/docs" component={Docs} />
-    </div>
-  </HashRouter>
-)
+const App = (props) => {
+  return (
+    <HashRouter>
+      <div>
+
+        <Route render={ (pp) =>
+          (<CommonHeader {...pp} colorSchemeSuffix={colorSchemeSuffix} />)
+        } />
+
+        <Route exact path="/" component={Cryptocalc} />
+        <Route path="/docs" component={Docs} />
+      </div>
+    </HashRouter>
+  )
+}
+
 export default App

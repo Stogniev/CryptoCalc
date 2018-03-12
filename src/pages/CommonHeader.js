@@ -1,17 +1,17 @@
 import React from 'react';
-import { Link } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 
 
 export const CommonHeader = ({colorSchemeSuffix}) => (
   <header>
     <div className="container">
-      <Link className={`logo ${colorSchemeSuffix}`} to="/">
+      <NavLink className={`logo ${colorSchemeSuffix}`} to="/">
         <img src={`img/logo-${colorSchemeSuffix}.svg`} alt="logo" />
         cryptocalc
-      </Link>
+      </NavLink>
       <ul className="menu">
-        <li><Link to="/">Calculator</Link></li>
-        <li><Link to="/docs">Docs</Link></li>
+        <li><NavLink exact to="/">Calculator</NavLink></li>
+        <li><NavLink exact to="/docs">Docs</NavLink></li>
       </ul>
     </div>
   </header>

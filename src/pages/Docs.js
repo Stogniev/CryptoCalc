@@ -1,6 +1,6 @@
 import React from 'react';
 import Helmet from 'react-helmet'
-import { CommonHeader } from './CommonHeader'
+//import { CommonHeader } from './CommonHeader'
 
 export class Docs extends React.Component {
   render() {
@@ -17,7 +17,7 @@ export class Docs extends React.Component {
           <link rel="stylesheet" href="css/fonts.css" />
         </Helmet>
 
-        <CommonHeader colorSchemeSuffix={colorSchemeSuffix} />
+        {/* <CommonHeader colorSchemeSuffix={colorSchemeSuffix} /> */}
 
         <main>
           <div className="container">

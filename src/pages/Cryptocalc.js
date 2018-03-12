@@ -14,10 +14,9 @@ import { highlightLexer } from '../highlighter'
 import { loadjs, canUseDOM } from '../domutil'
 import LS from '../localStorageUtil'
 import { refreshCurrencyUnits } from '../unitUtil'
-import { CommonHeader } from './CommonHeader'
+//import { CommonHeader } from './CommonHeader'
 
 const NBSP = '\u00A0'
-
 
 /* eslint-disable jsx-a11y/href-no-hash */  //
 export class Cryptocalc extends React.Component {
@@ -41,7 +40,7 @@ export class Cryptocalc extends React.Component {
     //parsedInputs: [], // parsed input lines
     expressions: [],  //active expressions
     results: [],   // calculated results of inputs
-    lightColorScheme: LS.getItem('colorScheme') !== 'dark',
+    lightColorScheme: true,
 
     e1: 'e1',
     e1HTML: '33 + 22',
@@ -53,7 +52,11 @@ export class Cryptocalc extends React.Component {
 
   constructor(props) {
     super(props)
-    this.state = Cryptocalc._defaultState
+
+    this.state = {
+      ...Cryptocalc._defaultState,
+      lightColorScheme: LS.getItem('colorScheme') !== 'dark',
+    }
     this.db = null;  // firebase
     //this.parser = new nearley.Parser(grammar.ParserRules, grammar.ParserStart) //.feed(txt);
   }
@@ -355,7 +358,6 @@ export class Cryptocalc extends React.Component {
   }
 
   render() {
-    //console.log('R')
     const { inputs, expressions, results, env, savedDocs, menuActive, lightColorScheme } = this.state
     //console.log('r:', inputs, expressions, results, env)
     const total = env && env.sum()
@@ -372,7 +374,7 @@ export class Cryptocalc extends React.Component {
           <link rel="stylesheet" href="css/fonts.css" />
         </Helmet>
 
-        <CommonHeader colorSchemeSuffix={colorSchemeSuffix} />
+        {/* <CommonHeader colorSchemeSuffix={colorSchemeSuffix} /> */}
 
         <section className="change">
           <div className="container">
