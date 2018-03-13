@@ -2,7 +2,7 @@
 const currencySymbols = require('currency-symbol-map').currencySymbolMap
 
 const confusingCurrencySymbols = [
-  '$', 'K', 'L', 'kr', '£', 'лв', '₨', '₱', '﷼', '฿', 'MOD', 'D', 'G', 'M', 'T', 'R', 'AND', 'KM', 'TIME', 'MM', 'GRAM', 'Ft', 'E', 'S'
+  '$', 'K', 'L', 'kr', '£', 'лв', '₨', '₱', '﷼', '฿', 'MOD', 'D', 'G', 'M', 'T', 'R', 'AND', 'KM', 'TIME', 'MM', 'GRAM', 'Ft', 'E', 'S', 'P', 'GB',
 ]
 
 //

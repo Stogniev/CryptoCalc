@@ -159,7 +159,7 @@ export class Cryptocalc extends React.Component {
   }
 
   onTextHolderKeyDown = (event) => {
-    console.log('key', event.key, event.ctrlKey, event.altKey, event.shiftKey)
+    //console.log('key', event.key, event.ctrlKey, event.altKey, event.shiftKey)
 
     // C-S-c  copy result of current line to clipboard
     if (event.key === 'C' && event.ctrlKey && !event.altKey && event.shiftKey) {

@@ -20,7 +20,7 @@ let currSymbolsList = Object.keys(currencies.symbolToCode).map(escapeStringRegex
 currSymbolsList = currSymbolsList.concat( currSymbolsList.map(x => x.toLocaleLowerCase()) )
 const currSymbols = currSymbolsList.join('|')
 
-//console.log('currSymbols', currSymbols)
+//console.log('currSymbols', currSymbols, '>>>>>>', currSymbolsList)
 
 // highlightGrammar entered by user OR from prepareTxt (BOTH)
 const highlightGrammar = {
@@ -34,14 +34,14 @@ const highlightGrammar = {
   plus: ['+', 'plus', 'and', 'with'],
   minus: ['-', 'minus', 'subtract', 'without'],
   mul: ['*', 'times', 'multiplied by', 'mul'],
-  divide: ['/', 'divide', 'divide by'],
+  divide: ['/', 'divide', 'divide by', 'divided by'],
   assign: ['=', '+=', '-=', '*=', '/*'],
   exp: ['^'],
   mod: ['mod'],
   leftShift: ['<<'],
   rightShift: ['>>'],
 
-  specVariables: specVariables,  
+  specVariables: specVariables,
 
   convert: [
     'in', 'into', 'as', 'to',
@@ -59,9 +59,11 @@ const highlightGrammar = {
   percent: ['%', 'PERCENT'],
 
   func: ['sin', 'cos', 'tan', 'asin', 'acos', 'atag', 'sqrt', 'ln'],
-  constant: ['Pi', 'E'],
 
   currency: new RegExp(`(?:${currSymbols})`),
+
+  constant: ['Pi', 'E'],
+
   //currency: new RegExp(`(?:USD|UAH|\\$|\\€)`),
 
   unit: new RegExp(`(?:${UP})(?:${UN})`),
@@ -82,24 +84,24 @@ const highlightGrammar = {
 
 const highlightLexer = moo.compile(highlightGrammar)
 
-// 
+//
 // function tokenize(text) {
 //   const r = []
 //   highlightLexer.reset(text)
-// 
+//
 //   for (let item of highlightLexer) {
 //     //console.log('-', item.value)
 //     r.push(`${item.value}:${item.type}`)
 //   }
-// 
+//
 //   // let item;
 //   // while (true) {
 //   //   item = highlightLexer.next()
 //   //   if (!item) break;
-//   // 
+//   //
 //   //   //if (['WS', 'semicolon'].includes(item.type)) continue;
 //   //   console.log('-', item.value)
-//   //   
+//   //
 //   //   /* switch (item.type) {
 //   //       *     case 'plus':
 //   //       *        r.push('<', item.value, '>');
@@ -109,32 +111,32 @@ const highlightLexer = moo.compile(highlightGrammar)
 //   //       * } */
 //   //   r.push(`${item.value}:${item.type}`)
 //   // }
-// 
+//
 //   return r
 // }
-// 
+//
 
 // function fmt(text) {
 //   const tokens = tokenize(text)
 //   //console.log('tokens:', tokens)
 //   //console.log('R:', text, '\n ', tokens)
 // }
-// 
+//
 // if (require.main === module) {
 //   // that user in put
 //   fmt('12.3 kg + 45 cm + pi / 2')
 //   fmt('€12.3 + $12.5')
 //   fmt('(€12.3 * 2) + 12.5 kg')
 //   fmt('50$ as a % of 100$')
-// 
+//
 //   fmt('50 USD; asapercentof 100 USD;')
-// 
+//
 //   fmt('3 + 4')
 //   fmt('4 + 5 ')
 //   fmt('12   ')
-// 
+//
 //   fmt('prev ')
-// 
+//
 //   fmt('17 \n')
 //   //fmt('d')
 // }
