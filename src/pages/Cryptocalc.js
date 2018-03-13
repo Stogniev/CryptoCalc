@@ -118,7 +118,7 @@ export class Cryptocalc extends React.Component {
   }
 
   onPlusClicked = () => {
-    this.setUserText('')
+    this.setUserTextHTML('')
     this.patchEmptyTextholder()
     this.focusUserText()
     this.setState({ menuActive: false })
@@ -133,7 +133,7 @@ export class Cryptocalc extends React.Component {
   }
 
   onLoadDocClicked = (key, event) => {
-    this.setUserText(this.state.savedDocs[key])
+    this.setUserTextHTML(this.state.savedDocs[key])
   }
 
   onSavingKeyPress = (event) => {
@@ -142,7 +142,7 @@ export class Cryptocalc extends React.Component {
 
     if (is.equal(event.key, 'Enter') && !is.empty(name)) {
       const savedDocs = {...this.state.savedDocs}
-      savedDocs[name] = this.getUserText()
+      savedDocs[name] = this.textHolderDOM().innerHTML
       this.setState( {savedDocs, menuActive: false, menuInput: ''} )
     }
   }
@@ -181,7 +181,7 @@ export class Cryptocalc extends React.Component {
 
     // C-M-backspace  delete all
     if (event.key === 'Backspace' && event.ctrlKey && event.altKey && !event.shiftKey) {
-      this.setUserText('')
+      this.setUserTextHTML('')
       this.patchEmptyTextholder()
       this.onInput() // call handler manually
       event.preventDefault()
@@ -218,9 +218,9 @@ export class Cryptocalc extends React.Component {
   }
 
   // note: direct dom manipulation because of contentEditable
-  setUserText(text) {
-    this.textHolderDOM().innerText = text
-    this.onInput() // ~~ call handler manually
+  setUserTextHTML(innerHTML) {
+    this.textHolderDOM().innerHTML = innerHTML
+    this.onInput() // call handler manually
   }
 
   deleteDocClicked = (name, event) => {
