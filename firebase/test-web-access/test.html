@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+  <head>
+
+    <script src="https://www.gstatic.com/firebasejs/4.9.1/firebase.js"></script>
+
+    <!-- ?? -->
+    <!-- <script src="https://www.gstatic.com/firebasejs/4.9.1/firebase-app.js"></script> -->
+
+    <script src="https://www.gstatic.com/firebasejs/4.9.1/firebase-firestore.js"></script>
+
+  </head>
+<body>
+
+<h2>Currency rates (live updated)</h2>
+
+<button type="button" onclick="modifyDoc()">
+  Try to modify doc (should miss privs)
+</button>
+
+<!-- <p id="demo"></p> -->
+<p id="rates"></p>
+
+
+<!-- <button type="button" onclick="loadDoc()">Request data</button> -->
+
+<!-- <script> -->
+<!-- function loadDoc() { -->
+<!--   var xhttp = new XMLHttpRequest(); -->
+<!--   xhttp.onreadystatechange = function() { -->
+<!--     if (this.readyState == 4 && this.status == 200) { -->
+<!--       document.getElementById("demo").innerHTML = this.responseText; -->
+<!--     } -->
+<!--   }; -->
+<!--   xhttp.open("GET", "demo_get.asp", true); -->
+<!--   xhttp.send(); -->
+<!-- } -->
+<!-- </script> -->
+
+
+
+<script>
+  // Initialize Firebase
+  var config = {
+    apiKey: "AIzaSyA4HThdnU1J0rD4mHKmmDVPYVRMjoGE-Nw",
+    authDomain: "cryptocalc1-76acb.firebaseapp.com",
+    databaseURL: "https://cryptocalc1-76acb.firebaseio.com",
+    projectId: "cryptocalc1-76acb",
+    storageBucket: "cryptocalc1-76acb.appspot.com",
+    messagingSenderId: "89798210406"
+  };
+  firebase.initializeApp(config);
+
+  // Initialize Cloud Firestore through Firebase
+  let db = firebase.firestore();
+  //let firestore = db
+</script>
+
+
+<script>
+  // function showDoc() {
+  //   var docRef = db.collection("users").doc("alovelace");
+  // 
+  //   docRef.get().then(function(doc) {
+  //     if (doc.exists) {
+  //       console.log("Document data:", doc.data().last);
+  //     } else {
+  //       // doc.data() will be undefined in this case
+  //       console.log("No such document!");
+  //     }
+  //   }).catch(function(error) {
+  //     console.log("Error getting document:", error);
+  //   });
+  // }
+  // 
+  // showDoc()
+
+  function writeDoc() {
+    var docRef = db.collection("users").doc("alovelace");
+  }
+
+  // // setup realtime update
+  // db.collection('users').doc("alovelace").onSnapshot(
+  //   (doc) => {
+  //     console.log('alovelace:', doc.data())
+  //     document.getElementById('demo').innerText = doc.data().last
+  //   },
+  //   (error) => console.error('Snapshot init error', e)
+  // )
+
+  // setup realtime updated rates
+  db.collection('rates').doc("all").onSnapshot(
+    (doc) => {
+      console.log('Rates updated:', doc.data())
+      document.getElementById('rates').innerText =  `Rates (for 1 USD): UAH: ${doc.data().UAH}, BTC: ${doc.data().BTC}`
+    },
+    (e) => console.error('Snapshot init error', e)
+  )
+
+  function modifyDoc() {
+    var docRef = db.collection("users").doc("alovelace");
+    docRef.update({time: 'zz'+new Date().toString()})
+  }
+
+  function saveDocByFunction() {
+    var docRef = db.collection("users").doc("alovelace");
+    docRef.update({time: new Date().toString()})
+  }
+</script>
+
+</body>
+</html>
+
