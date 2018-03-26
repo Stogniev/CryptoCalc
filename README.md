@@ -63,6 +63,7 @@ Account: safecryptocalc@gmail.com (free)
 
 task list: https://cron-job.org/en/members/jobs/
 
+Important note: in case problems with cronjobbed tasks (for example 5xx http answer) the email with "Cronjob failed rates" is sent to the account. If the problems repeat many times correspondent cronjob service will auto-stop ans has to be restarted manually. So keep in mind necessity to review your mailbox for possible errors.
 
 
 ## Openexchangerates
