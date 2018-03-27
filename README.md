@@ -59,7 +59,7 @@ Technical note: firebase configuration local "patch" used: ```~/dev/cryptocalc/f
 ## Cron-job service
 Used to call firebase functions periodically.
 
-Account: safecryptocalc@gmail.com (free)
+Account: safecryptocalc@gmail.com/hm5435kdfcv7 (free)
 
 task list: https://cron-job.org/en/members/jobs/
 
@@ -69,7 +69,7 @@ Important note: in case problems with cronjobbed tasks (for example 5xx http ans
 ## Openexchangerates
 Used to get conventional currencies rates (called by firebase function)
 
-Account: safecryptocalc@gmail.com (free with 1000 requests/month limit)
+Account: safecryptocalc@gmail.com/3hdiv3ucgw (free with 1000 requests/month limit)
 
 ## CoinCap.io
 Used to get crypty currencies rates (called by firebase function)
